@@ -779,10 +779,15 @@ function geminiSampler(key) {
     const models = await geminiModels(key);
     let last = null;
     for (const model of models.slice(0, 8)) {
-      let r;
-      try { r = await fetch(GEM + "models/" + model + ":generateContent?key=" + encodeURIComponent(key), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: opts.signal }); }
-      catch (e) { throw { code: e && e.name === "AbortError" ? "cancelled" : "network", message: String(e) }; }
-      let j = null; try { j = await r.json(); } catch (e) {}
+      let r, j = null;
+      // timeout por modelo: modelo lento ou lotado passa para o próximo
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 40000);
+      const onAbort = () => ctl.abort(); if (opts.signal) opts.signal.addEventListener("abort", onAbort);
+      const b = /^gemini-3/.test(model) && !opts.images ? Object.assign({}, body, { generationConfig: Object.assign({ thinkingConfig: { thinkingLevel: "low" } }, body.generationConfig) }) : body;
+      try { r = await fetch(GEM + "models/" + model + ":generateContent?key=" + encodeURIComponent(key), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b), signal: ctl.signal }); try { j = await r.json(); } catch (e) {} }
+      catch (e) { if (opts.signal && opts.signal.aborted) throw { code: "cancelled", message: "" }; last = { code: "network", message: String(e) }; continue; }
+      finally { clearTimeout(tm); if (opts.signal) opts.signal.removeEventListener("abort", onAbort); }
+      if (r.status === 400 && b !== body && /thinking/i.test(JSON.stringify(j || ""))) { try { r = await fetch(GEM + "models/" + model + ":generateContent?key=" + encodeURIComponent(key), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: opts.signal }); j = null; try { j = await r.json(); } catch (e) {} } catch (e) { last = { code: "network", message: String(e) }; continue; } }
       if (r.status === 404 || r.status === 429 || r.status >= 500) { last = { code: r.status === 429 ? "rate_limited" : "upstream_error", message: "" }; if (r.status === 404) try { localStorage.removeItem(GEM_LS); } catch (e) {} continue; }
       if (!r.ok) { const msg = j && j.error && j.error.message || ""; throw { code: /API key|API_KEY|permission/i.test(msg) || r.status === 403 ? "bad_key" : "invalid_request", message: msg }; }
       if (j.promptFeedback && j.promptFeedback.blockReason) throw { code: "refused", message: "" };
@@ -1160,7 +1165,7 @@ function aiErrMsg(e) {
   if (c === "cancelled") return "";
   if (c === "bad_key") return "A chave da API não foi aceita. Confira em Perfil > IA.";
   if (c === "no_credit") return "A conta da API está sem crédito. Coloque crédito em console.anthropic.com ou use outra IA.";
-  if (c === "network") return "Sem internet ou a chamada foi bloqueada. Tente de novo.";
+  if (c === "network") return "A IA não respondeu (internet fraca ou Gemini lotado). Tente de novo em instantes.";
   if (c === "refused") return "A IA recusou esse pedido. Tente descrever de outro jeito.";
   return "A IA não respondeu agora. Use o cálculo sem IA ou tente mais tarde.";
 }
@@ -1182,8 +1187,9 @@ function addFoto() {
     <label class="f">Detalhes (opcional)<input type="text" id="fotoTxt" data-in="fotoTxt" value="${esc(ADD.fotoTxt)}" placeholder="Ex.: o arroz é integral, a carne é patinho"></label>
     <button class="btn pri block" data-act="fotoExt">Começar</button>${ADD.aiErr ? `<div class="card small" style="color:var(--bad)">${esc(ADD.aiErr)}</div>` : ""}${ADD.parsed ? parsedList(ADD.parsed) : ""}`;
   let h = `<div class="card ai"><div class="ai-badge">${ICON.spark} Foto do prato</div><div class="small ink2" style="margin-top:4px">Tire ou escolha uma foto. A IA identifica os alimentos e estima as quantidades. Confira os gramas antes de salvar.</div></div>
-    <label class="btn soft block" for="fotoIn">${ICON.cam.replace("<svg", '<svg width="20" height="20"')} ${ADD.foto ? "Trocar foto" : "Tirar ou escolher foto"}</label>
-    <input type="file" id="fotoIn" accept="image/*" capture="environment" data-on="fotoIn" class="hidden">`;
+    <div class="row" style="gap:8px"><label class="btn soft grow" for="fotoCam">${ICON.cam.replace("<svg", '<svg width="20" height="20"')} ${ADD.foto ? "Outra foto" : "Tirar foto"}</label><label class="btn soft grow" for="fotoIn">Da galeria</label></div>
+    <input type="file" id="fotoCam" accept="image/*" capture="environment" data-on="fotoIn" class="hidden">
+    <input type="file" id="fotoIn" accept="image/*" data-on="fotoIn" class="hidden">`;
   if (ADD.fotoUrl) h += `<img class="thumb" src="${ADD.fotoUrl}" alt="Foto do prato">`;
   h += `<label class="f">Detalhes (opcional)<input type="text" id="fotoTxt" data-in="fotoTxt" value="${esc(ADD.fotoTxt)}" placeholder="Ex.: o arroz é integral, a carne é patinho"></label>
     <button class="btn pri block" data-act="aiFoto" ${ADD.foto && !ADD.aiBusy ? "" : "disabled"}>${ADD.aiBusy ? '<span class="spin"></span> Analisando' : "Analisar foto"}</button>`;
