@@ -1946,7 +1946,7 @@ function frMedidorCard() {
     <div class="fr-kcal"><b>${fmt(t.kcal)}</b> de ${fmt(meta)} kcal <span class="muted">· ${t.kcal > meta ? "passou " + fmt(t.kcal - meta) : "faltam " + fmt(meta - t.kcal)}</span></div>
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
-    <div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias no ritmo e sem passar da meta (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></div>`
+    <div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></div>`
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
 }
 // o app inteiro fala com a voz do Rael (categorias sem frase ficam vazias, sem inventar)
@@ -1965,22 +1965,26 @@ const nomeU = () => (P().nome || (PID() === "main" ? "Rael" : "") || "você").tr
 // voz do Rael Frango nos prompts da IA (coach, análise, sugestão de refeição)
 const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: humor seco, autoirônico, preguiçoso de forma carinhosa (café em negociação, crista torta, aplaude sentado, sofá que faz proposta convincente). Fala curto, com ironia e um carinho escondido; quando o usuário vai bem, finge que não está impressionado. Zoeira leve é bem-vinda, sem caricatura e sem autoajuda motivacional. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Meta batida. A balança perdeu o argumento por hoje." / "Pulou o treino? Rael entende: o sofá fez uma proposta convincente." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
 // ---- Nota do dia (0 a 100): premia fazer o dia certo, não comer mais ----
-// Pesos: calorias 35, proteína 25, atividade 25 (qualquer exercício de 20 min ou mais: treino, caminhada, aeróbico, patins, bike; folga planejada também vale), água 10, registro 5. Bônus de +5 por mais de um tipo de exercício no dia (a nota nunca passa de 100). Níveis: Pintinho < 40, Frango 40–79, Galo Alfa ≥ 80.
+// Nota fracionada: cada item vale a fração da meta do dia inteiro já cumprida. Pesos: calorias 35, proteína 25, atividade 25 (qualquer exercício de 20 min ou mais: treino, caminhada, aeróbico, patins, bike; folga planejada também vale), água 10, registro 5. Bônus de +5 por mais de um tipo de exercício no dia (a nota nunca passa de 100). Níveis: Pintinho < 40, Frango 40–79, Galo Alfa ≥ 80.
 const FR_NOTA = { cal: 35, prot: 25, treino: 25, agua: 10, reg: 5, bonus: 5, a: 40, b: 80 };
 const FR_ARC = { a: 0.4, b: 0.8, max: 1 };
 // entrada: kcal, meta, p, mp, agua, ma, refeicoes, exp (fração do dia esperada, 1 = dia fechado), treino: null (não se aplica) | {feito, folga, tipos (quantos tipos de exercício no dia)}
 function frNotaCalc(i) {
   const exp = Math.max(i.exp || 1, 0.05), partes = [];
   const add = (k, rotulo, max, frac, txt, ok) => partes.push({ k, rotulo, max, pts: max * clamp(frac, 0, 1), frac: clamp(frac, 0, 1), txt, ok });
-  // calorias: no ritmo (≥ 90% do esperado) e sem passar da meta (+5%); passando, perde até zerar em +25%
+  // a nota é fracionada: cada item vale a fração da meta do DIA INTEIRO já cumprida (sobe ao comer, beber e treinar; cai ao passar da meta)
+  // calorias: 90% da meta já vale cheio; passando de +5%, perde até zerar em +25%
   let cal = 0; const r = i.meta ? i.kcal / i.meta : 0;
-  if (i.meta) { if (r > 1.05) cal = 1 - (r - 1.05) / 0.2; else { const need = 0.9 * exp; cal = r >= need ? 1 : r / need; } }
-  add("cal", "Calorias", FR_NOTA.cal, cal, r > 1.05 ? "passou" : cal >= 1 ? "no ritmo" : Math.round(cal * 100) + "%", cal >= 1);
-  if (i.mp) { const f = i.p / (i.mp * exp); add("prot", "Proteína", FR_NOTA.prot, f, f >= 1 ? "ok" : Math.round(clamp(f, 0, 1) * 100) + "%", f >= 1); }
+  if (i.meta) cal = r > 1.05 ? 1 - (r - 1.05) / 0.2 : r / 0.9;
+  add("cal", "Calorias", FR_NOTA.cal, cal, r > 1.05 ? "passou" : cal >= 1 ? "ok" : Math.round(clamp(cal, 0, 1) * 100) + "%", cal >= 1);
+  if (i.mp) { const f = i.p / i.mp; add("prot", "Proteína", FR_NOTA.prot, f, f >= 1 ? "ok" : Math.round(clamp(f, 0, 1) * 100) + "%", f >= 1); }
   if (i.treino) { const f = i.treino.feito || i.treino.folga ? 1 : 0; add("treino", "Atividade", FR_NOTA.treino, f, i.treino.feito ? "feito" : i.treino.folga ? "folga" : "pendente", f === 1);
     if ((i.treino.tipos || 0) >= 2) partes.push({ k: "bonus", rotulo: "Bônus", max: 0, pts: FR_NOTA.bonus, frac: 1, txt: "2 tipos", ok: true, bonus: true }); }
-  if (i.ma) { const f = i.agua / (i.ma * exp); add("agua", "Água", FR_NOTA.agua, f, f >= 1 ? "ok" : Math.round(clamp(f, 0, 1) * 100) + "%", f >= 1); }
+  if (i.ma) { const f = i.agua / i.ma; add("agua", "Água", FR_NOTA.agua, f, f >= 1 ? "ok" : Math.round(clamp(f, 0, 1) * 100) + "%", f >= 1); }
   { const f = i.refeicoes / 3; add("reg", "Refeições", FR_NOTA.reg, f, Math.min(i.refeicoes, 3) + "/3", f >= 1); }
+  // selo à parte (não entra na nota): está no ritmo do horário? (calorias e proteína ≥ 90% e água ≥ 80% do esperado até agora)
+  const ritmo = (!i.meta || i.kcal >= 0.9 * exp * i.meta) && (!i.mp || i.p >= 0.9 * exp * i.mp) && (!i.ma || i.agua >= 0.8 * exp * i.ma) && !(i.meta && i.kcal > i.meta * 1.05);
+  partes.push({ k: "ritmo", rotulo: "Ritmo", max: 0, pts: 0, frac: ritmo ? 1 : 0, txt: ritmo ? "no ritmo" : "atrasado", ok: ritmo, bonus: true });
   const max = partes.reduce((s, x) => s + x.max, 0), pts = partes.reduce((s, x) => s + x.pts, 0), score = max ? Math.min(100, Math.round(pts / max * 100)) : 0;
   const estourou = i.meta && i.kcal > i.meta * 1.10;
   let nv = score < FR_NOTA.a ? { k: "pintinho", n: "Pintinho" } : score < FR_NOTA.b || estourou ? { k: "frango", n: "Frango" } : { k: "galo", n: "Galo Alfa" };
