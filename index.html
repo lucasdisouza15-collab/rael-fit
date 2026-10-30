@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030k"><script>(function(){try{var V="v7-20261030k";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030l"><script>(function(){try{var V="v7-20261030l";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2410,19 +2410,23 @@ function sessBody() {
       ${last ? `<div class="xs ink2" style="margin-top:4px">Última vez (${ddmm(sg.last.w.data)}): ${esc(last)}</div>` : ""}
       ${sg && sg.up && x.tipo === "carga" ? `<div style="margin-top:6px"><span class="pill good">Subiu de nível: ${fmt1(sg.kg)} kg hoje</span></div>` : ""}
       <table class="sets" style="margin-top:6px"><thead><tr><th>Série</th>${hk ? `<th>${hk}</th>` : ""}<th>${hr}</th><th aria-label="Feita"></th></tr></thead><tbody>
-      ${x.series.map((s, si) => `<tr class="${s.ok ? "done" : ""}"><td><button class="btn sm ghost" data-act="setType" data-x="${xi}" data-s="${si}" title="Tocar marca como aquecimento" style="min-width:40px">${s.tipo === "aq" ? "A" : si + 1 - x.series.slice(0, si).filter(z => z.tipo === "aq").length}</button></td>
+      ${x.series.map((s, si) => `<tr class="${s.ok ? "done" : ""}"><td><button class="stt ${ST_CLS[s.tipo] || ""}" data-act="setType" data-x="${xi}" data-s="${si}" title="Tocar muda o tipo: normal, aquecimento (W), drop set (D), falha (F)">${stLbl(x.series, si)}</button></td>
         ${hk ? `<td><input type="number" inputmode="decimal" step="0.5" data-in="setIn" data-x="${xi}" data-s="${si}" data-f="kg" value="${esc(s.kg)}" aria-label="${hk}"></td>` : ""}
         <td><input type="number" inputmode="numeric" data-in="setIn" data-x="${xi}" data-s="${si}" data-f="reps" value="${esc(s.reps)}" placeholder="${esc(s.ph || "")}" aria-label="${hr}"></td>
         <td><button class="check ${s.ok ? "on" : ""}" data-act="setOk" data-x="${xi}" data-s="${si}" aria-label="Marcar série">${ICON.check}</button></td></tr>`).join("")}
       </tbody></table>
-      <div class="row" style="margin-top:6px"><button class="btn sm ghost" data-act="setAdd" data-x="${xi}">${ICON.plus.replace("<svg", '<svg width="15" height="15"')} Série</button>${x.series.length > 1 ? `<button class="btn sm ghost" data-act="setDel" data-x="${xi}">Tirar última</button>` : ""}</div></div>`;
+      <div class="row" style="margin-top:8px;gap:8px"><button class="btn soft grow sbtn" data-act="setAdd" data-x="${xi}">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar série</button>${x.series.length > 1 ? `<button class="btn ghost sbtn" data-act="setDel" data-x="${xi}">Tirar última</button>` : ""}</div></div>`;
   });
   h += `<button class="btn soft block" data-act="sessAddEx">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar exercício</button>
-    <div class="disc">Toque no número da série para marcar como aquecimento (não conta para volume nem progressão).</div>
+    <div class="disc">Toque no número da série para trocar o tipo: normal, W (aquecimento, não conta para volume nem progressão), D (drop set) ou F (falha).</div>
     ${UIc.confirm === "discard" ? confirmBox("Descartar este treino? Nada será salvo.", "sessDiscard", {}, "Descartar") : ""}`;
   return h;
 }
 function sessFoot() { return `<button class="btn" data-act="sessDiscardAsk">Descartar</button><button class="btn pri block" data-act="sessFinish">Finalizar treino</button>`; }
+// tipos de série como no Hevy: normal (número), W aquecimento, D drop set, F falha. Só o aquecimento ("aq") fica fora de volume e progressão.
+const ST_CICLO = ["", "aq", "drop", "falha"], ST_CLS = { aq: "w", drop: "d", falha: "f" };
+function stLbl(series, si) { const t = series[si].tipo; return t === "aq" ? "W" : t === "drop" ? "D" : t === "falha" ? "F" : String(1 + series.slice(0, si).filter(z => !z.tipo).length); }
+(function () { try { const st = document.createElement("style"); st.textContent = ".stt{min-width:40px;min-height:40px;border-radius:10px;border:1px solid var(--line,#D5D8DF);background:var(--card,#fff);color:inherit;font:inherit;font-weight:800;touch-action:manipulation;cursor:pointer}.stt.w{background:#FDE9B8;color:#7A5200;border-color:#E9B23A}.stt.d{background:#E7DDFB;color:#4B2A9A;border-color:#A58BE6}.stt.f{background:#FADADA;color:#9B1C1C;border-color:#E58B8B}.sbtn{min-height:44px;touch-action:manipulation}"; document.head.appendChild(st); } catch (_) {} })();
 function updA(fn, redraw = true) { const a = getDoc("ativo"); if (!a) return; fn(a); putDoc("ativo", a); if (redraw) redrawSheet(); }
 ON.setIn = el => updA(a => { a.ex[+el.dataset.x].series[+el.dataset.s][el.dataset.f] = el.value === "" ? "" : num(el.value); }, false);
 ACT.setOk = ds => {
@@ -2430,7 +2434,7 @@ ACT.setOk = ds => {
   updA(a => { const x = a.ex[+ds.x], s = x.series[+ds.s]; s.ok = !s.ok; if (s.ok) { if (s.reps === "" && s.ph !== "") s.reps = num(s.ph); if (s.kg === "" && +ds.s > 0) s.kg = x.series[+ds.s - 1].kg; if (+ds.s + 1 < x.series.length && x.series[+ds.s + 1].kg === "") x.series[+ds.s + 1].kg = s.kg; start = s.tipo === "aq" ? 45 : num(x.item.desc) || 0; } });
   if (start) startRest(start);
 };
-ACT.setType = ds => updA(a => { const s = a.ex[+ds.x].series[+ds.s]; s.tipo = s.tipo === "aq" ? "" : "aq"; });
+ACT.setType = ds => updA(a => { const s = a.ex[+ds.x].series[+ds.s], i = ST_CICLO.indexOf(s.tipo || ""); s.tipo = ST_CICLO[(i + 1) % ST_CICLO.length]; });
 ACT.setAdd = ds => updA(a => { const x = a.ex[+ds.x], l = x.series[x.series.length - 1] || {}; x.series.push({ kg: l.kg ?? "", reps: "", ph: l.reps || l.ph || "", ok: false, tipo: "" }); });
 ACT.setDel = ds => updA(a => { a.ex[+ds.x].series.pop(); });
 ACT.sessAddEx = () => openExPicker(ex => updA(a => { a.ex.push(sessionEx(ex.id, null)); }, false));
@@ -2488,7 +2492,7 @@ ACT.viewWorkout = ds => {
   const w = getDoc("treino-" + ds.id); if (!w) return;
   UIc.confirm = null;
   openSheet({ title: w.nome, body: () => `<div class="small muted">${DOWL[dowOf(w.data)]}, ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${fmt(volume(w))} kg de volume · ~${fmt(kcalTreino(w))} kcal</div>
-    ${w.ex.map(x => { const [hk, hr] = setHead(x.tipo); return `<div class="ex-card"><div style="font-weight:700">${esc(x.nome)}</div><div class="small ink2 tnum" style="margin-top:4px">${x.series.map((s, i) => `${s.tipo === "aq" ? "A" : i + 1}: ${hk ? fmt1(s.kg) + " " + hk + " × " : ""}${s.reps} ${hr}`).join("<br>")}</div></div>`; }).join("")}
+    ${w.ex.map(x => { const [hk, hr] = setHead(x.tipo); return `<div class="ex-card"><div style="font-weight:700">${esc(x.nome)}</div><div class="small ink2 tnum" style="margin-top:4px">${x.series.map((s, i) => `${stLbl(x.series, i)}: ${hk ? fmt1(s.kg) + " " + hk + " × " : ""}${s.reps} ${hr}`).join("<br>")}</div></div>`; }).join("")}
     ${UIc.confirm === "delW" ? confirmBox("Apagar este treino do histórico?", "delWorkout", { id: w.id }) : ""}`,
     foot: `<button class="btn danger" data-act="delWorkoutAsk">Apagar</button><button class="btn block" data-act="repeatWorkout" data-id="${w.id}">Repetir este treino</button>` });
 };
@@ -2596,7 +2600,7 @@ function hvImportar(txt) {
     const lb = cLb >= 0 ? num(r[cLb]) : 0, kg = cKg >= 0 && r[cKg] !== "" ? num(r[cKg]) : lb * 0.4536, reps = num(r[cR]), dur = cD >= 0 ? num(r[cD]) : 0;
     const warm = /warm|aquec/i.test(r[cTy] || "");
     if (!reps && dur && !kg) { x.tipo = "tempo"; x.series.push({ kg: 0, reps: r1(dur), ok: true, tipo: "" }); }
-    else x.series.push({ kg: r1(kg), reps, ok: true, tipo: warm ? "aq" : "" });
+    else x.series.push({ kg: r1(kg), reps, ok: true, tipo: warm ? "aq" : /drop/i.test(r[cTy] || "") ? "drop" : /fail|falha/i.test(r[cTy] || "") ? "falha" : "" });
   });
   const lista = Object.values(treinos).filter(w => w.ex.some(x => x.series.length));
   if (!lista.length) return { erro: "Li " + (rows.length - 1) + " linhas, mas não achei nenhum treino válido (datas ou exercícios não reconhecidos). Exemplo de data na primeira linha: " + (rows[1][cS] || "vazia") };
