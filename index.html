@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030l"><script>(function(){try{var V="v7-20261030l";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030m"><script>(function(){try{var V="v7-20261030m";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2586,7 +2586,32 @@ function hvExId(nome, novos) {
   const id = "hv-" + k; if (!novos[id]) novos[id] = { id, nome, grupo: hvGrupo(nome), equip: hvEquip(nome), tipo: "carga", custom: true, hevy: true };
   return id;
 }
+// rotinas sugeridas a partir do histórico: o treino mais recente de cada título (sem títulos genéricos, cardio, nem rotinas que já existem)
+let HV_ROT = [];
+const hvNrm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
+const HV_GEN = /^(treino|treinamento|workout|exercicio|cardio|hiit|upper body workout|lower body workout)\b|matinal|noturno|madrugada|da tarde|da manha|da noite|hotel|alto gasto/;
+function hvRotinas(lista) {
+  const ja = new Set((P().rotinas || []).map(r => hvNrm(r.nome))), por = {};
+  lista.forEach(w => { const n = (w.nome || "").trim(), k = hvNrm(n); if (!k || HV_GEN.test(k) || ja.has(k)) return; if (!w.ex.some(x => x.tipo === "carga" || x.tipo === "corpo")) return; if (!por[k] || w.inicio > por[k].inicio) por[k] = w; });
+  return Object.values(por).sort((a, b) => b.inicio - a.inicio).map(w => ({
+    nome: w.nome.trim().slice(0, 60), data: w.data, on: true,
+    itens: w.ex.filter(x => x.tipo === "carga" || x.tipo === "corpo").map(x => {
+      const tr = x.series.filter(z => z.tipo !== "aq"), rp = tr.map(z => z.reps).filter(v => v > 0), n = tr.length || x.series.length || 3;
+      const mn = rp.length ? Math.min(...rp) : 8, mx = rp.length ? Math.max(...rp) : 12;
+      return { eid: x.eid, series: n, min: Math.max(1, Math.min(mn, mx)), max: Math.max(mn, mx, 1), desc: /supino|remada curvada|agachamento|terra|desenvolvimento/.test(hvNrm(x.nome)) ? 120 : 75 };
+    })
+  })).filter(r => r.itens.length);
+}
+ACT.hevyRot = () => openSheet({ title: "Criar rotinas", body: hvRotBody(), foot: `<button class="btn pri block" data-act="hevyRotGo">Criar rotinas marcadas</button>` });
+function hvRotBody() { return `<div class="small ink2">Cada rotina usa o seu treino mais recente com esse nome (exercícios, número de séries e faixa de repetições, sem aquecimento). Desmarque as que não quiser.</div><div class="list" style="margin-top:8px">${HV_ROT.map((r, i) => `<div class="li tap" data-act="hevyRotTog" data-i="${i}"><div class="grow"><div class="t">${esc(r.nome)}</div><div class="s">${r.itens.length} exercícios · último em ${ddmm(r.data)}</div></div><span class="pill ${r.on ? "good" : ""}">${r.on ? "Criar" : "Pular"}</span></div>`).join("")}</div>`; }
+ACT.hevyRotTog = ds => { const r = HV_ROT[+ds.i]; if (r) r.on = !r.on; redrawSheet(); };
+ACT.hevyRotGo = () => {
+  const esc_ = HV_ROT.filter(r => r.on); if (!esc_.length) { toast("Marque ao menos uma rotina."); return; }
+  updP(p => { p.rotinas = (p.rotinas || []).concat(esc_.filter(r => !(p.rotinas || []).some(x => hvNrm(x.nome) === hvNrm(r.nome))).map(r => ({ id: uid(), nome: r.nome, itens: r.itens, hevy: true }))); });
+  HV_ROT = HV_ROT.filter(r => !r.on); toast(esc_.length + " rotina" + (esc_.length === 1 ? "" : "s") + " criada" + (esc_.length === 1 ? "" : "s") + ". Veja em Treino."); closeAllSheets();
+};
 function hvImportar(txt) {
+  HV_ROT = [];
   const rows = hvCsv(txt); if (rows.length < 2) return { erro: "O arquivo está vazio ou não é um CSV. Primeira linha lida: " + String(txt).slice(0, 80) };
   const H = rows[0].map(h => norm(h).trim().replace(/\s+/g, "_")), ix = n => H.indexOf(n);
   const cT = ix("title"), cS = ix("start_time"), cE = ix("end_time"), cX = ix("exercise_title"), cI = ix("set_index"), cTy = ix("set_type"), cKg = ix("weight_kg"), cLb = ix("weight_lbs"), cR = ix("reps"), cD = ix("duration_seconds"), cKm = ix("distance_km");
@@ -2604,6 +2629,7 @@ function hvImportar(txt) {
   });
   const lista = Object.values(treinos).filter(w => w.ex.some(x => x.series.length));
   if (!lista.length) return { erro: "Li " + (rows.length - 1) + " linhas, mas não achei nenhum treino válido (datas ou exercícios não reconhecidos). Exemplo de data na primeira linha: " + (rows[1][cS] || "vazia") };
+  HV_ROT = hvRotinas(lista);
   const ja = new Set(workouts().map(w => w.id));
   const novosW = lista.filter(w => !ja.has(w.id));
   if (Object.keys(novos).length) updP(p => { p.exCustom = (p.exCustom || []).concat(Object.values(novos).filter(e => !(p.exCustom || []).some(c => c.id === e.id)).map(e => ({ id: e.id, nome: e.nome, grupo: e.grupo, equip: e.equip, tipo: e.tipo }))); });
@@ -2611,7 +2637,7 @@ function hvImportar(txt) {
   render();
   return { n: novosW.length, ja: lista.length - novosW.length, ex: Object.keys(novos).length, series: novosW.reduce((a, w) => a + w.ex.reduce((b, x) => b + x.series.length, 0), 0) };
 }
-function hvMostra(body, fechar) { replaceSheet({ title: "Importar do Hevy", body, foot: fechar ? `<button class="btn pri block" data-act="sheetClose">Fechar</button>` : "" }); }
+function hvMostra(body, fechar) { replaceSheet({ title: "Importar do Hevy", body, foot: fechar ? (HV_ROT.length ? `<button class="btn soft block" data-act="hevyRot" style="margin-bottom:8px">Criar rotinas a partir do histórico (${HV_ROT.length})</button>` : "") + `<button class="btn pri block" data-act="sheetClose">Fechar</button>` : "" }); }
 ON.hevyImp = el => {
   const f = el.files && el.files[0]; if (!f) { openSheet({ title: "Importar do Hevy", body: `<div class="card small" style="color:var(--bad)">O celular não entregou nenhum arquivo. Tente de novo ou use "Colar o texto do arquivo".</div>`, foot: `<button class="btn pri block" data-act="sheetClose">Fechar</button>` }); return; }
   openSheet({ title: "Importar do Hevy", body: `<div class="row"><span class="spin"></span><span>Arquivo recebido: ${esc(f.name)} (${Math.round(f.size / 1024)} KB). Lendo…</span></div>` });
