@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v5-20261030d"><script>(function(){try{var V="v5-20261030d";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v6-20261030e"><script>(function(){try{var V="v6-20261030e";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3095,11 +3095,11 @@ function frRaelCenaEx(cena, tam) {
 // Variações: em situações parecidas, o dia do mês escolhe entre 2 ou 3 cenas, para não ficar repetitivo.
 function frCenaApp(c) {
   if (FR_REACAO && Date.now() < FR_REACAO.ate) return FR_REACAO.cena;
-  const dia = new Date().getDate(), v = n => dia % n;
+  const dia = new Date().getDate() + Math.floor((c.hr || 0) / 3), v = n => dia % n; // muda a cada 3 horas para o Rael não ficar parado
   if (c.pensando) return "pensando";
   if (c.ativo) return "treinando";
   if (c.correndo) return v(2) ? "fone" : "corrida";
-  if (c.treinou) return (c.seq || 0) >= 3 && v(2) === 0 ? "fogo" : "forte";
+  if (c.treinou) { const L = (c.seq || 0) >= 3 ? ["fogo", "forte", "aplauso"] : ["forte", "aplauso"]; return L[dia % L.length]; }
   if (c.passou) return v(2) ? "rei" : "alfa";
   if (c.estourou) return "pizza";
   if (c.hr < 5) return "geladeira";
