@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030i"><script>(function(){try{var V="v7-20261030i";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030j"><script>(function(){try{var V="v7-20261030j";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3283,6 +3283,7 @@ function frPergRespond(id, a) {
   const q = FR_PERG.find(x => x.id === id); if (!q || !q.o[a]) return;
   const op = q.o[a], fim = new Date(); fim.setHours(23, 59, 59, 999);
   frBalSet("q:" + id, fim.getTime());
+  frBalSet("qpausa", Date.now() + 3 * 3600e3); // depois de responder, descansa 3h antes da próxima pergunta
   try { const k = "frango:resp", o = JSON.parse(localStorage.getItem(k) || "{}"), d = TODAY(); (o[d] = o[d] || {})[id] = op[0]; const ks = Object.keys(o).sort(); while (ks.length > 30) delete o[ks.shift()]; localStorage.setItem(k, JSON.stringify(o)); } catch (_) {}
   FR_RESP = { txt: op[1], ate: Date.now() + 9000 };
   setTimeout(() => { if (FR_RESP && Date.now() >= FR_RESP.ate) { FR_RESP = null; try { if (!SHEET.stack.length) render(); } catch (_) {} } }, 9200);
@@ -3290,6 +3291,7 @@ function frPergRespond(id, a) {
 }
 // perguntas que combinam com o momento e ainda não foram respondidas hoje
 function frPergEscolhe(c, ok) {
+  if (!ok("qpausa")) return null;
   const el = FR_PERG.filter(q => ok("q:" + q.id) && q.on(c));
   if (!el.length) return null;
   const q = el[(new Date().getDate() * 7 + c.hr) % el.length];
