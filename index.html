@@ -271,6 +271,11 @@ details.acc summary::-webkit-details-marker{display:none}
 #fr-splash .fr-sp-barra i{display:block;height:100%;width:100%;background:#F2C14E;border-radius:3px;transform-origin:left;animation:frSpBar 1.6s ease-out forwards}
 @keyframes frSpBar{from{transform:scaleX(.05)}to{transform:scaleX(1)}}
 @media (prefers-reduced-motion:reduce){#fr-splash .fr-sp-rael{animation:none}}
+.fr-nivel.fr-pintinho{background:#C9D6F2!important;color:#1B1630!important}.fr-nivel.fr-frango{background:#2F4C9E!important;color:#fff!important}.fr-nivel.fr-galo{background:#F2C14E!important;color:#1B1630!important}
+.fr-nota-n{font:600 15px Fredoka,system-ui,sans-serif;margin-left:6px;opacity:.85}.fr-nota-n b{font-size:22px}
+.fr-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 2px}
+.fr-chip{font:600 12px "DM Sans",system-ui,sans-serif;border-radius:999px;padding:4px 10px;border:1.5px solid var(--edge,#D5D8DF);background:var(--chip,#E9EBF0);color:inherit}
+.fr-chip.ok{background:#E7ECF7;border-color:#2F4C9E;color:#2F4C9E}.fr-chip.meio{background:#FBEFC9;border-color:#E5C26A;color:#7A5A00}.fr-chip.zero{opacity:.8}
 .fr-bal .fr-resp{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fr-bal .fr-resp button{font:700 12.5px var(--f-body,inherit);border:1.5px solid var(--line);border-radius:999px;background:var(--chip);padding:6px 12px;cursor:pointer;color:inherit}.fr-bal .fr-resp button.pri{background:#2F4C9E;border-color:#2F4C9E;color:#fff}
 </style>
 
@@ -1855,15 +1860,22 @@ const FR_LIM = { a: 0.8, b: 1.05, max: 1.3 };
 // Só vira Galo Alfa se passar da meta real do dia; antes disso o ponteiro nunca passa do fim do Frango.
 function frEsperado(td) { if (td !== TODAY()) return 1; const n = new Date(), h = n.getHours() + n.getMinutes() / 60; if (h < 5) return 1; return clamp((h - 7) / 14, 0.15, 1); }
 function frRitmo(td, kcal, meta) { const exp = frEsperado(td), real = meta ? kcal / meta : 0; let r = meta ? kcal / (meta * exp) : 0; if (kcal <= meta) r = Math.min(r, FR_LIM.b); return { r, real, esperado: meta * exp }; }
-function frNivel(r) { return r < FR_LIM.a ? { k: "pintinho", n: "Pintinho" } : r <= FR_LIM.b ? { k: "frango", n: "Frango" } : { k: "galo", n: "Galo Alfa" }; }
-function frPt(r, raio) { const ang = Math.PI * (1 - clamp(r, 0, FR_LIM.max) / FR_LIM.max); return [100 + raio * Math.cos(ang), 100 - raio * Math.sin(ang)]; }
+function frNivel(r) { return r < FR_LIM.a ? { k: "pintinho", n: "Pintinho" } : r <= FR_LIM.b ? { k: "frango", n: "Frango" } : { k: "galo", n: "Galo Alfa" }; } // legado: o app usa frNotaDe()
+function frPt(r, raio) { const ang = Math.PI * (1 - clamp(r, 0, FR_ARC.max) / FR_ARC.max); return [100 + raio * Math.cos(ang), 100 - raio * Math.sin(ang)]; }
 function frArco(r1_, r2_, raio) { const [x1, y1] = frPt(r1_, raio), [x2, y2] = frPt(r2_, raio); return `M${x1.toFixed(1)} ${y1.toFixed(1)}A${raio} ${raio} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`; }
-function frMedidor(r) {
-  const [nx, ny] = frPt(r, 62), nv = frNivel(r);
-  return `<svg viewBox="0 0 200 118" role="img" aria-label="Frangômetro no ponto ${nv.n}" style="width:100%;max-width:300px;display:block;margin:0 auto">
-    <g fill="none" stroke-width="18"><path d="${frArco(0, FR_LIM.a, 80)}" stroke="#F2C14E"/><path d="${frArco(FR_LIM.a, FR_LIM.b, 80)}" stroke="#2F4C9E"/><path d="${frArco(FR_LIM.b, FR_LIM.max, 80)}" stroke="#D4574A"/></g>
+function frMedidor(x, nv) {
+  const r = clamp(x / 100, 0, 1), [nx, ny] = frPt(r, 62);
+  return `<svg viewBox="0 0 200 118" role="img" aria-label="Nota do dia: ${Math.round(x)} de 100, ${nv.n}" style="width:100%;max-width:300px;display:block;margin:0 auto">
+    <g fill="none" stroke-width="18"><path d="${frArco(0, FR_ARC.a, 80)}" stroke="#C9D6F2"/><path d="${frArco(FR_ARC.a, FR_ARC.b, 80)}" stroke="#2F4C9E"/><path d="${frArco(FR_ARC.b, FR_ARC.max, 80)}" stroke="#F2C14E"/></g>
     <line x1="100" y1="100" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1B1630" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="100" r="8" fill="#1B1630"/>
     <g font-family="inherit" font-size="8" font-weight="700" fill="#1B1630"><text x="14" y="114">PINTINHO</text><text x="80" y="14">FRANGO</text><text x="136" y="114">GALO ALFA</text></g></svg>`;
+}
+// nota do dia a partir dos dados do app
+function frNotaDe(td) {
+  const p = P(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, x = frPlanoDe(td), feitos = treinosDo(td);
+  const refeicoes = Object.values(d.ref || {}).filter(a => a && a.length).length;
+  const treino = feitos.length ? { feito: true } : x ? { folga: !!x.folga } : null;
+  return frNotaCalc({ kcal: t.kcal, meta, p: t.p, mp: m.p, agua: d.agua || 0, ma: m.agua, refeicoes, exp: frEsperado(td), treino });
 }
 // Rael Frango: SVG idêntico ao do canvas de identidade aprovado (Main.dc.html). Só os olhos/sobrancelhas mudam com o humor.
 function frRael(humor, tam) {
@@ -1896,10 +1908,10 @@ const frPesos = () => allDays().map(dt => ({ data: dt, kg: (getDoc("dia-" + dt) 
 function frPlanoDe(date) { const p = P(), rid = (p.semana || {})[dowOf(date)], r = rid && rotinaById(rid, p); return r ? { t: r.nome, folga: false } : (p.rotinas || []).length ? { t: "Folga", folga: true } : null; }
 
 function frTopo(tab, td) {
-  td = td || TODAY(); const p = P(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, rt = frRitmo(td, t.kcal, meta), nv = frNivel(rt.r);
+  td = td || TODAY(); const p = P(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, rt = frRitmo(td, t.kcal, meta), nota = frNotaDe(td), nv = nota.nv;
   const feitos = treinosDo(td), a = getDoc("ativo"), x = frPlanoDe(td), temComida = t.kcal > 0, sem = frDiasSem(), seq = frSeq();
   const dow = dowOf(td), hr = new Date().getHours(), treinavel = x && !x.folga, perna = feitos.length && /legs|perna/i.test(feitos[0].nome);
-  let humor = feitos.length ? "feliz" : t.kcal > meta ? "alfa" : !temComida ? "dorme" : a ? "foco" : "normal", rot = DOWL[dow] + ", " + ddmm(td);
+  let humor = feitos.length ? "feliz" : nv.k === "galo" ? "alfa" : !temComida ? "dorme" : a ? "foco" : "normal", rot = DOWL[dow] + ", " + ddmm(td);
   let pre = "";
   if (dow === 0) pre = fr2("domingo"); else if (dow === 6) pre = fr2("sabado");
   else if (treinavel) { const n = norm(x.t); pre = /push|peito/.test(n) ? fr2("peito") : /pull|costas/.test(n) ? fr2("costas") : /leg|perna/.test(n) ? fr2("pernas") : ""; }
@@ -1913,7 +1925,7 @@ function frTopo(tab, td) {
   else if (tabela) { rot = tabela[0]; fala = tabela[1](); }
   else { if (feitos.length || a) fala = treinoFala; else if (sem >= 7) fala = FR_FRASES.volta[7]; else if (sem >= 3) fala = FR_FRASES.volta[3]; else if (temComida) fala = comidaFala; else fala = treinoFala; }
   if (tab === "comer" && sem >= 3 && !temComida) fala = sem >= 7 ? FR_FRASES.volta[7] : FR_FRASES.volta[3];
-  const hoje = td === TODAY(), ctx = { hoje, tab, hr, dow, treinavel: !!treinavel, treinou: feitos.length > 0, ativo: !!a, passou: t.kcal > meta, nivel: nv.n, temComida };
+  const hoje = td === TODAY(), ctx = { hoje, tab, hr, dow, treinavel: !!treinavel, treinou: feitos.length > 0, ativo: !!a, passou: nv.k === "galo", nivel: nv.n, temComida };
   const bal = frBalaoDo(ctx); ctx.pensando = !!bal && bal.k === "treino";
   let cena = hoje ? frCenaApp(ctx) : (humor === "feliz" ? "danca" : "tarde");
   if (tab === "evo") cena = humor === "feliz" ? "danca" : "pesando";
@@ -1921,13 +1933,14 @@ function frTopo(tab, td) {
   return `<div class="fr-top">${frRaelCena(cena, 104)}<div class="fr-bal"><div class="eyebrow">${esc(rot)}</div>${corpo}</div></div>`;
 }
 function frMedidorCard() {
-  const p = P(), td = ui.date, isHoje = td === TODAY(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, rt = frRitmo(td, t.kcal, meta), nv = frNivel(rt.r), seq = frSeq();
+  const p = P(), td = ui.date, isHoje = td === TODAY(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, nota = frNotaDe(td), nv = nota.nv, seq = frSeq();
   const seqTxt = FR_FRASES.seq[seq] || "";
-  return `<div class="card fr-card">${frMedidor(rt.r)}<div style="text-align:center;margin-top:2px"><span class="fr-nivel fr-${nv.k}">${nv.n}</span></div>
+  return `<div class="card fr-card">${frMedidor(nota.ponteiro, nv)}<div style="text-align:center;margin-top:2px"><span class="fr-nivel fr-${nv.k}">${nv.n}</span> <span class="fr-nota-n"><b>${nota.score}</b>/100</span></div>
+    ${frNotaChips(nota)}
     <div class="fr-kcal"><b>${fmt(t.kcal)}</b> de ${fmt(meta)} kcal <span class="muted">· ${t.kcal > meta ? "passou " + fmt(t.kcal - meta) : "faltam " + fmt(meta - t.kcal)}</span></div>
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
-    <div class="xs muted" style="margin-top:8px;text-align:center">${isHoje && rt.esperado < meta ? `Pelo horário, o esperado até agora é cerca de ${fmt(rt.esperado)} kcal. ` : ""}Pintinho: abaixo de ${Math.round(FR_LIM.a * 100)}% do esperado. Frango: de ${Math.round(FR_LIM.a * 100)}% a ${Math.round(FR_LIM.b * 100)}%. Galo Alfa: passou da meta do dia.</div></div>`
+    <div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias no ritmo e sem passar da meta (35), proteína (25), treino ou folga (25), água (10) e 3 refeições lançadas (5). Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></div>`
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
 }
 // o app inteiro fala com a voz do Rael (categorias sem frase ficam vazias, sem inventar)
@@ -1945,6 +1958,31 @@ const nomeU = () => (P().nome || (PID() === "main" ? "Rael" : "") || "você").tr
 
 // voz do Rael Frango nos prompts da IA (coach, análise, sugestão de refeição)
 const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: humor seco, autoirônico, preguiçoso de forma carinhosa (café em negociação, crista torta, aplaude sentado, sofá que faz proposta convincente). Fala curto, com ironia e um carinho escondido; quando o usuário vai bem, finge que não está impressionado. Zoeira leve é bem-vinda, sem caricatura e sem autoajuda motivacional. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Meta batida. A balança perdeu o argumento por hoje." / "Pulou o treino? Rael entende: o sofá fez uma proposta convincente." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
+// ---- Nota do dia (0 a 100): premia fazer o dia certo, não comer mais ----
+// Pesos (decisão minha, ajustável): calorias 35, proteína 25, treino 25, água 10, registro 5. Níveis: Pintinho < 40, Frango 40–79, Galo Alfa ≥ 80.
+const FR_NOTA = { cal: 35, prot: 25, treino: 25, agua: 10, reg: 5, a: 40, b: 80 };
+const FR_ARC = { a: 0.4, b: 0.8, max: 1 };
+// entrada: kcal, meta, p, mp, agua, ma, refeicoes, exp (fração do dia esperada, 1 = dia fechado), treino: null (não se aplica) | {feito, folga}
+function frNotaCalc(i) {
+  const exp = Math.max(i.exp || 1, 0.05), partes = [];
+  const add = (k, rotulo, max, frac, txt, ok) => partes.push({ k, rotulo, max, pts: max * clamp(frac, 0, 1), frac: clamp(frac, 0, 1), txt, ok });
+  // calorias: no ritmo (≥ 90% do esperado) e sem passar da meta (+5%); passando, perde até zerar em +25%
+  let cal = 0; const r = i.meta ? i.kcal / i.meta : 0;
+  if (i.meta) { if (r > 1.05) cal = 1 - (r - 1.05) / 0.2; else { const need = 0.9 * exp; cal = r >= need ? 1 : r / need; } }
+  add("cal", "Calorias", FR_NOTA.cal, cal, r > 1.05 ? "passou" : cal >= 1 ? "no ritmo" : Math.round(cal * 100) + "%", cal >= 1);
+  if (i.mp) { const f = i.p / (i.mp * exp); add("prot", "Proteína", FR_NOTA.prot, f, f >= 1 ? "ok" : Math.round(clamp(f, 0, 1) * 100) + "%", f >= 1); }
+  if (i.treino) { const f = i.treino.feito || i.treino.folga ? 1 : 0; add("treino", "Treino", FR_NOTA.treino, f, i.treino.feito ? "feito" : i.treino.folga ? "folga" : "pendente", f === 1); }
+  if (i.ma) { const f = i.agua / (i.ma * exp); add("agua", "Água", FR_NOTA.agua, f, f >= 1 ? "ok" : Math.round(clamp(f, 0, 1) * 100) + "%", f >= 1); }
+  { const f = i.refeicoes / 3; add("reg", "Refeições", FR_NOTA.reg, f, Math.min(i.refeicoes, 3) + "/3", f >= 1); }
+  const max = partes.reduce((s, x) => s + x.max, 0), pts = partes.reduce((s, x) => s + x.pts, 0), score = max ? Math.round(pts / max * 100) : 0;
+  const estourou = i.meta && i.kcal > i.meta * 1.10;
+  let nv = score < FR_NOTA.a ? { k: "pintinho", n: "Pintinho" } : score < FR_NOTA.b || estourou ? { k: "frango", n: "Frango" } : { k: "galo", n: "Galo Alfa" };
+  const ponteiro = nv.k === "frango" && score >= FR_NOTA.b ? FR_NOTA.b - 0.5 : score;
+  return { score, nv, partes, ponteiro, estourou: !!estourou };
+}
+function frNotaChips(n) {
+  return `<div class="fr-chips">${n.partes.map(x => `<span class="fr-chip ${x.ok ? "ok" : x.frac > 0 ? "meio" : "zero"}">${x.rotulo} <b>${x.ok && x.txt !== "feito" && x.txt !== "folga" ? "✓" : x.txt}</b></span>`).join("")}</div>`;
+}
 // Rael Frango animado. frRaelCena(cena, tam): cenas = manha, tarde, noite, treinando, forte, cansado, comemora.
 // Usa frRael(humor, tam) (SVG aprovado) e só acrescenta peças por cima; o corpo ganha a classe .ra-corpo para animar.
 function frRaelCena(cena, tam) {
@@ -2495,6 +2533,6 @@ ACT.delKey = () => { try { localStorage.removeItem(KEY_LS); localStorage.removeI
 })();
 try { frSplash(); } catch (_) {}
 </script>
-<!-- frangometro teste 2026-10-30d -->
+<!-- frangometro teste 2026-10-30e -->
 
 </body></html>
