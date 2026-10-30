@@ -260,6 +260,17 @@ details.acc summary::-webkit-details-marker{display:none}
 @keyframes raAg{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(40deg)}}
 .ra .ra-q{animation:raQ 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes raQ{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-8px) rotate(8deg)}}
+#fr-splash{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:radial-gradient(120% 90% at 50% 30%,#3B5CB8 0%,#2F4C9E 55%,#223A7E 100%);color:#fff;transition:opacity .4s ease;cursor:pointer}
+#fr-splash.sai{opacity:0;pointer-events:none}
+#fr-splash .fr-sp-box{display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px;text-align:center}
+#fr-splash .fr-sp-rael{animation:frSpPulo 1.1s ease-in-out infinite;filter:drop-shadow(0 10px 0 rgba(0,0,0,.18))}
+@keyframes frSpPulo{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+#fr-splash .fr-sp-nome{font:700 40px/1.1 Fredoka,system-ui,sans-serif;letter-spacing:-.01em;margin-top:6px}
+#fr-splash .fr-sp-sub{font:500 14px "DM Sans",system-ui,sans-serif;opacity:.8}
+#fr-splash .fr-sp-barra{width:140px;height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;margin-top:14px}
+#fr-splash .fr-sp-barra i{display:block;height:100%;width:100%;background:#F2C14E;border-radius:3px;transform-origin:left;animation:frSpBar 1.6s ease-out forwards}
+@keyframes frSpBar{from{transform:scaleX(.05)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){#fr-splash .fr-sp-rael{animation:none}}
 .fr-bal .fr-resp{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fr-bal .fr-resp button{font:700 12.5px var(--f-body,inherit);border:1.5px solid var(--line);border-radius:999px;background:var(--chip);padding:6px 12px;cursor:pointer;color:inherit}.fr-bal .fr-resp button.pri{background:#2F4C9E;border-color:#2F4C9E;color:#fff}
 </style>
 
@@ -2075,6 +2086,16 @@ ACT.frBal = ds => {
   else { frBalSet(k, fim.getTime()); toast("Registrado: hoje o sofá venceu. O Rael não conta pra ninguém."); }
   render();
 };
+// Tela de abertura: fundo azul, Rael animado e o nome do app. Aparece ao abrir e some sozinha (toque para pular).
+function frSplash(ms) {
+  if (window.__frSplashFeito || document.getElementById("fr-splash")) return; window.__frSplashFeito = true;
+  const h = new Date().getHours(), cena = h >= 5 && h < 11 ? "manha" : h >= 18 || h < 5 ? "noite" : "tarde";
+  const el = document.createElement("div"); el.id = "fr-splash"; el.setAttribute("role", "status"); el.setAttribute("aria-label", "Abrindo o Frangômetro");
+  el.innerHTML = `<div class="fr-sp-box"><div class="fr-sp-rael">${frRaelCena(cena, 176)}</div><div class="fr-sp-nome">Frangômetro</div><div class="fr-sp-sub">acordando o Rael…</div><div class="fr-sp-barra"><i></i></div></div>`;
+  document.body.appendChild(el);
+  const fim = () => { if (!el.parentNode) return; el.classList.add("sai"); setTimeout(() => el.remove(), 420); };
+  el.addEventListener("click", fim); setTimeout(fim, ms || 1700);
+}
 // =================== GRÁFICOS ===================
 function niceMax(v) { if (v <= 0) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))); const f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; }
 function barChart(pts, o = {}) {
@@ -2472,7 +2493,8 @@ ACT.delKey = () => { try { localStorage.removeItem(KEY_LS); localStorage.removeI
   w("agua", "agua", 5000, ds => num(ds.v) > 0);
   w("savePeso", "pesando", 6000);
 })();
+try { frSplash(); } catch (_) {}
 </script>
-<!-- frangometro teste 2026-10-30c -->
+<!-- frangometro teste 2026-10-30d -->
 
 </body></html>
