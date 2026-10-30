@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v14-20261030y"><script>(function(){try{var V="v14-20261030y";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v15-20261030z"><script>(function(){try{var V="v15-20261030z";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1507,7 +1507,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const fn = ACT[b.dataset.act]; if (!fn) return;
   if (b.dataset.act !== "scrim") e.preventDefault();
-  fn(b.dataset, b, e);
+  try { fn(b.dataset, b, e); } catch (err) { console.error(err); toast("Erro no botão: " + (err && err.message || err)); }
 });
 document.addEventListener("change", e => { const el = e.target.closest("[data-on]"); if (el && ON[el.dataset.on]) ON[el.dataset.on](el, e); });
 document.addEventListener("input", e => { const el = e.target.closest("[data-in]"); if (el && ON[el.dataset.in]) ON[el.dataset.in](el, e); });
@@ -2413,7 +2413,7 @@ ACT.openSession = () => openSession();
 let tickT = null;
 function openSession() {
   if (SHEET.stack.some(o => o.body === sessBody)) { redrawSheet(); return; }
-  openSheet({ title: getDoc("ativo").nome, full: true, body: sessBody, foot: sessFoot, closeAct: "sessMin", head: `<span class="pill acc num" id="elapsed">${mmss((Date.now() - getDoc("ativo").inicio) / 1000)}</span>` });
+  openSheet({ title: getDoc("ativo").nome, full: true, body: sessBody, foot: sessFoot, closeAct: "sessMin", head: `<button class="iconbtn" data-act="ajuda" aria-label="Ajuda" style="font-weight:800">?</button><span class="pill acc num" id="elapsed">${mmss((Date.now() - getDoc("ativo").inicio) / 1000)}</span>` });
   clearInterval(tickT);
   tickT = setInterval(() => { const a = getDoc("ativo"), el = $("#elapsed"); if (!a) { clearInterval(tickT); return; } if (el) el.textContent = mmss((Date.now() - a.inicio) / 1000); }, 1000);
 }
@@ -2446,7 +2446,7 @@ function sessFoot() { return `<button class="btn" data-act="sessDiscardAsk">Desc
 const ST_CICLO = ["", "aq", "drop", "falha"], ST_CLS = { aq: "w", drop: "d", falha: "f" };
 function stLbl(series, si) { const t = series[si].tipo; return t === "aq" ? "W" : t === "drop" ? "D" : t === "falha" ? "F" : String(1 + series.slice(0, si).filter(z => !z.tipo).length); }
 (function () { try { const st = document.createElement("style"); st.textContent = ".stt{min-width:40px;min-height:40px;border-radius:10px;border:1px solid var(--line,#D5D8DF);background:var(--card,#fff);color:inherit;font:inherit;font-weight:800;touch-action:manipulation;cursor:pointer}.stt.w{background:#FDE9B8;color:#7A5200;border-color:#E9B23A}.stt.d{background:#E7DDFB;color:#4B2A9A;border-color:#A58BE6}.stt.f{background:#FADADA;color:#9B1C1C;border-color:#E58B8B}.sbtn{min-height:44px;touch-action:manipulation}.rtck{width:34px;height:34px;flex:none;border-radius:9px;border:2px solid var(--line,#9AA1B0);background:var(--card,#fff);color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;touch-action:manipulation}.rtck.on{background:var(--accent,#2F4C9E);border-color:var(--accent,#2F4C9E)}.rtck svg{width:20px;height:20px}.rt-on{outline:2px solid var(--accent,#2F4C9E)}"; document.head.appendChild(st); } catch (_) {} })();
-function updA(fn, redraw = true) { const a = getDoc("ativo"); if (!a) return; fn(a); putDoc("ativo", a); if (redraw) redrawSheet(); }
+function updA(fn, redraw = true) { const a = getDoc("ativo"); if (!a) { toast("Nenhum treino ativo. Feche e abra o treino de novo."); return; } fn(a); putDoc("ativo", a); if (redraw) redrawSheet(); }
 ON.setIn = el => updA(a => { a.ex[+el.dataset.x].series[+el.dataset.s][el.dataset.f] = el.value === "" ? "" : num(el.value); }, false);
 ACT.setOk = ds => {
   let start = 0;
@@ -2719,6 +2719,32 @@ ACT.hevyColarGo = () => {
   HV_BUF = ""; hvMostra(`<div class="row"><span class="spin"></span><span>Lendo…</span></div>`);
   setTimeout(() => { try { const o = hvImportar(txt); hvMostra(o.erro ? `<div class="card small" style="color:var(--bad)">${esc(o.erro)}</div>` : `<div class="card"><div class="num" style="font-size:22px;font-weight:600">${o.n} treino(s) importado(s)</div><div class="small ink2" style="margin-top:6px">${o.series} séries no histórico.${o.ja ? " " + o.ja + " já existia(m)." : ""}</div></div>`, true); } catch (e) { hvMostra(`<div class="card small" style="color:var(--bad)">Erro: ${esc(String(e && e.message || e))}</div>`, true); } }, 60);
 };
+// ---------- Ajuda: como funciona cada tela (FAQ) ----------
+const AJ_FAQ = [
+  ["Treino", [
+    ["O que o número da série faz?", "Toque no número da série para trocar o tipo. A ordem é: normal (número), W (aquecimento), D (drop set) e F (falha). Só o W fica fora do volume e da progressão de carga."],
+    ["Como adiciono ou tiro uma série?", "No cartão do exercício, use \"Adicionar série\" (copia o peso da última) e \"Tirar última\" (remove a última linha da lista)."],
+    ["Como registro uma série feita?", "Preencha carga e repetições e toque no check. O descanso começa sozinho. Se deixar em branco, o app usa a carga da série anterior e as repetições sugeridas."],
+    ["Fechei a tela do treino. Perdi tudo?", "Não. O treino fica ativo até você tocar em Finalizar treino ou Descartar. É só abrir de novo pelo botão do treino em andamento."],
+    ["O que é o aumento de carga?", "Quando você bate o topo das repetições em todas as séries de trabalho, o app sugere subir a carga no próximo treino. O valor do salto está em Ajustes, Preferências."],
+    ["Como crio uma rotina?", "Na aba Treino, Rotinas, Nova rotina. Também dá para abrir um treino do Histórico e tocar em \"Criar rotina\" para copiar aquele treino."]
+  ]],
+  ["Comer", [
+    ["Como adiciono uma refeição?", "Na aba Comer, toque no + da refeição. As abas são: Buscar (tabela de alimentos), Digitar (descreva o que comeu), Foto (a IA lê o prato), Rápido (itens comuns) e Prontas (refeições que você salvou)."],
+    ["A foto do prato abre a galeria?", "Sim. Há dois botões: Tirar foto e Da galeria. Confira sempre os gramas antes de salvar, porque a IA estima."],
+    ["Como salvo uma refeição que repito?", "No menu da refeição (os três pontos), use \"Salvar como refeição pronta\". Ela aparece na aba Prontas."]
+  ]],
+  ["Frango e o app", [
+    ["O que é o balão do Frango?", "Às vezes ele faz uma pergunta. Toque numa resposta e ele reage. As perguntas são esporádicas e mudam a cada hora."],
+    ["Como faço backup?", "Em Ajustes, Fazer backup. Guarde o arquivo. Em Restaurar backup você recupera tudo. O app avisa quando faz tempo que não há backup."],
+    ["O app não atualizou. E agora?", "Ele confere sozinho por novas versões ao abrir. Se precisar, use \"Atualizar o app agora\" em Ajustes."]
+  ]]
+];
+function ajudaBody() {
+  return AJ_FAQ.map(([sec, qs]) => `<div class="eyebrow" style="margin-top:6px">${esc(sec)}</div>` + qs.map(([q, a]) => `<details class="card flat" style="padding:10px 12px"><summary style="font-weight:700;cursor:pointer">${esc(q)}</summary><div class="small ink2" style="margin-top:8px;line-height:1.45">${esc(a)}</div></details>`).join("")).join("");
+}
+ACT.ajuda = () => openSheet({ title: "Como funciona", body: ajudaBody });
+function ajudaCard() { return `<div class="card stack"><h2>Ajuda: como funciona cada tela</h2><div class="small ink2">Dicas rápidas sobre treino, comida e o resto do app. Também há um ? na tela do treino.</div><button class="btn soft block" data-act="ajuda">Abrir a ajuda</button></div>`; }
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
@@ -3929,6 +3955,7 @@ function viewPerfil() {
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
+  h += ajudaCard();
   h += `<div class="card stack"><h2>Enviar feedback</h2><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
   h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
   h += `<div class="xs muted" style="text-align:center;padding:8px 0">Frangômetro, versão teste. ${/^(rael|israel)$/i.test((p.nome || "").trim()) ? "Presente do Lucas pro Rael. " : ""}Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
