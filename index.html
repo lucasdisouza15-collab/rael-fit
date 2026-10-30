@@ -2538,6 +2538,75 @@ ACT.exInfo = ds => {
     ${ex.custom ? `<button class="btn danger" data-act="delEx" data-id="${esc(ex.id)}">Apagar exercício próprio</button>` : ""}` });
 };
 ACT.delEx = ds => { updP(p => { p.exCustom = (p.exCustom || []).filter(x => x.id !== ds.id); }); closeSheet(); toast("Exercício apagado"); };
+// =================== IMPORTAR TREINOS DO HEVY (CSV exportado pelo app, tudo no navegador) ===================
+// Hevy: Perfil > Configurações > Exportar & importar dados > Exportar dados (gera workout_data.csv).
+const exKey = n => norm(n).replace(/[^a-z0-9]/g, "");
+const HV_ALIAS = {
+  "bench press (barbell)": "supino-reto-barra", "bench press (dumbbell)": "supino-reto-halter", "incline bench press (barbell)": "supino-incl-barra", "incline bench press (dumbbell)": "supino-incl-halter",
+  "chest fly (dumbbell)": "crucifixo-halter", "pec deck (machine)": "peck-deck", "butterfly (pec deck)": "peck-deck", "push up": "flexao", "squat (barbell)": "agachamento-livre", "deadlift (barbell)": "levantamento-terra",
+  "romanian deadlift (barbell)": "terra-romeno", "lat pulldown (cable)": "puxada-frente", "seated cable row": "remada-baixa", "seated cable row (v grip)": "remada-baixa", "bent over row (barbell)": "remada-curvada", "bent over row (dumbbell)": "remada-unilateral",
+  "dumbbell row": "remada-unilateral", "pull up": "barra-fixa", "chin up": "barra-supinada", "overhead press (barbell)": "desenvolvimento-barra", "shoulder press (dumbbell)": "desenvolvimento-halter", "lateral raise (dumbbell)": "elevacao-lateral",
+  "face pull": "face-pull", "bicep curl (barbell)": "rosca-direta", "bicep curl (dumbbell)": "rosca-alternada", "hammer curl (dumbbell)": "rosca-martelo", "triceps pushdown": "triceps-pulley", "triceps rope pushdown": "triceps-corda", "skullcrusher (barbell)": "triceps-testa",
+  "leg press (machine)": "leg-press-45", "leg extension (machine)": "cadeira-extensora", "seated leg curl (machine)": "cadeira-flexora", "lying leg curl (machine)": "mesa-flexora", "hip thrust (barbell)": "elevacao-pelvica", "standing calf raise (machine)": "panturrilha-pe",
+  "seated calf raise (machine)": "panturrilha-sentado", "plank": "prancha", "crunch": "abdominal-supra", "running": "corrida-rua", "treadmill": "esteira"
+};
+function hvGrupo(n) { const s = norm(n);
+  return /bench|chest|pec|fly|crossover|peito|supino|crucifixo|flexao|push up/.test(s) ? "Peito" : /row|pulldown|pull up|chin up|lat |remada|puxada|barra fixa|deadlift|terra/.test(s) && !/romanian|stiff/.test(s) ? "Costas" : /shoulder|overhead|lateral raise|front raise|face pull|ombro|desenvolvimento|elevacao lateral/.test(s) ? "Ombros"
+    : /curl|rosca|biceps/.test(s) && !/leg|perna/.test(s) ? "Bíceps" : /tricep|pushdown|skull|dip|triceps|mergulho/.test(s) ? "Tríceps" : /squat|leg press|leg extension|lunge|agachamento|afundo|extensora/.test(s) ? "Quadríceps"
+    : /romanian|stiff|leg curl|flexora|hamstring/.test(s) ? "Posteriores" : /calf|panturrilha/.test(s) ? "Panturrilha" : /crunch|plank|abdominal|prancha|ab /.test(s) ? "Abdômen" : /glute|hip thrust|pelvica/.test(s) ? "Glúteos" : /run|treadmill|bike|cycling|walk|corrida|esteira|elliptical/.test(s) ? "Cardio" : "Corpo inteiro"; }
+function hvEquip(n) { const s = norm(n);
+  return /barbell|barra/.test(s) ? "Barra" : /dumbbell|halter/.test(s) ? "Halter" : /machine|maquina/.test(s) ? "Máquina" : /cable|polia/.test(s) ? "Polia" : /smith/.test(s) ? "Smith" : /kettlebell/.test(s) ? "Kettlebell" : /band|elastico/.test(s) ? "Elástico" : /bodyweight|body weight|peso corporal|push up|pull up|plank/.test(s) ? "Peso corporal" : "Máquina"; }
+function hvCsv(txt) {
+  const rows = []; let row = [], cur = "", q = false;
+  txt = String(txt).replace(/^﻿/, "");
+  const sep = (txt.split("\n")[0].match(/;/g) || []).length > (txt.split("\n")[0].match(/,/g) || []).length ? ";" : ",";
+  for (let i = 0; i < txt.length; i++) { const c = txt[i];
+    if (q) { if (c === '"') { if (txt[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true; else if (c === sep) { row.push(cur); cur = ""; }
+    else if (c === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; } else if (c !== "\r") cur += c; }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.length > 1);
+}
+const HV_MES = { jan: 0, feb: 1, fev: 1, mar: 2, apr: 3, abr: 3, may: 4, mai: 4, jun: 5, jul: 6, aug: 7, ago: 7, sep: 8, set: 8, oct: 9, out: 9, nov: 10, dec: 11, dez: 11 };
+function hvData(s) {
+  s = String(s || "").trim(); let m = s.match(/^(\d{1,2})\s+([A-Za-zçÇ]{3})[a-zç.]*\s+(\d{4}),?\s+(\d{1,2}):(\d{2})/);
+  if (m && HV_MES[norm(m[2])] != null) return new Date(+m[3], HV_MES[norm(m[2])], +m[1], +m[4], +m[5]).getTime();
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/); if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
+  const t = Date.parse(s); return isNaN(t) ? null : t;
+}
+function hvExId(nome, novos) {
+  const p = P(), k = exKey(nome), semParen = exKey(nome.replace(/\s*\(.*\)\s*/, ""));
+  const al = HV_ALIAS[norm(nome).trim()]; if (al && EX_BY[al]) return al;
+  const e = allEx(p).find(x => exKey(x.nome) === k) || allEx(p).find(x => exKey(x.nome) === semParen);
+  if (e) return e.id;
+  const id = "hv-" + k; if (!novos[id]) novos[id] = { id, nome, grupo: hvGrupo(nome), equip: hvEquip(nome), tipo: "carga", custom: true, hevy: true };
+  return id;
+}
+function hvImportar(txt) {
+  const rows = hvCsv(txt); if (rows.length < 2) { toast("Arquivo vazio ou fora do formato do Hevy."); return; }
+  const H = rows[0].map(h => norm(h).trim().replace(/\s+/g, "_")), ix = n => H.indexOf(n);
+  const cT = ix("title"), cS = ix("start_time"), cE = ix("end_time"), cX = ix("exercise_title"), cI = ix("set_index"), cTy = ix("set_type"), cKg = ix("weight_kg"), cLb = ix("weight_lbs"), cR = ix("reps"), cD = ix("duration_seconds"), cKm = ix("distance_km");
+  if (cS < 0 || cX < 0) { toast("Não parece o CSV do Hevy (faltam as colunas de data e exercício)."); return; }
+  const novos = {}, treinos = {};
+  rows.slice(1).forEach(r => {
+    const ini = hvData(r[cS]); if (!ini) return; const key = "hv" + ini;
+    const w = treinos[key] || (treinos[key] = { id: key, nome: (cT >= 0 && r[cT]) || "Treino", rotinaId: null, inicio: ini, fim: (cE >= 0 && hvData(r[cE])) || ini + 3600e3, data: iso(new Date(ini)), ex: [], hevy: true, _ix: {} });
+    const nome = (r[cX] || "").trim(); if (!nome) return;
+    let x = w._ix[nome]; if (!x) { const eid = hvExId(nome, novos), tipo = ((novos[eid] || exById(eid)).tipo) || "carga"; x = w._ix[nome] = { eid, nome, tipo, item: { series: 0, min: 8, max: 12, desc: 90 }, series: [] }; w.ex.push(x); }
+    const lb = cLb >= 0 ? num(r[cLb]) : 0, kg = cKg >= 0 && r[cKg] !== "" ? num(r[cKg]) : lb * 0.4536, reps = num(r[cR]), dur = cD >= 0 ? num(r[cD]) : 0;
+    const warm = /warm|aquec/i.test(r[cTy] || "");
+    if (!reps && dur && !kg) { x.tipo = "tempo"; x.series.push({ kg: 0, reps: r1(dur), ok: true, tipo: "" }); }
+    else x.series.push({ kg: r1(kg), reps, ok: true, tipo: warm ? "aq" : "" });
+  });
+  const lista = Object.values(treinos).filter(w => w.ex.some(x => x.series.length));
+  if (!lista.length) { toast("Não achei treinos nesse arquivo."); return; }
+  const ja = new Set(workouts().map(w => w.id));
+  const novosW = lista.filter(w => !ja.has(w.id));
+  if (Object.keys(novos).length) updP(p => { p.exCustom = (p.exCustom || []).concat(Object.values(novos).filter(e => !(p.exCustom || []).some(c => c.id === e.id)).map(e => ({ id: e.id, nome: e.nome, grupo: e.grupo, equip: e.equip, tipo: e.tipo }))); });
+  novosW.forEach(w => { delete w._ix; w.ex.forEach(x => { x.item.series = x.series.length; }); putDoc("treino-" + w.id, w); });
+  render(); toast(novosW.length + " treino" + (novosW.length === 1 ? "" : "s") + " importado" + (novosW.length === 1 ? "" : "s") + (lista.length > novosW.length ? " (" + (lista.length - novosW.length) + " já estavam aqui)" : "") + (Object.keys(novos).length ? ". " + Object.keys(novos).length + " exercício(s) novo(s) criado(s)." : "."));
+}
+ON.hevyImp = el => { const f = el.files && el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { hvImportar(r.result); } catch (e) { console.error(e); toast("Não consegui ler esse arquivo."); } }; r.readAsText(f); el.value = ""; };
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
@@ -3283,7 +3352,7 @@ function frSplash(ms) {
   if (window.__frSplashFeito || document.getElementById("fr-splash")) return; window.__frSplashFeito = true;
   const h = new Date().getHours(), cena = h >= 5 && h < 11 ? "manha" : h >= 18 || h < 5 ? "noite" : "tarde";
   const el = document.createElement("div"); el.id = "fr-splash"; el.setAttribute("role", "status"); el.setAttribute("aria-label", "Abrindo o Frangômetro");
-  el.innerHTML = `<div class="fr-sp-box"><div class="fr-sp-rael">${frRaelCena(cena, 176)}</div><div class="fr-sp-nome">Frangômetro</div><div class="fr-sp-sub">VERSÃO TESTE · acordando o Rael…</div><div class="fr-sp-barra"><i></i></div></div>`;
+  el.innerHTML = `<div class="fr-sp-box"><div class="fr-sp-rael">${frRaelCena(cena, 176)}</div><div class="fr-sp-nome">Frangômetro</div><div class="fr-sp-sub">acordando o Rael…</div><div class="fr-sp-barra"><i></i></div></div>`;
   document.body.appendChild(el);
   const fim = () => { if (!el.parentNode) return; el.classList.add("sai"); setTimeout(() => el.remove(), 420); };
   el.addEventListener("click", fim); setTimeout(fim, ms || 1700);
@@ -3526,6 +3595,7 @@ function viewPerfil() {
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label></div>`;
+  h += `<div class="card stack"><h2>Importar treinos do Hevy</h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><label class="btn pri" for="hvIn">Escolher CSV do Hevy</label><input type="file" id="hvIn" accept=".csv,text/csv,text/plain" class="hidden" data-on="hevyImp"></div>`;
   h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}</div>
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
@@ -3600,7 +3670,7 @@ ACT.dNext = () => { ui.date = addDays(ui.date, 1); render(); };
 ACT.dToday = () => { ui.date = TODAY(); render(); };
 function render() {
   const showDate = ui.tab === "hoje" || (ui.tab === "comer" && ui.sub.comer === "diario");
-  $("#topbar").innerHTML = `<div class="brand">${frRael("normal", 34)}<span class="fr-logo">Frangômetro</span><span class="fr-ver" title="Versão de teste: me conte o que achou">versão teste</span></div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
+  $("#topbar").innerHTML = `<div class="brand">${frRael("normal", 34)}<span class="fr-logo">Frangômetro</span><span class="fr-ver">versão teste</span></div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
   $("#tabbar").innerHTML = TABS.map(([k, n]) => `<button data-act="tab" data-k="${k}" ${ui.tab === k ? 'aria-current="page"' : ""}>${ICON[k]}<span>${n}</span></button>`).join("");
   const V = { hoje: viewHoje, comer: viewComer, treino: viewTreino, evo: viewEvo, perfil: viewPerfil }[ui.tab];
   $("#view").innerHTML = ui.tab === "hoje" ? V() : `<div class="stack">${frTopo(ui.tab)}${V()}</div>`;
