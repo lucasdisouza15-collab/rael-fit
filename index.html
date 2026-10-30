@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v17-20261030b"><script>(function(){try{var V="v17-20261030b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v18-20261030c"><script>(function(){try{var V="v18-20261030c";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2472,12 +2472,14 @@ ACT.sessFinish = () => {
   if (!ex.length) { toast("Marque pelo menos uma série feita (✓) antes de finalizar."); return; }
   const prs = [];
   ex.forEach(x => { if (x.tipo !== "carga") return; const before = bestOf(x.eid).e1rm; const now = Math.max(...x.series.filter(s => s.tipo !== "aq").map(s => e1rm(s.kg, s.reps)), 0); if (now > before && before > 0) prs.push({ nome: x.nome, v: now }); });
-  const w = { id: a.id, nome: a.nome, rotinaId: a.rotinaId, inicio: a.inicio, fim: Date.now(), data: a.data, ex, prs };
+  const rot = rotinaDeTreino({ ex: a.ex.map(x => ({ eid: x.eid, nome: x.nome, item: x.item, series: x.series.map(s => ({ reps: s.reps === "" ? num(s.ph) : s.reps, tipo: s.tipo })) })) }); /* estrutura planejada (com séries não marcadas), usada para atualizar a rotina */
+  const w = { id: a.id, nome: a.nome, rotinaId: a.rotinaId, inicio: a.inicio, fim: Date.now(), data: a.data, ex, prs, rot };
   putDoc("treino-" + w.id, w); delDoc("ativo"); stopRest(); clearInterval(tickT);
   SHEET.stack = [];
   openSheet({ title: "Treino concluído", body: `<div class="card ai" style="text-align:center">${frRaelCena("comemora", 120)}<div class="num" style="font-size:22px;font-weight:700">${esc(frase("fim"))}</div></div>
     <div class="grid2"><div class="card flat stat"><span>Duração</span><b>${hhmm((w.fim - w.inicio) / 1000)}</b></div><div class="card flat stat"><span>Volume</span><b>${fmt(volume(w))} kg</b></div><div class="card flat stat"><span>Séries</span><b>${seriesFeitas(w)}</b></div><div class="card flat stat"><span>Gasto estimado</span><b>${fmt(kcalTreino(w))} kcal</b></div></div>
     ${prs.length ? `<div class="card"><div class="eyebrow">Recordes novos</div><div class="list">${prs.map(x => `<div class="li"><div class="grow t">${esc(x.nome)}</div><span class="pill good">1RM est. ${fmt1(x.v)} kg</span></div>`).join("")}</div></div>` : ""}
+    ${w.rotinaId && (P().rotinas || []).some(x => x.id === w.rotinaId) ? `<button class="btn soft block" data-act="rotAtualizaAsk" data-id="${w.id}">Atualizar a rotina com este treino</button>` : ""}
     <div class="disc">Gasto calculado por MET (${fmt1(P().metMusc)}) × peso × duração. É uma estimativa.</div>`, foot: `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
 };
 
@@ -2513,7 +2515,7 @@ ACT.viewWorkout = ds => {
   openSheet({ title: w.nome, body: () => `<div class="small muted">${DOWL[dowOf(w.data)]}, ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${fmt(volume(w))} kg de volume · ~${fmt(kcalTreino(w))} kcal</div>
     ${w.ex.map(x => { const [hk, hr] = setHead(x.tipo); return `<div class="ex-card"><div style="font-weight:700">${esc(x.nome)}</div><div class="small ink2 tnum" style="margin-top:4px">${x.series.map((s, i) => `${stLbl(x.series, i)}: ${hk ? fmt1(s.kg) + " " + hk + " × " : ""}${s.reps} ${hr}`).join("<br>")}</div></div>`; }).join("")}
     `,
-    foot: () => UIc.confirm === "delW" ? `<button class="btn" data-act="cancelConfirm">Cancelar</button><button class="btn danger block" data-act="delWorkout" data-id="${w.id}">Apagar este treino</button>` : `<button class="btn danger" data-act="delWorkoutAsk">Apagar</button><button class="btn" data-act="rotinaDoTreino" data-id="${w.id}">Criar rotina</button><button class="btn block" data-act="repeatWorkout" data-id="${w.id}">Repetir este treino</button>` });
+    foot: () => UIc.confirm === "delW" ? `<button class="btn" data-act="cancelConfirm">Cancelar</button><button class="btn danger block" data-act="delWorkout" data-id="${w.id}">Apagar este treino</button>` : `<button class="btn danger" data-act="delWorkoutAsk">Apagar</button>${w.rotinaId && (P().rotinas || []).some(x => x.id === w.rotinaId) ? `<button class="btn" data-act="rotAtualizaAsk" data-id="${w.id}">Atualizar rotina</button>` : ""}<button class="btn" data-act="rotinaDoTreino" data-id="${w.id}">Criar rotina</button><button class="btn block" data-act="repeatWorkout" data-id="${w.id}">Repetir este treino</button>` });
 };
 // cria uma rotina a partir de um treino do histórico (exercícios, séries de trabalho, faixa de repetições e aquecimento como W)
 function rotinaDeTreino(w) {
@@ -2534,6 +2536,19 @@ ACT.rotinaDoTreino = ds => {
     <label class="f" style="margin-top:10px">Nome da rotina<input type="text" id="wrNome" value="${esc(nome)}" maxlength="60"></label>
     <div class="list" style="margin-top:8px">${it.map(i => { const e = exById(i.eid); return `<div class="li"><div class="grow"><div class="t">${esc(e.nome)}</div><div class="s">${i.aq ? "W + " : ""}${i.series} série${i.series === 1 ? "" : "s"} · ${i.min === i.max ? i.min : i.min + "–" + i.max} reps</div></div></div>`; }).join("")}</div>`,
     foot: `<button class="btn pri block" data-act="rotinaDoTreinoGo" data-id="${w.id}">Criar rotina</button>` });
+};
+ACT.rotAtualizaAsk = ds => {
+  const w = getDoc("treino-" + ds.id), r = w && (P().rotinas || []).find(x => x.id === w.rotinaId); if (!r) { toast("Rotina não encontrada (pode ter sido apagada)."); return; }
+  const novo = w.rot && w.rot.length ? w.rot : rotinaDeTreino(w), nm = e => { const x = exById(e.eid); return x ? x.nome : "Exercício"; };
+  openSheet({ title: "Atualizar rotina", body: `<div class="small ink2">A rotina "${esc(r.nome)}" passa a ter os exercícios, a ordem e as séries deste treino. A faixa de repetições e o descanso dos exercícios que já estavam na rotina continuam iguais.</div>
+    <div class="list" style="margin-top:8px">${novo.map(i => `<div class="li"><div class="grow"><div class="t">${esc(nm(i))}</div><div class="s">${i.aq ? "W + " : ""}${i.series} série${i.series === 1 ? "" : "s"}</div></div></div>`).join("")}</div>`,
+    foot: () => `<button class="btn" data-act="sheetClose">Cancelar</button><button class="btn pri block" data-act="rotAtualiza" data-id="${esc(ds.id)}">Atualizar rotina</button>` });
+};
+ACT.rotAtualiza = ds => {
+  const w = getDoc("treino-" + ds.id); if (!w) return;
+  const novo = w.rot && w.rot.length ? w.rot : rotinaDeTreino(w); if (!novo.length) { toast("Esse treino não tem exercícios."); return; }
+  updP(p => { const r = (p.rotinas || []).find(x => x.id === w.rotinaId); if (!r) return; const old = {}; (r.itens || []).forEach(i => { old[i.eid] = i; }); r.itens = novo.map(n => old[n.eid] ? Object.assign({}, n, { min: old[n.eid].min, max: old[n.eid].max, desc: old[n.eid].desc }) : n); });
+  closeAllSheets(); ui.sub.treino = "rotinas"; render(); toast("Rotina atualizada. A próxima vez já abre assim.");
 };
 ACT.rotinaDoTreinoGo = ds => {
   const w = getDoc("treino-" + ds.id); if (!w) return;
