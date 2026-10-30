@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v6-20261030e"><script>(function(){try{var V="v6-20261030e";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030f"><script>(function(){try{var V="v7-20261030f";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3093,9 +3093,11 @@ function frRaelCenaEx(cena, tam) {
 
 // Escolha da cena do momento (substitui a anterior): gatilhos por hora, dia, treino, comida, água, peso, sequência e nota.
 // Variações: em situações parecidas, o dia do mês escolhe entre 2 ou 3 cenas, para não ficar repetitivo.
-function frCenaApp(c) {
+let FR_ULT = { slot: -1, salt: 0, cena: "" };
+const FR_SLOT_MS = 3600000; // a cena é reavaliada a cada 1 hora
+function frCenaApp0(c, dia) {
   if (FR_REACAO && Date.now() < FR_REACAO.ate) return FR_REACAO.cena;
-  const dia = new Date().getDate() + Math.floor((c.hr || 0) / 3), v = n => dia % n; // muda a cada 3 horas para o Rael não ficar parado
+  const v = n => dia % n;
   if (c.pensando) return "pensando";
   if (c.ativo) return "treinando";
   if (c.correndo) return v(2) ? "fone" : "corrida";
@@ -3115,6 +3117,15 @@ function frCenaApp(c) {
   if (c.hr >= 12 && c.hr < 18 && c.treinavel === false && c.dow !== 0 && c.dow !== 6 && v(3) === 0) return "alongando";
   return frCenaAgora(false, new Date(2000, 0, 1, c.hr));
 }
+// nunca repete a cena anterior quando há outra opção (a corrida pós-exercício continua mandando)
+function frCenaApp(c) {
+  const slot = Math.floor(Date.now() / FR_SLOT_MS);
+  if (FR_ULT.slot === slot) { const r = frCenaApp0(c, FR_ULT.salt); FR_ULT.cena = r; return r; }
+  const ant = FR_ULT.cena; let salt = slot, r = frCenaApp0(c, salt);
+  for (let k = 1; r === ant && k <= 6; k++) { salt = slot + k; r = frCenaApp0(c, salt); }
+  FR_ULT = { slot, salt, cena: r }; return r;
+}
+setInterval(() => { try { const ae = document.activeElement; if ((ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) || SHEET.stack.length || FR_ULT.slot === Math.floor(Date.now() / FR_SLOT_MS)) return; render(); } catch (_) {} }, 60000);
 // ---- Frases do Rael, rodada 5: ironia carinhosa, falando COM o usuário (30/10/2026) ----
 // {nome} vira o nome do perfil de quem está logado (sem nome: "você"; ", {nome}" some). Nunca escrever nome fixo aqui.
 function frNomeUsuario() { return P().nome || ""; }
