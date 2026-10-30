@@ -3283,7 +3283,7 @@ function frSplash(ms) {
   if (window.__frSplashFeito || document.getElementById("fr-splash")) return; window.__frSplashFeito = true;
   const h = new Date().getHours(), cena = h >= 5 && h < 11 ? "manha" : h >= 18 || h < 5 ? "noite" : "tarde";
   const el = document.createElement("div"); el.id = "fr-splash"; el.setAttribute("role", "status"); el.setAttribute("aria-label", "Abrindo o Frangômetro");
-  el.innerHTML = `<div class="fr-sp-box"><div class="fr-sp-rael">${frRaelCena(cena, 176)}</div><div class="fr-sp-nome">Frangômetro</div><div class="fr-sp-sub">acordando o Rael…</div><div class="fr-sp-barra"><i></i></div></div>`;
+  el.innerHTML = `<div class="fr-sp-box"><div class="fr-sp-rael">${frRaelCena(cena, 176)}</div><div class="fr-sp-nome">Frangômetro</div><div class="fr-sp-sub">VERSÃO TESTE · acordando o Rael…</div><div class="fr-sp-barra"><i></i></div></div>`;
   document.body.appendChild(el);
   const fim = () => { if (!el.parentNode) return; el.classList.add("sai"); setTimeout(() => el.remove(), 420); };
   el.addEventListener("click", fim); setTimeout(fim, ms || 1700);
@@ -3600,7 +3600,7 @@ ACT.dNext = () => { ui.date = addDays(ui.date, 1); render(); };
 ACT.dToday = () => { ui.date = TODAY(); render(); };
 function render() {
   const showDate = ui.tab === "hoje" || (ui.tab === "comer" && ui.sub.comer === "diario");
-  $("#topbar").innerHTML = `<div class="brand">${frRael("normal", 34)}<span class="fr-logo">Frangômetro</span><span class="fr-ver">versão teste</span></div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
+  $("#topbar").innerHTML = `<div class="brand">${frRael("normal", 34)}<span class="fr-logo">Frangômetro</span><span class="fr-ver" title="Versão de teste: me conte o que achou">versão teste</span></div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
   $("#tabbar").innerHTML = TABS.map(([k, n]) => `<button data-act="tab" data-k="${k}" ${ui.tab === k ? 'aria-current="page"' : ""}>${ICON[k]}<span>${n}</span></button>`).join("");
   const V = { hoje: viewHoje, comer: viewComer, treino: viewTreino, evo: viewEvo, perfil: viewPerfil }[ui.tab];
   $("#view").innerHTML = ui.tab === "hoje" ? V() : `<div class="stack">${frTopo(ui.tab)}${V()}</div>`;
