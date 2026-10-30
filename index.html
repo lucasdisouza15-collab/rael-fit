@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030g"><script>(function(){try{var V="v7-20261030g";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030h"><script>(function(){try{var V="v7-20261030h";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2795,7 +2795,7 @@ function frase(cat, rnd) {
   let h = 0; const s = TODAY() + cat; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return l[h % l.length];
 }
-const nomeU = () => (P().nome || (PID() === "main" ? "Rael" : "") || "você").trim() || "Rael";
+const nomeU = () => (P().nome || "").trim() || "você";
 
 // voz do Rael Frango nos prompts da IA (coach, análise, sugestão de refeição)
 const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: ironia carinhosa de verdade, com sarcasmo e tiradas curtas, falando DIRETAMENTE com o usuário e tirando sarro do que ele fez (ou deixou de fazer) hoje: sofá, preguiça, pizza, pão de queijo, o "amanhã eu começo". Piadas de frango são bem-vindas (crista, choco, galinheiro, aplaudir sentado). Quando o usuário vai bem, finge que não está impressionado e solta um elogio disfarçado de reclamação. Sem a palavra "campeão", sem autoajuda motivacional, sem caricatura e sem forçar a barra: uma tirada boa vale mais que três meh. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Treinou? Agora o sofá pode voltar a te desejar, mas você pagou o aluguel dele." / "Pizza registrada. Sem julgamento, só um suspiro profissional." / "17h e o treino ainda não apareceu. O sofá deve estar mandando um abraço." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
@@ -3663,11 +3663,11 @@ function viewPerfil() {
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
   h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
-  h += `<div class="xs muted" style="text-align:center;padding:8px 0">Frangômetro, versão teste. Presente do Lucas pro Rael. Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
+  h += `<div class="xs muted" style="text-align:center;padding:8px 0">Frangômetro, versão teste. ${/^(rael|israel)$/i.test((p.nome || "").trim()) ? "Presente do Lucas pro Rael. " : ""}Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
   return `<div class="stack">${h}</div>`;
 }
 function perfilForm(p) {
-  return `<div class="grid2"><label class="f">Nome<input type="text" id="pfNome" value="${esc(p.nome || (PID() === "main" ? "Rael" : ""))}" maxlength="30"></label><label class="f">Sexo<select id="pfSexo"><option value="M" ${p.sexo !== "F" ? "selected" : ""}>Masculino</option><option value="F" ${p.sexo === "F" ? "selected" : ""}>Feminino</option></select></label>
+  return `<div class="grid2"><label class="f">Nome<input type="text" id="pfNome" value="${esc(p.nome || "")}" placeholder="Seu nome" maxlength="30"></label><label class="f">Sexo<select id="pfSexo"><option value="M" ${p.sexo !== "F" ? "selected" : ""}>Masculino</option><option value="F" ${p.sexo === "F" ? "selected" : ""}>Feminino</option></select></label>
     <label class="f">Idade<input type="number" inputmode="numeric" id="pfIdade" value="${esc(p.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="pfAlt" value="${esc(p.altura)}"></label>
     <label class="f">Peso atual (kg)<input type="number" inputmode="decimal" step="0.1" id="pfPeso" value="${esc(fmt1(pesoAtual(p)).replace(",", "."))}"></label><label class="f">Meta de peso (kg)<input type="number" inputmode="decimal" step="0.1" id="pfMeta" value="${esc(p.metaPeso || "")}" placeholder="opcional"></label></div>
     <label class="f">Dia a dia, sem contar os treinos<select id="pfAtv">${ATIV.map(([v, n]) => `<option value="${v}" ${num(p.atividade) === v ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
@@ -3675,7 +3675,7 @@ function perfilForm(p) {
     <label class="f">Ritmo<select id="pfAj">${[[250, "Leve (250 kcal)"], [500, "Padrão (500 kcal)"], [750, "Agressivo (750 kcal)"]].map(([v, n]) => `<option value="${v}" ${num(p.ajuste) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>`;
 }
 function readPerfil(p) {
-  p.nome = ($("#pfNome").value || "").trim() || "Rael";
+  p.nome = ($("#pfNome").value || "").trim();
   const o = perfis(), it = o.list.find(x => x.id === PID()); if (it) { it.nome = p.nome; savePerfis(o); } p.sexo = $("#pfSexo").value; p.idade = clamp(num($("#pfIdade").value) || 30, 12, 100); p.altura = clamp(num($("#pfAlt").value) || 175, 120, 230);
   const peso = num($("#pfPeso").value); p.metaPeso = num($("#pfMeta").value) || null; p.atividade = num($("#pfAtv").value); p.objetivo = $("#pfObj").value; p.ajuste = num($("#pfAj").value);
   return peso;
@@ -3711,7 +3711,7 @@ ACT.wipe = () => { UIc.confirm = null; Object.keys(ST.docs).forEach(k => delDoc(
 // ---------- boas-vindas ----------
 function onboarding() {
   const p = P();
-  openSheet({ title: "Bem-vindo ao Frangômetro", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">Fala, ${esc(nomeU())}. Seu shape agora tem gerente.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
+  openSheet({ title: "Bem-vindo ao Frangômetro", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">${nomeU() === "você" ? "Fala!" : "Fala, " + esc(nomeU()) + "."} Seu shape agora tem gerente.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
     foot: `<button class="btn pri block" data-act="onbSave">Calcular minhas metas</button>` });
 }
 ACT.onbSkip = () => { updP(p => { p.onb = true; }); closeSheet(); };
@@ -3752,14 +3752,14 @@ function render() {
 function perfisCard() {
   const o = perfis();
   return `<div class="card stack"><div class="row between"><h2>Perfis neste aparelho</h2><button class="btn sm soft" data-act="newPerfil">${ICON.plus.replace("<svg", '<svg width="15" height="15"')} Novo perfil</button></div>
-    <div class="list">${o.list.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.nome || (x.id === "main" ? "Rael" : "Sem nome"))}</div><div class="s">${x.id === o.cur ? "em uso" : "dados separados"}</div></div>
+    <div class="list">${o.list.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.nome || "Sem nome")}</div><div class="s">${x.id === o.cur ? "em uso" : "dados separados"}</div></div>
       ${x.id === o.cur ? '<span class="pill acc">atual</span>' : `<button class="btn sm" data-act="usePerfil" data-id="${esc(x.id)}">Entrar</button>${x.id !== "main" ? `<button class="iconbtn" data-act="delPerfilAsk" data-id="${esc(x.id)}" aria-label="Apagar perfil">${ICON.trash}</button>` : ""}`}</div>`).join("")}</div>
     ${UIc.confirm && UIc.confirm.startsWith("perfil:") ? confirmBox("Apagar este perfil e todos os dados dele neste aparelho?", "delPerfil", { id: UIc.confirm.slice(7) }, "Apagar perfil") : ""}
     <div class="xs muted">Cada perfil tem refeições, treinos e metas próprios. Bom para testar ou para dividir o celular.</div></div>`;
 }
 ACT.perfilMenu = () => {
   const o = perfis();
-  openSheet({ title: "Trocar perfil", body: `<div class="list">${o.list.map(x => `<div class="li tap" data-act="usePerfil" data-id="${esc(x.id)}"><div class="grow t">${esc(x.nome || (x.id === "main" ? "Rael" : "Sem nome"))}</div>${x.id === o.cur ? '<span class="pill acc">atual</span>' : ""}</div>`).join("")}</div><button class="btn soft block" data-act="newPerfil">Novo perfil</button>` });
+  openSheet({ title: "Trocar perfil", body: `<div class="list">${o.list.map(x => `<div class="li tap" data-act="usePerfil" data-id="${esc(x.id)}"><div class="grow t">${esc(x.nome || "Sem nome")}</div>${x.id === o.cur ? '<span class="pill acc">atual</span>' : ""}</div>`).join("")}</div><button class="btn soft block" data-act="newPerfil">Novo perfil</button>` });
 };
 ACT.usePerfil = ds => { if (ds.id === PID()) { if (SHEET.stack.length) closeSheet(); return; } switchPerfil(ds.id); toast("Agora é o perfil de " + nomeU()); };
 ACT.newPerfil = () => {
