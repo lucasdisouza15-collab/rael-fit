@@ -1,34 +1,22 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1d5fd1"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Rael Frango"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
-<title>Rael Frango</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap">
 <style>
 /* Layout: app de uma coluna, mobile-first, barra de abas fixa embaixo, folhas (sheets) sobem de baixo */
 :root{
-  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#edf1f7; --ink:#111a2b; --ink-2:#4a566b; --muted:#7c8799;
-  --line:#dce2ec; --accent:#1d5fd1; --accent-ink:#ffffff; --accent-soft:#e1ebfb;
-  --prot:#6250d6; --carb:#eb6834; --gord:#1baf7a; --fib:#e87ba4;
-  --good:#0a7d4f; --warn:#b26a00; --bad:#c43a3a; --deficit:#1baf7a; --surplus:#eb6834;
-  --grid:#e1e0d9; --axis:#c3c2b7;
-  --shadow:0 1px 2px rgba(17,26,43,.06),0 4px 16px rgba(17,26,43,.06);
-  --f-display:"Sora",ui-sans-serif,system-ui,sans-serif;
-  --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --r:14px; --r-sm:10px;
+  --bg:#F3F4F6; --surface:#ffffff; --surface-2:#E9EBF0; --ink:#1B1630; --ink-2:#4A4660; --muted:#5A5E6B;
+  --line:#D5D8DF; --accent:#2F4C9E; --accent-ink:#ffffff; --accent-soft:#E7ECF7;
+  --prot:#2F4C9E; --carb:#F2C14E; --gord:#D4574A; --fib:#8A86A0;
+  --good:#2B7A57; --warn:#8A5A00; --bad:#C0392B; --deficit:#2F4C9E; --surplus:#D4574A;
+  --grid:#E4E6EB; --axis:#C9CCD6;
+  --shadow:none;
+  --f-display:"Fredoka",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"DM Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:18px; --r-sm:10px;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0c111b; --surface:#151c29; --surface-2:#1d2535; --ink:#eef2f8; --ink-2:#b6c0d1; --muted:#8792a5;
-  --line:#283246; --accent:#5b9cf2; --accent-ink:#06173a; --accent-soft:#18284a;
-  --prot:#9085e9; --carb:#d95926; --gord:#199e70; --fib:#d55181;
-  --good:#3fcf8e; --warn:#e2a23a; --bad:#ef6b6b; --deficit:#199e70; --surplus:#d95926;
-  --grid:#2c2c2a; --axis:#383835; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0c111b; --surface:#151c29; --surface-2:#1d2535; --ink:#eef2f8; --ink-2:#b6c0d1; --muted:#8792a5;
-  --line:#283246; --accent:#5b9cf2; --accent-ink:#06173a; --accent-soft:#18284a;
-  --prot:#9085e9; --carb:#d95926; --gord:#199e70; --fib:#d55181;
-  --good:#3fcf8e; --warn:#e2a23a; --bad:#ef6b6b; --deficit:#199e70; --surplus:#d95926;
-  --grid:#2c2c2a; --axis:#383835; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
@@ -42,12 +30,10 @@ h1{font-size:22px} h2{font-size:17px} h3{font-size:15px}
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 header.top .in{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;display:flex;align-items:center;gap:10px;min-height:56px}
 .brand{font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-.brand i{width:22px;height:22px;border-radius:7px;background:var(--accent);display:inline-block;position:relative}
-.brand i::after{content:"";position:absolute;inset:6px 5px;border-radius:2px;border-top:2.5px solid var(--accent-ink);border-bottom:2.5px solid var(--accent-ink)}
 .datenav{margin-left:auto;display:flex;align-items:center;gap:2px}
 .datenav button{border:0;background:transparent;width:34px;height:34px;border-radius:50%;cursor:pointer;color:var(--ink-2);font-size:18px}
 .datenav button:hover{background:var(--surface-2)}
-.datenav .lbl{font-weight:600;font-size:14px;min-width:92px;text-align:center;cursor:pointer;padding:6px 4px;border-radius:8px}
+.datenav .lbl{font-weight:600;font-size:14px;min-width:64px;text-align:center;cursor:pointer;padding:6px 4px;border-radius:8px}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 nav.tabs button{border:0;background:transparent;padding:8px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer}
@@ -187,12 +173,32 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 details.acc summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
 details.acc summary::-webkit-details-marker{display:none}
 .confirm{background:color-mix(in srgb,var(--bad) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line));border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+
+.pill.good{background:var(--accent-soft);color:#2F4C9E}
+.pill.warn{background:#FBEFC9;color:#7A5A00}
+.pill.bad{background:#F6DAD6;color:#A23327}
+.sets tr.done td{background:var(--accent-soft)}
+.check.on{background:#2F4C9E;border-color:#2F4C9E}
+.card{border-width:1.5px}
+/* Frangômetro: Rael e medidor (só o mascote e o medidor levam cor da marca) */
+.brand{min-width:0;white-space:nowrap}.brand .fr-logo{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.01em}
+.brand .fr-ver{white-space:nowrap;font-size:10px;font-weight:700;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:2px 10px}
+.fr-top{display:flex;align-items:center;gap:12px}
+.fr-bal{min-width:0;flex:1;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:10px 12px}
+.fr-fala{font-size:13.5px;font-style:italic;color:var(--ink-2);line-height:1.4}
+.fr-card{text-align:left}
+.fr-nivel{display:inline-block;font-family:var(--f-display);font-weight:600;font-size:22px;border-radius:999px;padding:2px 16px}
+.fr-pintinho{background:#F2C14E;color:#1B1630}.fr-frango{background:#2F4C9E;color:#fff}.fr-galo{background:#D4574A;color:#fff}
+.fr-kcal{text-align:center;margin-top:8px;font-size:15px}.fr-kcal b{font-family:var(--f-display);font-size:26px;font-weight:600}
+.fr-seq{font-family:var(--f-display);font-weight:600;font-size:30px;min-width:1.6em;text-align:center}
+@media (max-width:460px){.brand .fr-ver{display:none}}
 </style>
 
 <header class="top"><div class="in" id="topbar"></div></header>
 <main class="wrap" id="view" aria-live="polite"></main>
 <nav class="tabs" aria-label="Seções"><div class="in" id="tabbar"></div></nav>
 <div id="layer"></div>
+
 <script>
 // ---------- Banco de alimentos (por 100 g ou 100 ml) ----------
 // [nome, kcal, proteína, carboidrato, gordura, fibra, categoria, fonte, g por unidade (opcional), nome da unidade]
@@ -434,6 +440,7 @@ const MODELOS = [
   {nome:"Treino B (costas, bíceps)",desc:"ABC",itens:[["puxada-frente",4,8,12,90],["remada-baixa",3,8,12,90],["remada-unilateral",3,8,12,75],["pulldown",3,10,15,60],["rosca-direta",3,8,12,60],["rosca-martelo",3,10,12,60]]},
   {nome:"Treino C (pernas, abdômen)",desc:"ABC",itens:[["agachamento-livre",4,8,12,120],["leg-press-45",3,10,12,90],["cadeira-extensora",3,10,15,60],["mesa-flexora",3,10,15,60],["panturrilha-pe",4,12,15,60],["abdominal-infra",3,12,20,45]]}
 ];
+
 // ---------- utilidades ----------
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -804,6 +811,7 @@ function geminiSampler(key) {
   f.limits = async () => ({ images: { maxCount: 1 } });
   return f;
 }
+
 // =================== ALIMENTAÇÃO ===================
 const macroTxt = t => `P ${fmt(t.p)} · C ${fmt(t.c)} · G ${fmt(t.g)}`;
 const CAT_PORCAO = { Cereais: 120, Leguminosas: 140, Carnes: 120, Peixes: 120, Ovos: 50, Laticínios: 200, Frutas: 120, Verduras: 60, Tubérculos: 150, Gorduras: 10, Doces: 20, Bebidas: 250, Prontos: 150, "Pães": 50, Oleaginosas: 30, Suplementos: 30, Receitas: 1 };
@@ -1373,6 +1381,7 @@ Refeições de hoje:\n${comido}`;
     await CAP.sample(prompt, { onText: ({ text }) => { AI.out = text; const o = $("#aiOut"); if (o) o.textContent = text; } });
   } catch (e) { AI.out = aiErrMsg(e) || AI.out; const o = $("#aiOut"); if (o) o.textContent = AI.out; }
 };
+
 // =================== TREINO ===================
 const EQ_LOCAL = {
   academia: null,
@@ -1721,54 +1730,136 @@ ACT.exInfo = ds => {
     ${ex.custom ? `<button class="btn danger" data-act="delEx" data-id="${esc(ex.id)}">Apagar exercício próprio</button>` : ""}` });
 };
 ACT.delEx = ds => { updP(p => { p.exCustom = (p.exCustom || []).filter(x => x.id !== ds.id); }); closeSheet(); toast("Exercício apagado"); };
-// =================== FRASES ===================
+
+// =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
+// =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
+// Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
+const FR2 = {
+  vazio: ["Ainda sem registros. A tela está mais vazia que minha agenda de domingo.", "Nenhuma comida anotada. Vou fingir que é um jejum de informação.", "Seu prato ainda não apareceu por aqui. Deve estar fazendo entrada dramática.", "A cozinha está em silêncio. Até minha opinião ficou sem assunto.", "Dia sem registro até agora. Minha planilha está olhando para mim.", "Nenhuma refeição lançada. A tela pediu um pouco de contexto.", "O prato de hoje segue em modo confidencial.", "Ainda não há comida por aqui. Meu palpite não conta como dado.", "O registro está vazio. Pela primeira vez, não fui eu que esqueci.", "Sua refeição não chegou ao app. Talvez esteja presa no trânsito do garfo.", "Sem lançamentos por enquanto. Estou tentando não tirar conclusões — difícil.", "A tela está limpa. A pia, provavelmente, tem outra versão dessa história.", "Nenhuma comida registrada. Minha curiosidade está oficialmente sem permissão.", "O dia começou sem anotações. Até o campo de busca está entediado."],
+  evo: ["Gráficos atualizados. Eu gosto de linhas que sabem para onde vão.", "Peso, calorias e treinos: finalmente, números com mais contexto que meu humor.", "A curva está aí. Eu me recuso a interpretar como previsão do tempo.", "Seus dados ganharam um gráfico. Os meus continuam em guardanapos.", "Cada ponto mostra um registro. O drama, por sorte, não entrou no eixo.", "A evolução apareceu. Eu trouxe meus óculos de analista imaginário.", "Tem altos, baixos e linhas. Parece reunião, mas com cores melhores.", "O gráfico não julga; ele só tem uma cara séria por causa das escalas.", "Aqui dá para ver tendências. Eu chamo de fofoca com legenda.", "Seus treinos agora têm histórico. Minha memória agradece a tecnologia.", "Os dados se encontraram e fizeram uma linha. Socialização eficiente.", "A balança conta uma parte; o gráfico evita que eu faça novela com um dia.", "Calorias, peso e treino organizados. Minha bagunça pessoal segue sem gráfico.", "A linha mudou. Não vou fazer suspense: são dados, não final de temporada.", "O histórico está completo. Eu enfim parei de confiar na memória do calendário."],
+  perfil: ["Metas e perfil ficam aqui. Meu camarim, infelizmente, não.", "Ajuste suas preferências. Eu prometo não opinar sobre a cor da sua rotina.", "Configurações organizadas. Um lugar onde até meus detalhes têm endereço.", "Quer atualizar o perfil? Eu também queria atualizar minha foto de documento.", "Aqui você ajusta as metas. Minha meta pessoal é achar o botão certo.", "Perfil revisado. Agora só falta alguém revisar minhas poses.", "Mude o que precisar. Eu não tenho apego emocional a uma configuração.", "Suas preferências moram aqui. Eu aluguei um cantinho para o backup.", "Metas, perfil e cópia de segurança. O trio mais responsável desta tela.", "Está tudo ajustável. Menos minha opinião sobre ícones desalinhados.", "Salve suas alterações. Eu já perdi uma ideia por não apertar salvar.", "Backup em dia. Meu pente, em compensação, vive desaparecendo.", "Seu perfil merece estar atualizado. O meu está há três penas atrasado.", "Esta tela resolve ajustes. Para drama, eu mantenho outro departamento."],
+  descanso: ["O intervalo acabou. Eu tinha acabado de me acomodar.", "Descanso encerrado. Minha cadeira imaginária protesta em silêncio.", "Hora da próxima série. Eu nem terminei minha análise do teto.", "O cronômetro tocou. Incrível como ele nunca respeita meu intervalo.", "Acabou a pausa. Foi breve, mas deu tempo de sentir saudade.", "Próxima série na área. Eu estava começando a gostar deste intervalo.", "O descanso terminou. Vou guardar minha pose de quem não estava cansado.", "Tempo esgotado. Meu plano era descansar até segunda instrução.", "O relógio chamou. Eu não gostei do tom, mas reconheço a autoridade.", "Pausa concluída. Minhas desculpas ainda estavam carregando.", "Já pode voltar. Eu estava no meio de uma reclamação muito bem estruturada.", "Intervalo encerrado. Minha vontade pediu cinco minutos para recorrer.", "O cronômetro apitou. Até o aparelho tem mais iniciativa que eu.", "Acabou o descanso. Vou fingir que não estava negociando com o banco.", "Próxima série. Eu estava prestes a chamar isso de treino de contemplação."],
+  folga: ["Folga planejada. Hoje até o tênis pode ficar fora do expediente.", "Dia de descanso no calendário. Eu aprovo reuniões que não acontecem.", "Sem treino hoje. Meu alongamento será alcançar o controle remoto.", "A pausa estava prevista. Até minha preguiça veio com autorização.", "Hoje é folga. Vou cuidar da recuperação com uma dedicação suspeita.", "Descanso marcado. Meu alarme pode praticar o silêncio.", "Treino de folga: excelência em não procurar o tênis.", "Hoje a agenda esportiva tem uma atividade: não ter atividade.", "Dia livre de treino. Eu já escolhi a roupa mais técnica: pijama.", "Pausa planejada. Nem todo compromisso precisa aparecer de legging.", "Hoje o descanso é oficial. Minha lombar agradece por escrito.", "Folga do treino. Vou evitar qualquer esforço que pareça uma série.", "O treino tirou o dia. Eu gostaria de fazer o mesmo com a louça.", "Recuperação no programa de hoje. Meu sofá foi convocado como especialista.", "Dia sem treino, por planejamento. Finalmente uma decisão que combina comigo."],
+  passou: ["Passou da meta. Eu não vou convocar uma coletiva por causa de um número.", "Hoje as calorias foram além. Minha calculadora está tentando manter a compostura.", "A meta ficou para trás. Eu também fico, quando a sobremesa chega.", "O total passou do previsto. Nada de sirenes: só um registro honesto.", "Calorias acima da meta. Eu culpo a aritmética, por enquanto.", "O dia fechou com extras. Minha planilha já pediu um café.", "Passou um pouco. Até meus cálculos têm dias expansivos.", "A meta não coube no dia. Eu também não caibo em algumas cadeiras.", "Registro feito: o número subiu, meu tom continua baixo.", "A conta passou. Eu sou péssimo em fingir surpresa com comida boa.", "O total ficou acima. Não vou transformar uma linha em minissérie.", "A meta ficou curta hoje. Minha régua está sob investigação.", "Calorias extras anotadas. Eu sabia que esse botão tinha trabalho.", "O número passou do combinado. Acontece; até meu pente sai do lugar."],
+  proteina: ["Meta de proteína batida. Minha planilha ganhou assunto para o almoço.", "Proteína em dia. Eu já estou tentando parecer um nutricionista de novela.", "Chegou à meta. Meu medidor interno fez um discreto sinal positivo.", "Proteína completa. Até o frango aqui ficou impressionado — por motivos profissionais.", "Meta atingida. Eu trouxe uma prancheta, mas era só para posar.", "Você fechou a proteína. Minha calculadora parou de fazer cara de dúvida.", "A proteína chegou ao total. Eu posso enfim falar de outra coisa.", "Meta de proteína concluída. Meu lado organizado pediu para registrar este momento.", "Bateu a meta. Até a planilha está com postura melhor.", "Proteína contabilizada. Eu sabia que esse número tinha potencial dramático.", "Fechou a conta da proteína. Minha caneta já queria assinar embaixo.", "Alvo de proteína alcançado. Eu reconheço uma boa soma quando vejo.", "Hoje a proteína não ficou como figurante. Minha tabela agradece.", "Meta batida. Eu pretendia comemorar discretamente, mas trouxe confete.", "Proteína em dia. Meu contador interno saiu do modo interrogatório."],
+  aguaManha: ["Bom dia e água. Minha garganta agradece sem precisar abrir chamado.", "Um copo logo cedo. Eu ainda estou carregando, mas a água já chegou.", "Água da manhã registrada. Minha garrafa finalmente ganhou uma função.", "Primeiro gole do dia. Eu chamo isso de reunião produtiva.", "Bom começo: água antes de eu começar a reclamar do horário.", "Copo d’água feito. Minha voz deixou de soar como papel amassado.", "A manhã pediu água. Eu, por uma vez, concordei sem discutir.", "Água no começo do dia. Até minha garrafa pareceu surpresa.", "Gole registrado. Minha planta não precisa mais ser a única hidratada aqui.", "Um copo antes do café. Eu sei, também achei ousado.", "Água tomada. Meu despertador não merece crédito por isso.", "A garrafa abriu os trabalhos. Eu sigo negociando com a manhã.", "Hidratação matinal anotada. Minha sede perdeu a pauta.", "Primeiro copo foi. O resto do dia que marque uma reunião.", "Água cedo: uma decisão sensata antes que eu tenha opinião sobre tudo."],
+  peito: ["Peito e braço na pauta. Eu trouxe uma camiseta de manga justa para motivar a vaidade.", "Hoje o espelho vai receber uma atualização de ombros.", "Braços trabalhando; minha pose de perfil também está de plantão.", "Treino de peito e braço. Eu já ensaiei o ângulo da foto que não vou tirar.", "Peito e braços em ação. Meu ego chegou cinco minutos antes.", "Hoje tem supino. Eu vou fingir que entendo a conversa entre os bancos.", "Braço no treino, vaidade no aquecimento. Divisão eficiente de tarefas.", "Série feita. Minha manga começou a negociar espaço.", "Peito trabalhado. Eu conferi o espelho só por controle de qualidade.", "Braços na agenda. Minha camisa já está apreensiva.", "Treino de hoje: peito, braço e um breve debate com os halteres.", "A parte superior entrou em reunião. Eu trouxe água e opinião.", "Carga ajustada. Minha pose continua no nível avançado."],
+  costas: ["Costas no treino. Eu não consigo ver o resultado, então confio no espelho alheio.", "Hoje é dia de puxar. Minha cadeira já está com saudade.", "Costas trabalhando; eu tentando descobrir se a postura também está.", "Treino de costas marcado. Até a camiseta vai notar antes de mim.", "Remada no programa. Eu sigo sem entender por que o banco não rema junto.", "Costas em pauta. Meu espelho tem uma área de cobertura limitada.", "Hoje tem puxada. Eu gostaria de puxar o fim do expediente para mais perto.", "O treino de hoje é costas. Finalmente, um assunto que não vejo chegando.", "Remadas feitas. Eu vou chamar isso de trabalho em equipe com o cabo.", "Costas no foco. Meu lado dramático queria um close, mas não há ângulo.", "Puxada registrada. A máquina e eu temos uma relação profissional.", "Treino de costas: porque até a parte que não vejo merece atenção.", "Mais uma série. Minha postura está em revisão, sem prazo definido."],
+  pernas: ["Dia de pernas. Estou sorrindo porque ainda não começou.", "A sessão de pernas está prestes a iniciar. Meu elevador já foi avisado.", "Hoje tem perna. Eu gostaria de registrar minha posição sentado antes.", "Pernas na agenda. Minha escada de casa recebeu uma notificação.", "Antes da primeira série, vou apreciar a capacidade de ficar em pé.", "Treino de pernas começando. Minha cadeira já me desejou boa sorte.", "Hoje vou agachar. Meu ego disse que fica observando de longe.", "O treino ainda nem começou e eu já estou avaliando o caminho até o banco.", "Dia de perna: vou entrar com postura e sair com negociações.", "Meu tênis está amarrado. Agora falta convencer o resto do elenco.", "A primeira repetição se aproxima. Eu estou aproveitando esta última versão das pernas.", "Pernas no menu. Espero que não venha com escada de acompanhamento.", "Hoje tem agachamento. Meu joelho pediu para ler o roteiro antes."],
+  pesoReg: ["Peso registrado. Eu e a balança vamos manter isso entre nós.", "Número anotado. Minha opinião sobre ele não foi solicitada.", "Registro feito. Eu não transformo um visor em previsão do futuro.", "A pesagem entrou no histórico. Minha curiosidade ganhou recibo.", "Peso anotado. Sem discurso; eu estava sem microfone mesmo.", "A balança mostrou um número. Eu mostrei educação e registrei.", "Número salvo. Eu não vou pedir explicações à balança.", "Pesagem concluída. O visor segue sem saber fazer conversa fiada.", "O dado entrou no app. Meu drama ficou do lado de fora.", "Registro de peso feito. Eu prefiro o histórico ao palpite.", "A balança deu seu informe. Eu arquivei sem abrir debate.", "Pesagem salva. Minha relação com esse botão está mais estável que meu pente."],
+  foraDeCasa: ["Comeu fora? O cardápio tinha tantas opções que eu pedi tempo para pensar.", "Lanche registrado. A embalagem fez mais barulho que minha decisão.", "Refeição fora de casa: anotada, apesar do cardápio sem legenda.", "Eu vi o lanche. O plano não pediu exclusividade.", "Comida de restaurante registrada. A porção veio com ambições próprias.", "Lanche fora do previsto anotado. Minha previsão falhou com elegância.", "Refeição na rua salva. Meu palpite sobre o molho segue inconclusivo.", "O lanche entrou no registro. A sacola tentou manter sigilo.", "Refeição registrada. A batata do lado pediu para não ser chamada de extra."],
+  sabado: ["Sábado: treino extra opcional. A palavra “opcional” está muito bem escrita.", "Se rolar treino, ótimo. Se não, meu sábado mantém a agenda original.", "Uma sessão extra hoje? Eu vou consultar meu departamento de preguiça.", "Sábado chegou. O tênis está pronto; eu ainda estou em modo rascunho.", "Treino opcional: até o cronômetro veio sem pressão.", "Sábado livre. A academia está aberta e minha negociação também.", "Um treino extra cabe no dia. Também cabe um café sem pressa.", "A ideia de treinar apareceu. Eu pedi para ela aguardar na recepção.", "Hoje pode ter sessão extra. Meu sofá já protocolou uma objeção.", "Sábado e tênis: uma combinação possível, não um contrato assinado.", "Treino a mais? Eu gosto de opções que não vêm com multa.", "Se você for treinar, eu torço. De longe, por questão de logística.", "A sessão extra está disponível. Meu entusiasmo está consultando o calendário."],
+  domingo: ["Domingo: descanso, patins ou caminhada. Eu voto em decidir depois do café.", "Patins no domingo. Eu trouxe capacete e uma confiança moderada.", "Dia de descansar ou passear. Minha agenda aprovou as duas opções.", "Domingo pede calma. Até meus pensamentos estão andando de pantufas.", "Caminhada marcada? Eu vou escolher uma rota com bons bancos.", "Patins ou descanso: duas formas válidas de não discutir com a academia.", "Hoje a rua está convidando. Eu estou avaliando o convite pela janela.", "Descanso no programa. Se aparecer uma caminhada, não vou fazer cena.", "Domingo sem obrigação de treino. Meu despertador pode tirar folga também.", "Uma caminhada leve combina com o dia. Eu já escolhi a trilha sonora.", "Dia de passeio ou sofá. Eu apoio a democracia, principalmente quando tem almofada.", "Domingo chegou; vou deixar o plano aberto e a janela também."]
+};
+function fr2(cat) { const l = FR2[cat]; let h = 0; const s = TODAY() + cat + (new Date().getHours() >= 12 ? "t" : "m"); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return l[h % l.length]; }
+const fr2r = cat => FR2[cat][Math.floor(Math.random() * FR2[cat].length)];
+
+const FR_FRASES = {
+  manha: ["Bom dia. Rael acordou mal-humorado; o café ainda está em negociação.", "O Rael abriu um olho. O outro entrou com pedido de demissão.", "Bom dia! A crista está torta, mas o aplicativo abriu.", "Bom dia. O Rael encara o café como se fosse reunião obrigatória.", "Abri o app antes do café. Foi uma decisão tomada sob pressão."],
+  tarde: ["Começar segunda? Rael também. Só não especificou qual segunda.", "Academia cheia. Até o halter parece estar esperando senha."],
+  noite: ["Boa noite. Minha energia social encerrou o expediente às seis."],
+  domingo: ["Domingo: até o relógio parece estar andando de pantufas."],
+  refeicao: ["Registrado. O Rael finge que não viu o segundo pão de queijo.", "Prato registrado. O Rael avaliou em silêncio; foi um silêncio longo.", "Pronto. Até o Rael sabe que \"só provei\" merece registro."],
+  treino: ["Treinou! Até o Rael levantou do choco para aplaudir.", "Treino registrado. Rael levantou um peso: a expectativa alheia.", "Mais um treino feito. Rael aplaude sentado; a lombar é dele.", "Treinou! O Rael está tão orgulhoso que até penteou a crista.", "Repetições feitas. A última teve a mesma cara da primeira."],
+  perna: ["Perna treinada. Descer escada agora é conteúdo de suspense."],
+  meta: ["Meta batida. Hoje você é o frango de capa de revista.", "Meta alcançada. A balança perdeu o argumento por hoje.", "Calorias dentro da meta. Estou tentando não parecer impressionado. Falhando."],
+  pulou: ["Pulou o treino? Rael entende: o sofá fez uma proposta convincente.", "Não rolou hoje. O sofá apresentou argumentos com apoio de almofadas.", "Um dia escapou. Não precisa abrir investigação criminal."],
+  agua: ["Água registrada. Minha garrafa finalmente tem testemunhas."],
+  pesoDesceu: ["Desceu um pouco. A balança entregou o dado e saiu de fininho."],
+  pesoIgual: ["Igual de novo. A balança está claramente economizando novidades."],
+  pesoSubiu: ["Subiu um pouco. A balança acordou com opinião própria."],
+  seq: { 2: "Dois dias seguidos. Já pedi ao calendário uma sala VIP.", 3: "Três dias: você deixou meu alarme sem função. Que audácia.", 7: "Uma semana! Vou atualizar meu currículo para \"testemunha ocular\".", 10: "Dez dias seguidos. Estou fingindo que previa isso desde o começo.", 30: "Trinta dias seguidos. Estou emocionado; não espalha, tenho reputação." },
+  volta: { 3: "Três dias sem abrir o app. Eu já ia mandar um pombo-correio.", 7: "Faz uma semana? Eu deixei a notificação no rascunho. Achei mais elegante." }
+};
+function frPick(cat) { const l = FR_FRASES[cat]; let h = 0; const s = TODAY() + cat; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return l[h % l.length]; }
+function frAbertura() { const hr = new Date().getHours(); if (dowOf(TODAY()) === 0) return frPick("domingo"); if (hr < 12) return frPick("manha"); if (hr >= 18) return frPick("noite"); return frPick("tarde"); }
+
+// Limites do medidor: decisão desta versão (ajustável): abaixo de 80% da meta = Pintinho, 80 a 105% = Frango, acima de 105% = Galo Alfa
+const FR_LIM = { a: 0.8, b: 1.05, max: 1.3 };
+// Ritmo do dia (decisão minha, ajustável): hoje o esperado cresce de 7h a 21h, com mínimo de 15%; dias passados usam a meta inteira.
+// Só vira Galo Alfa se passar da meta real do dia; antes disso o ponteiro nunca passa do fim do Frango.
+function frEsperado(td) { if (td !== TODAY()) return 1; const n = new Date(), h = n.getHours() + n.getMinutes() / 60; if (h < 5) return 1; return clamp((h - 7) / 14, 0.15, 1); }
+function frRitmo(td, kcal, meta) { const exp = frEsperado(td), real = meta ? kcal / meta : 0; let r = meta ? kcal / (meta * exp) : 0; if (kcal <= meta) r = Math.min(r, FR_LIM.b); return { r, real, esperado: meta * exp }; }
+function frNivel(r) { return r < FR_LIM.a ? { k: "pintinho", n: "Pintinho" } : r <= FR_LIM.b ? { k: "frango", n: "Frango" } : { k: "galo", n: "Galo Alfa" }; }
+function frPt(r, raio) { const ang = Math.PI * (1 - clamp(r, 0, FR_LIM.max) / FR_LIM.max); return [100 + raio * Math.cos(ang), 100 - raio * Math.sin(ang)]; }
+function frArco(r1_, r2_, raio) { const [x1, y1] = frPt(r1_, raio), [x2, y2] = frPt(r2_, raio); return `M${x1.toFixed(1)} ${y1.toFixed(1)}A${raio} ${raio} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`; }
+function frMedidor(r) {
+  const [nx, ny] = frPt(r, 62), nv = frNivel(r);
+  return `<svg viewBox="0 0 200 118" role="img" aria-label="Frangômetro no ponto ${nv.n}" style="width:100%;max-width:300px;display:block;margin:0 auto">
+    <g fill="none" stroke-width="18"><path d="${frArco(0, FR_LIM.a, 80)}" stroke="#F2C14E"/><path d="${frArco(FR_LIM.a, FR_LIM.b, 80)}" stroke="#2F4C9E"/><path d="${frArco(FR_LIM.b, FR_LIM.max, 80)}" stroke="#D4574A"/></g>
+    <line x1="100" y1="100" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1B1630" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="100" r="8" fill="#1B1630"/>
+    <g font-family="inherit" font-size="8" font-weight="700" fill="#1B1630"><text x="14" y="114">PINTINHO</text><text x="80" y="14">FRANGO</text><text x="136" y="114">GALO ALFA</text></g></svg>`;
+}
+// Rael Frango: SVG idêntico ao do canvas de identidade aprovado (Main.dc.html). Só os olhos/sobrancelhas mudam com o humor.
+function frRael(humor, tam) {
+  const olhosNormal = `<circle cx="80" cy="98" r="9" fill="#FFFFFF" stroke-width="4"/><circle cx="120" cy="98" r="9" fill="#FFFFFF" stroke-width="4"/><circle cx="82" cy="99" r="3.5" fill="#1B1630" stroke="none"/><circle cx="118" cy="99" r="3.5" fill="#1B1630" stroke="none"/>`;
+  const olhos = humor === "dorme" ? `<path d="M71 99q9 7 18 0M111 99q9 7 18 0" fill="none" stroke-width="4"/>` : humor === "feliz" ? `<path d="M71 102q9-10 18 0M111 102q9-10 18 0" fill="none" stroke-width="4"/>` : humor === "foco" ? olhosNormal.replace('cx="82"', 'cx="85"').replace('cx="118"', 'cx="123"') : olhosNormal;
+  const sobr = humor === "dorme" ? "" : `<path d="${humor === "alfa" ? "M64 78L90 93M136 78L110 93" : "M66 83L90 91M134 83L110 91"}" fill="none"/>`;
+  return `<svg width="${tam || 96}" height="${tam || 96}" viewBox="0 0 200 200" role="img" aria-label="Rael Frango" style="flex:none">
+<path d="M82 164V184M70 186H94M118 164V184M106 186H130" fill="none" stroke="#E08A3A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<g stroke="#1B1630" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="84" cy="50" r="14" fill="#D4574A"/><circle cx="100" cy="42" r="15" fill="#D4574A"/><circle cx="116" cy="50" r="14" fill="#D4574A"/>
+<ellipse cx="100" cy="112" rx="62" ry="60" fill="#FFFFFF"/>
+<ellipse cx="100" cy="112" rx="62" ry="60" fill="#F7D77A"/>
+<ellipse cx="100" cy="140" rx="34" ry="22" fill="#FBEBB5" stroke="none"/>
+<ellipse cx="36" cy="124" rx="15" ry="27" transform="rotate(22 36 124)" fill="#E9B23A"/>
+<ellipse cx="164" cy="124" rx="15" ry="27" transform="rotate(-22 164 124)" fill="#E9B23A"/>
+<path d="M47 72Q100 52 153 72" fill="none" stroke-width="16"/>
+<path d="M47 72Q100 52 153 72" fill="none" stroke="#2F4C9E" stroke-width="4.5"/>
+${olhos}${sobr}
+<path d="M90 110H110L100 127Z" fill="#E8903A" stroke-width="5"/>
+<ellipse cx="100" cy="136" rx="6" ry="8" fill="#D4574A" stroke-width="4"/>
+</g>
+<ellipse cx="64" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/><ellipse cx="136" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/></svg>`;
+}
+
+// ---- adaptação ao app: dados do próprio aparelho (mesmo formato de sempre) ----
+const frRegDays = () => allDays().filter(dt => dayT(day(dt)).kcal > 0);
+function frSeq() { const reg = new Set(frRegDays()); let d = TODAY(); if (!reg.has(d)) d = addDays(d, -1); let n = 0; while (reg.has(d)) { n++; d = addDays(d, -1); } return n; }
+function frDiasSem() { const r = frRegDays(); if (!r.length) return 0; const a = new Date(TODAY() + "T12:00:00") - new Date(r[r.length - 1] + "T12:00:00"); return Math.round(a / 864e5); }
+const frPesos = () => allDays().map(dt => ({ data: dt, kg: (getDoc("dia-" + dt) || {}).peso })).filter(x => x.kg);
+function frPlanoDe(date) { const p = P(), rid = (p.semana || {})[dowOf(date)], r = rid && rotinaById(rid, p); return r ? { t: r.nome, folga: false } : (p.rotinas || []).length ? { t: "Folga", folga: true } : null; }
+
+function frTopo(tab, td) {
+  td = td || TODAY(); const p = P(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, rt = frRitmo(td, t.kcal, meta), nv = frNivel(rt.r);
+  const feitos = treinosDo(td), a = getDoc("ativo"), x = frPlanoDe(td), temComida = t.kcal > 0, sem = frDiasSem(), seq = frSeq();
+  const dow = dowOf(td), hr = new Date().getHours(), treinavel = x && !x.folga, perna = feitos.length && /legs|perna/i.test(feitos[0].nome);
+  let humor = feitos.length ? "feliz" : t.kcal > meta ? "alfa" : !temComida ? "dorme" : a ? "foco" : "normal", rot = DOWL[dow] + ", " + ddmm(td);
+  let pre = "";
+  if (dow === 0) pre = fr2("domingo"); else if (dow === 6) pre = fr2("sabado");
+  else if (treinavel) { const n = norm(x.t); pre = /push|peito/.test(n) ? fr2("peito") : /pull|costas/.test(n) ? fr2("costas") : /leg|perna/.test(n) ? fr2("pernas") : ""; }
+  else if (x && x.folga) pre = fr2("folga");
+  if (!pre) pre = frAbertura();
+  const treinoFala = a ? frPick("treino") : feitos.length ? (perna ? frPick("perna") : frPick("treino")) : (treinavel && hr >= 21 ? frPick("pulou") : pre);
+  const comidaFala = !temComida ? fr2("vazio") : t.kcal > meta ? fr2("passou") : t.p >= m.p && m.p ? fr2("proteina") : rt.real >= FR_LIM.a ? frPick("meta") : frPick("refeicao");
+  const tabela = { comer: ["Comer", () => comidaFala], treino: ["Treino", () => treinoFala], perfil: ["Ajustes", () => fr2("perfil")] }[tab];
+  let fala;
+  if (tab === "evo") { rot = "Evolução"; fala = FR_FRASES.seq[seq] || fr2("evo"); const ps = frPesos(); if (ps.length > 1 && ps[ps.length - 1].kg < ps[ps.length - 2].kg - 0.05) humor = "feliz"; }
+  else if (tabela) { rot = tabela[0]; fala = tabela[1](); }
+  else { if (feitos.length || a) fala = treinoFala; else if (sem >= 7) fala = FR_FRASES.volta[7]; else if (sem >= 3) fala = FR_FRASES.volta[3]; else if (temComida) fala = comidaFala; else fala = treinoFala; }
+  if (tab === "comer" && sem >= 3 && !temComida) fala = sem >= 7 ? FR_FRASES.volta[7] : FR_FRASES.volta[3];
+  return `<div class="fr-top">${frRael(humor, 104)}<div class="fr-bal"><div class="eyebrow">${esc(rot)}</div><div class="fr-fala">${esc(fala)}</div></div></div>`;
+}
+function frMedidorCard() {
+  const p = P(), td = ui.date, isHoje = td === TODAY(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, rt = frRitmo(td, t.kcal, meta), nv = frNivel(rt.r), seq = frSeq();
+  const seqTxt = FR_FRASES.seq[seq] || "";
+  return `<div class="card fr-card">${frMedidor(rt.r)}<div style="text-align:center;margin-top:2px"><span class="fr-nivel fr-${nv.k}">${nv.n}</span></div>
+    <div class="fr-kcal"><b>${fmt(t.kcal)}</b> de ${fmt(meta)} kcal <span class="muted">· ${t.kcal > meta ? "passou " + fmt(t.kcal - meta) : "faltam " + fmt(meta - t.kcal)}</span></div>
+    <div style="margin-top:12px">${macroBars(t, m)}</div>
+    <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
+    <div class="xs muted" style="margin-top:8px;text-align:center">${isHoje && rt.esperado < meta ? `Pelo horário, o esperado até agora é cerca de ${fmt(rt.esperado)} kcal. ` : ""}Pintinho: abaixo de ${Math.round(FR_LIM.a * 100)}% do esperado. Frango: de ${Math.round(FR_LIM.a * 100)}% a ${Math.round(FR_LIM.b * 100)}%. Galo Alfa: passou da meta do dia.</div></div>`
+    + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
+}
+// o app inteiro fala com a voz do Rael (categorias sem frase ficam vazias, sem inventar)
 const FRASES = {
-  hoje: [
-    "Shape não chega por delivery, Rael. Tem que ir buscar.",
-    "Frango e batata-doce: o casal mais estável que você conhece.",
-    "Proteína primeiro, carboidrato depois, desculpa nunca.",
-    "Ser hétero top dá trabalho: agora tem que contar macro.",
-    "Hoje a meta é simples: comer direito e pegar pesado. Na carga, Rael.",
-    "O espelho tá de olho em você. O Lucas também.",
-    "Barriga tanquinho se faz na cozinha. O braço se faz na academia. A desculpa se faz no sofá.",
-    "Lembrete: whey não é sobremesa. Mas pode ser.",
-    "Monstro não pula refeição. Nem dia de perna."
-  ],
-  treino: [
-    "Hoje é dia de pegar pesado, Rael. Na carga. Na carga, Rael.",
-    "Agachamento profundo: vai até embaixo, sem medo de ser feliz.",
-    "Aperta o glúteo na subida. É técnica, Rael. É só técnica.",
-    "Quem treina costas vê o resultado por trás.",
-    "Se ficar fácil demais, coloca mais peso. No supino e na vida.",
-    "Dia de perna. Não adianta fingir que esqueceu.",
-    "Pré-treino tomado. Desculpa esfarrapada não entra.",
-    "Hoje é você e o ferro. Relação séria, com compromisso."
-  ],
-  folga: [
-    "Folga também é treino. Pra preguiça, não.",
-    "Hoje o músculo cresce no sofá. Mas cresce com proteína, ouviu?",
-    "Descanso merecido. Amanhã a barra te espera, toda saudosa."
-  ],
-  curta: ["Bora, Rael.", "O monstro saiu da jaula.", "Respeita o shape.", "Isso aí, hétero top de academia.", "Quem é vivo sempre aparece. Na academia, de preferência."],
-  fim: [
-    "Treino pago, Rael. Pode se olhar no espelho.",
-    "Saiu suado e satisfeito. Do jeito que o Lucas gosta de ouvir.",
-    "Monstro! Agora vai lá comer seu frango.",
-    "Tá ficando grande, hein. Os músculos, Rael. Os músculos.",
-    "Mais um pro histórico. O shape agradece."
-  ],
-  descanso: ["Acabou o descanso. Volta pra barra que ela tá carente.", "Chega de celular. Próxima série!", "O ferro não levanta sozinho, Rael.", "Descansou? Então vai com tudo."],
-  agua: ["Bebe água, Rael. Seco só o shape.", "Hidrata essa máquina.", "Água: a única coisa que você engole sem contar caloria."],
-  excesso: ["Passou da meta. Amanhã a gente chama de refeed.", "Esse lanche não tava no plano, né? Te vi.", "Rael, meta é meta. Até pro brigadeiro."],
-  deficit: ["Déficit no talo. O tanquinho tá em obra.", "Fechou no déficit. A gordura tá indo embora sem nem se despedir."],
-  peso: ["Balança não define caráter. Só peso.", "Subiu? Pode ser músculo. Vamos acreditar que é músculo."]
+  hoje: [].concat(FR_FRASES.manha, FR_FRASES.tarde, FR_FRASES.noite), treino: FR_FRASES.treino, fim: FR_FRASES.treino, curta: FR_FRASES.refeicao,
+  folga: FR2.folga, excesso: FR2.passou, deficit: [""], proteina: FR2.proteina, descanso: FR2.descanso, agua: FR2.aguaManha.concat(FR_FRASES.agua), peso: FR2.pesoReg
 };
 function frase(cat, rnd) {
   const l = FRASES[cat] || FRASES.curta;
-  const nm = nomeU();
-  if (rnd || cat === "fim" || cat === "descanso") return l[Math.floor(Math.random() * l.length)].replace(/Rael/g, nm);
+  if (rnd || cat === "fim" || cat === "descanso") return l[Math.floor(Math.random() * l.length)];
   let h = 0; const s = TODAY() + cat; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  return l[h % l.length].replace(/Rael/g, nm);
+  return l[h % l.length];
 }
 const nomeU = () => (P().nome || (PID() === "main" ? "Rael" : "") || "você").trim() || "Rael";
 
@@ -1825,12 +1916,7 @@ function viewHoje() {
   const p = P(), d = day(ui.date), t = dayT(d), m = metas(p), meta = metaDoDia(ui.date, p), g = gastoDia(ui.date, p);
   const saldo = g.total - t.kcal, pct = clamp(t.kcal / (meta || 1), 0, 1.5), C = 2 * Math.PI * 56;
   const over = t.kcal > meta;
-  let h = `<div><div class="eyebrow">${ui.date === TODAY() ? DOWL[dowOf(ui.date)] + ", " + ddmm(ui.date) : labelDate(ui.date)}</div><h1 style="margin-top:2px">E aí, ${esc(nomeU())}</h1><div class="small ink2" style="margin-top:2px">${esc(over ? frase("excesso") : frase("hoje"))}</div></div>`;
-  h += `<div class="card"><div class="hero"><div class="ring"><svg viewBox="0 0 132 132"><circle cx="66" cy="66" r="56" fill="none" stroke="var(--surface-2)" stroke-width="12"/><circle cx="66" cy="66" r="56" fill="none" stroke="var(${over ? "--surplus" : "--accent"})" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C * Math.min(pct, 1)} ${C}"/></svg>
-    <div class="c"><b>${fmt(Math.abs(meta - t.kcal))}</b><span>${over ? "kcal acima" : "kcal restantes"}</span></div></div>
-    <div class="stack" style="gap:2px;min-width:0"><div class="kv"><span class="muted">Meta</span><b>${fmt(meta)}</b></div><div class="kv"><span class="muted">Comido</span><b>${fmt(t.kcal)}</b></div><div class="kv"><span class="muted">Treino e atividades</span><b>${fmt(g.atv + g.tr)}</b></div>
-    <button class="btn sm soft" style="margin-top:6px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="15" height="15"')} Lançar comida</button></div></div>
-    <div style="margin-top:14px">${macroBars(t, m)}</div></div>`;
+  let h = frTopo("hoje", ui.date) + frMedidorCard();
   const temComida = t.kcal > 0;
   h += `<div class="card"><div class="row between"><h2>Balanço do dia</h2><span class="pill ${!temComida ? "" : saldo >= 0 ? "good" : "warn"}">${!temComida ? "sem comida lançada" : saldo >= 0 ? "déficit" : "superávit"}</span></div>
     <div class="balance" style="margin-top:12px"><div><div class="n">${fmt(g.total)}</div><div class="l">gasto</div></div><div class="op">−</div><div><div class="n">${fmt(t.kcal)}</div><div class="l">comido</div></div><div class="op">=</div><div><div class="n" style="color:var(${!temComida ? "--ink" : saldo >= 0 ? "--good" : "--warn"})">${fmt(Math.abs(saldo))}</div><div class="l">${saldo >= 0 ? "déficit" : "superávit"}</div></div></div>
@@ -1953,7 +2039,7 @@ function coachBody() {
 function coachFoot() { return `<input type="text" id="coachIn" placeholder="Escreva sua pergunta" aria-label="Pergunta" class="grow" style="min-width:0"><button class="btn pri" data-act="coachSend" ${AI.busy === "chat" ? "disabled" : ""}>Enviar</button>`; }
 ACT.coachSend = async () => {
   const q = ($("#coachIn").value || "").trim(); if (!q) return;
-  const rules = `Você é o coach do app Rael Frango: nutrição e musculação, direto, prático e bem-humorado (o usuário é o ${nomeU()}, gosta de zoeira leve). Responda em português do Brasil, em poucas linhas, com números quando der. Não dê diagnóstico médico; em dor ou problema de saúde, mande procurar um profissional.\nDados atuais do usuário:\n${contexto(14)}`;
+  const rules = `Você é o coach do app Frangômetro (mascote Rael Frango): nutrição e musculação, direto, prático e bem-humorado (o usuário é o ${nomeU()}, gosta de zoeira leve). Responda em português do Brasil, em poucas linhas, com números quando der. Não dê diagnóstico médico; em dor ou problema de saúde, mande procurar um profissional.\nDados atuais do usuário:\n${contexto(14)}`;
   if (!CAP.sample) { openExtAI({ title: "Perguntar ao coach", prompt: rules + "\n\nPergunta: " + q, textOnly: true }); return; }
   AI.chat.push({ role: "user", content: q }); AI.busy = "chat"; AI.live = ""; redrawSheet(); scrollChat();
   try {
@@ -2019,8 +2105,8 @@ function viewPerfil() {
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
-  h += `<div class="disc card flat">Rael Frango é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
-  h += `<div class="xs muted" style="text-align:center;padding:8px 0">Presente do Lucas pro Rael. Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
+  h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
+  h += `<div class="xs muted" style="text-align:center;padding:8px 0">Frangômetro, versão teste. Presente do Lucas pro Rael. Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
   return `<div class="stack">${h}</div>`;
 }
 function perfilForm(p) {
@@ -2055,7 +2141,7 @@ ACT.exportar = async () => {
 ACT.bkCopy = () => { const t = $("#bkTxt"); try { navigator.clipboard.writeText(t.value).then(() => toast("Backup copiado"), () => { t.select(); toast("Texto selecionado: copie pelo menu"); }); } catch (e) { t.select(); } };
 function restore(txt) {
   const o = parseLoose(txt);
-  if (!o || o.app !== "rael-fit" || !o.docs) { toast("Esse arquivo não é um backup do Rael Frango."); return false; }
+  if (!o || o.app !== "rael-fit" || !o.docs) { toast("Esse arquivo não é um backup do Frangômetro."); return false; }
   for (const k in o.docs) { const d = o.docs[k]; if (d && typeof d === "object") putDoc(k, d); }
   render(); toast("Backup restaurado"); return true;
 }
@@ -2068,7 +2154,7 @@ ACT.wipe = () => { UIc.confirm = null; Object.keys(ST.docs).forEach(k => delDoc(
 // ---------- boas-vindas ----------
 function onboarding() {
   const p = P();
-  openSheet({ title: "Bem-vindo ao Rael Frango", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">Fala, ${esc(nomeU())}. Seu shape agora tem gerente.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
+  openSheet({ title: "Bem-vindo ao Frangômetro", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">Fala, ${esc(nomeU())}. Seu shape agora tem gerente.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
     foot: `<button class="btn pri block" data-act="onbSave">Calcular minhas metas</button>` });
 }
 ACT.onbSkip = () => { updP(p => { p.onb = true; }); closeSheet(); };
@@ -2089,10 +2175,10 @@ ACT.dNext = () => { ui.date = addDays(ui.date, 1); render(); };
 ACT.dToday = () => { ui.date = TODAY(); render(); };
 function render() {
   const showDate = ui.tab === "hoje" || (ui.tab === "comer" && ui.sub.comer === "diario");
-  $("#topbar").innerHTML = `<div class="brand"><i aria-hidden="true"></i>Rael Frango</div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
+  $("#topbar").innerHTML = `<div class="brand">${frRael("normal", 34)}<span class="fr-logo">Frangômetro</span><span class="fr-ver">versão teste</span></div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
   $("#tabbar").innerHTML = TABS.map(([k, n]) => `<button data-act="tab" data-k="${k}" ${ui.tab === k ? 'aria-current="page"' : ""}>${ICON[k]}<span>${n}</span></button>`).join("");
   const V = { hoje: viewHoje, comer: viewComer, treino: viewTreino, evo: viewEvo, perfil: viewPerfil }[ui.tab];
-  $("#view").innerHTML = V();
+  $("#view").innerHTML = ui.tab === "hoje" ? V() : `<div class="stack">${frTopo(ui.tab)}${V()}</div>`;
 }
 (async function init() {
   ST.docs = lsRead();
@@ -2168,6 +2254,9 @@ ACT.saveKey = async () => {
   UIc.keyBusy = false; render();
 };
 ACT.delKey = () => { try { localStorage.removeItem(KEY_LS); localStorage.removeItem(GEM_LS); } catch (e) {} UIc.keyMsg = ""; useApiKey(); render(); toast("Chave removida"); };
+
 </script>
+
+<!-- frangometro teste 2026-10-30 -->
 
 </body></html>
