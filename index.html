@@ -2609,11 +2609,12 @@ function hvImportar(txt) {
 }
 function hvMostra(body, fechar) { replaceSheet({ title: "Importar do Hevy", body, foot: fechar ? `<button class="btn pri block" data-act="sheetClose">Fechar</button>` : "" }); }
 ON.hevyImp = el => {
-  const f = el.files && el.files[0]; if (!f) return; el.value = "";
-  openSheet({ title: "Importar do Hevy", body: `<div class="row"><span class="spin"></span><span>Lendo o arquivo ${esc(f.name)}…</span></div>` });
+  const f = el.files && el.files[0]; if (!f) { openSheet({ title: "Importar do Hevy", body: `<div class="card small" style="color:var(--bad)">O celular não entregou nenhum arquivo. Tente de novo ou use "Colar o texto do arquivo".</div>`, foot: `<button class="btn pri block" data-act="sheetClose">Fechar</button>` }); return; }
+  openSheet({ title: "Importar do Hevy", body: `<div class="row"><span class="spin"></span><span>Arquivo recebido: ${esc(f.name)} (${Math.round(f.size / 1024)} KB). Lendo…</span></div>` });
   const r = new FileReader();
-  r.onerror = () => hvMostra(`<div class="card small" style="color:var(--bad)">Não consegui abrir o arquivo. Tente de novo ou envie o CSV para o Lucas.</div>`, true);
+  r.onerror = () => { try { el.value = ""; } catch (_) {} hvMostra(`<div class="card small" style="color:var(--bad)">O celular não deixou ler o arquivo (${esc(String(r.error && r.error.name || "erro"))}). Use "Colar o texto do arquivo" em Ajustes.</div>`, true); };
   r.onload = () => {
+    try { el.value = ""; } catch (_) {}
     setTimeout(() => {
       try {
         const buf = new Uint8Array(r.result), u16 = buf[0] === 0xFF && buf[1] === 0xFE, txt = new TextDecoder(u16 ? "utf-16le" : "utf-8").decode(buf);
@@ -2624,6 +2625,12 @@ ON.hevyImp = el => {
     }, 60);
   };
   r.readAsArrayBuffer(f);
+};
+ACT.hevyColar = () => openSheet({ title: "Colar CSV do Hevy", body: `<div class="small ink2">Abra o arquivo (no app de arquivos ou editor de texto), copie tudo e cole aqui.</div><textarea id="hvTxt" placeholder="title,start_time,end_time,..." style="min-height:220px;font-size:12px"></textarea>`, foot: `<button class="btn pri block" data-act="hevyColarGo">Importar</button>` });
+ACT.hevyColarGo = () => {
+  const txt = ($("#hvTxt") || {}).value || ""; if (!txt.trim()) { toast("Cole o texto do arquivo primeiro."); return; }
+  hvMostra(`<div class="row"><span class="spin"></span><span>Lendo…</span></div>`);
+  setTimeout(() => { try { const o = hvImportar(txt); hvMostra(o.erro ? `<div class="card small" style="color:var(--bad)">${esc(o.erro)}</div>` : `<div class="card"><div class="num" style="font-size:22px;font-weight:600">${o.n} treino(s) importado(s)</div><div class="small ink2" style="margin-top:6px">${o.series} séries no histórico.${o.ja ? " " + o.ja + " já existia(m)." : ""}</div></div>`, true); } catch (e) { hvMostra(`<div class="card small" style="color:var(--bad)">Erro: ${esc(String(e && e.message || e))}</div>`, true); } }, 60);
 };
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
@@ -3613,7 +3620,7 @@ function viewPerfil() {
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label></div>`;
-  h += `<div class="card stack"><h2>Importar treinos do Hevy</h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><label class="btn pri" for="hvIn">Escolher CSV do Hevy</label><input type="file" id="hvIn" class="hidden" data-on="hevyImp"></div>`;
+  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v3</span></h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><div class="xs muted">Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.</div></div>`;
   h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}</div>
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
