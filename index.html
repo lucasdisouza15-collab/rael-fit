@@ -198,7 +198,6 @@ details.acc summary::-webkit-details-marker{display:none}
 <main class="wrap" id="view" aria-live="polite"></main>
 <nav class="tabs" aria-label="Seções"><div class="in" id="tabbar"></div></nav>
 <div id="layer"></div>
-
 <script>
 // ---------- Banco de alimentos (por 100 g ou 100 ml) ----------
 // [nome, kcal, proteína, carboidrato, gordura, fibra, categoria, fonte, g por unidade (opcional), nome da unidade]
@@ -440,7 +439,6 @@ const MODELOS = [
   {nome:"Treino B (costas, bíceps)",desc:"ABC",itens:[["puxada-frente",4,8,12,90],["remada-baixa",3,8,12,90],["remada-unilateral",3,8,12,75],["pulldown",3,10,15,60],["rosca-direta",3,8,12,60],["rosca-martelo",3,10,12,60]]},
   {nome:"Treino C (pernas, abdômen)",desc:"ABC",itens:[["agachamento-livre",4,8,12,120],["leg-press-45",3,10,12,90],["cadeira-extensora",3,10,15,60],["mesa-flexora",3,10,15,60],["panturrilha-pe",4,12,15,60],["abdominal-infra",3,12,20,45]]}
 ];
-
 // ---------- utilidades ----------
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -811,7 +809,6 @@ function geminiSampler(key) {
   f.limits = async () => ({ images: { maxCount: 1 } });
   return f;
 }
-
 // =================== ALIMENTAÇÃO ===================
 const macroTxt = t => `P ${fmt(t.p)} · C ${fmt(t.c)} · G ${fmt(t.g)}`;
 const CAT_PORCAO = { Cereais: 120, Leguminosas: 140, Carnes: 120, Peixes: 120, Ovos: 50, Laticínios: 200, Frutas: 120, Verduras: 60, Tubérculos: 150, Gorduras: 10, Doces: 20, Bebidas: 250, Prontos: 150, "Pães": 50, Oleaginosas: 30, Suplementos: 30, Receitas: 1 };
@@ -1371,7 +1368,7 @@ ACT.aiPlan = async () => {
 ACT.aiSuggest = async () => {
   const p = P(), d = day(ui.date), t = dayT(d), m = metas(p), meta = metaDoDia(ui.date, p);
   const comido = MEALS.map(([k, n]) => (d.ref[k] || []).length ? n + ": " + d.ref[k].map(e => e.nome + " (" + qtdLabel(e) + ")").join(", ") : "").filter(Boolean).join("\n") || "nada ainda";
-  const prompt = `Você é um nutricionista prático. Em português do Brasil, em no máximo 8 linhas curtas, sugira 3 opções do que comer no resto do dia para fechar as metas, com quantidades em gramas e kcal aproximadas. Sem markdown pesado.
+  const prompt = `${RAEL_VOZ}\nPapel agora: nutricionista prático. Em português do Brasil, em no máximo 8 linhas curtas, sugira 3 opções do que comer no resto do dia para fechar as metas, com quantidades em gramas e kcal aproximadas. Sem markdown pesado.
 Meta: ${meta} kcal, P ${m.p} g, C ${m.c} g, G ${m.g} g. Já comeu: ${fmt(t.kcal)} kcal, P ${fmt(t.p)}, C ${fmt(t.c)}, G ${fmt(t.g)}.
 Refeições de hoje:\n${comido}`;
   if (!CAP.sample) { openExtAI({ title: "Ideias com IA", prompt, textOnly: true }); return; }
@@ -1381,7 +1378,6 @@ Refeições de hoje:\n${comido}`;
     await CAP.sample(prompt, { onText: ({ text }) => { AI.out = text; const o = $("#aiOut"); if (o) o.textContent = text; } });
   } catch (e) { AI.out = aiErrMsg(e) || AI.out; const o = $("#aiOut"); if (o) o.textContent = AI.out; }
 };
-
 // =================== TREINO ===================
 const EQ_LOCAL = {
   academia: null,
@@ -1730,7 +1726,6 @@ ACT.exInfo = ds => {
     ${ex.custom ? `<button class="btn danger" data-act="delEx" data-id="${esc(ex.id)}">Apagar exercício próprio</button>` : ""}` });
 };
 ACT.delEx = ds => { updP(p => { p.exCustom = (p.exCustom || []).filter(x => x.id !== ds.id); }); closeSheet(); toast("Exercício apagado"); };
-
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
@@ -1863,6 +1858,8 @@ function frase(cat, rnd) {
 }
 const nomeU = () => (P().nome || (PID() === "main" ? "Rael" : "") || "você").trim() || "Rael";
 
+// voz do Rael Frango nos prompts da IA (coach, análise, sugestão de refeição)
+const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: humor seco, autoirônico, preguiçoso de forma carinhosa (café em negociação, crista torta, aplaude sentado, sofá que faz proposta convincente). Fala curto, com ironia e um carinho escondido; quando o usuário vai bem, finge que não está impressionado. Zoeira leve é bem-vinda, sem caricatura e sem autoajuda motivacional. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Meta batida. A balança perdeu o argumento por hoje." / "Pulou o treino? Rael entende: o sofá fez uma proposta convincente." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
 // =================== GRÁFICOS ===================
 function niceMax(v) { if (v <= 0) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))); const f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; }
 function barChart(pts, o = {}) {
@@ -2020,7 +2017,7 @@ Dias registrados:\n${linhas.join("\n") || "nenhum"}\nTreinos:\n${tr.join("\n") |
 }
 ACT.aiAnalise = async () => {
   const per = ui.evoPer || 30;
-  const prompt = `Você é coach de dieta e musculação, bem-humorado, falando com o ${nomeU()} (amigo zoeiro, pode brincar um pouco). Em português do Brasil, analise os dados abaixo em até 10 linhas: o que está indo bem, o que ajustar na dieta e no treino (cite exercícios e cargas se fizer sentido) e uma meta para a próxima semana. Seja concreto. Não dê conselho médico.\n\n${contexto(per)}`;
+  const prompt = `${RAEL_VOZ}\nPapel agora: coach de dieta e musculação falando com o ${nomeU()}. Em português do Brasil, analise os dados abaixo em até 10 linhas: o que está indo bem, o que ajustar na dieta e no treino (cite exercícios e cargas se fizer sentido) e uma meta para a próxima semana. Seja concreto. Não dê conselho médico.\n\n${contexto(per)}`;
   if (!CAP.sample) { openExtAI({ title: "Análise do coach", prompt, textOnly: true }); return; }
   AI.out = "";
   openSheet({ title: "Análise do coach", body: () => `<div class="ai-out" id="aiOut">${AI.out ? esc(AI.out) : '<span class="row small muted"><span class="spin"></span> Lendo seus números…</span>'}</div><div class="disc">Gerado por IA. Não substitui médico ou nutricionista.</div>` });
@@ -2039,7 +2036,7 @@ function coachBody() {
 function coachFoot() { return `<input type="text" id="coachIn" placeholder="Escreva sua pergunta" aria-label="Pergunta" class="grow" style="min-width:0"><button class="btn pri" data-act="coachSend" ${AI.busy === "chat" ? "disabled" : ""}>Enviar</button>`; }
 ACT.coachSend = async () => {
   const q = ($("#coachIn").value || "").trim(); if (!q) return;
-  const rules = `Você é o coach do app Frangômetro (mascote Rael Frango): nutrição e musculação, direto, prático e bem-humorado (o usuário é o ${nomeU()}, gosta de zoeira leve). Responda em português do Brasil, em poucas linhas, com números quando der. Não dê diagnóstico médico; em dor ou problema de saúde, mande procurar um profissional.\nDados atuais do usuário:\n${contexto(14)}`;
+  const rules = `${RAEL_VOZ}\nPapel agora: coach de nutrição e musculação do app, falando com o ${nomeU()}. Responda em português do Brasil, em poucas linhas, com números quando der. Não dê diagnóstico médico; em dor ou problema de saúde, mande procurar um profissional.\nDados atuais do usuário:\n${contexto(14)}`;
   if (!CAP.sample) { openExtAI({ title: "Perguntar ao coach", prompt: rules + "\n\nPergunta: " + q, textOnly: true }); return; }
   AI.chat.push({ role: "user", content: q }); AI.busy = "chat"; AI.live = ""; redrawSheet(); scrollChat();
   try {
@@ -2254,9 +2251,7 @@ ACT.saveKey = async () => {
   UIc.keyBusy = false; render();
 };
 ACT.delKey = () => { try { localStorage.removeItem(KEY_LS); localStorage.removeItem(GEM_LS); } catch (e) {} UIc.keyMsg = ""; useApiKey(); render(); toast("Chave removida"); };
-
 </script>
-
-<!-- frangometro teste 2026-10-30 -->
+<!-- frangometro teste 2026-10-30b -->
 
 </body></html>
