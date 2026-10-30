@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v11-20261030v"><script>(function(){try{var V="v11-20261030v";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v12-20261030w"><script>(function(){try{var V="v12-20261030w";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2846,6 +2846,7 @@ function frTopo(tab, td) {
   if (tab === "comer" && sem >= 3 && !temComida) fala = sem >= 7 ? FR_FRASES.volta[7] : FR_FRASES.volta[3];
   const hoje = td === TODAY(), ctx = { hoje, tab, hr, dow, treinavel: !!treinavel, treinou: feitos.length > 0, mexeu: frMovTipos(td).length > 0, correndo: (() => { const f = frMovFim(td); return f > 0 && Date.now() - f < 1800e3 && Date.now() >= f; })(), ativo: !!a, passou: nv.k === "galo", nivel: nv.n, temComida, seq, estourou: temComida && t.kcal > meta * 1.1, aguaOk: !!(m.agua && (d.agua || 0) >= m.agua) };
   const bal = frBalaoDo(ctx); ctx.pensando = !!bal && bal.k === "treino";
+  if (!bal && hoje && !tabela && tab !== "evo" && typeof frRespFrase === "function") { const rf = frRespFrase(); if (rf) fala = rf; }
   let cena = hoje ? frCenaApp(ctx) : (humor === "feliz" ? "danca" : "tarde");
   if (tab === "evo") { const ps2 = frPesos(); const subiu = ps2.length > 1 && ps2[ps2.length - 1].kg > ps2[ps2.length - 2].kg + 0.3; cena = humor === "feliz" ? "danca" : subiu ? "susto" : (new Date().getDate() % 2 ? "espelho" : "pesando"); }
   const corpo = bal ? `<div class="fr-fala">${esc(bal.txt)}</div><div class="fr-resp">${bal.resp.map(r => `<button class="${r[0]}" data-act="frBal" data-k="${bal.k}" data-a="${r[1]}">${r[2]}</button>`).join("")}</div>` : `<div class="fr-fala">${esc(fala)}</div>`;
@@ -2860,6 +2861,7 @@ function frMedidorCard() {
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
     <div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></div>`
+    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "")
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
 }
 // o app inteiro fala com a voz do Rael (categorias sem frase ficam vazias, sem inventar)
@@ -3377,6 +3379,37 @@ function frPergEscolhe(c, ok) {
   const q = el[(new Date().getDate() * 7 + c.hr) % el.length];
   return { k: "q:" + q.id, txt: frNome(q.q), resp: q.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) };
 }
+
+// ---- Respostas do balão viram frases do Rael (com moderação: 1 em cada 3 horas) e contagem de treinos ----
+const FR_REAGE = {
+  sono: { "Menos de 6h": ["Dormiu pouco, você disse. Hoje o Rael pega leve nas cobranças; só não some.", "Pouco sono segura o músculo e aumenta a fome. Água, proteína e cama cedo hoje."], "Mais de 8h": ["Dormiu bem, hein. Recuperação em dia é meio treino feito."] },
+  acordou: { "Destruído": ["Você falou que acordou destruído. Se o corpo pedir, treino leve também vale."], "Pronto pra guerra": ["Acordou pronto pra guerra? Aproveita a energia antes que o sofá negocie."] },
+  dor: { "Dor de verdade": ["Você falou de uma dor de verdade no treino. Se continuar, procura um profissional; o Rael não aposta com articulação."] },
+  treinoOnte: { "Dor forte": ["Dor forte de ontem? Alonga, bebe água e pega leve hoje."] },
+  fome: { "Bateu forte": ["A fome da tarde bateu forte. Deixa uma fruta ou um iogurte por perto antes da padaria."] },
+  dia: { "Ruim": ["O dia foi ruim, você contou. Amanhã a gente começa pequeno: um copo d'água e uma refeição anotada."], "Boa": ["O dia foi bom, você contou. Bora tentar repetir a dose."] },
+  foi: { "Bati recorde": ["Bateu recorde no treino. O Rael ainda está processando; segue assim."] },
+  passou: { "Escapou": ["Passou da meta, mas anotou. Hoje é só voltar pro plano, sem drama."], "Foi liberado": ["Dia livre cumprido. Hoje o plano volta, com carinho e sem culpa."] }
+};
+function frRespFrase() {
+  try {
+    if ((new Date().getDate() + new Date().getHours()) % 3 !== 0) return null; // moderação
+    const o = JSON.parse(localStorage.getItem("frango:resp") || "{}"), hj = TODAY(), on = addDays(hj, -1), L = [];
+    [hj, on].forEach(d => { const r = o[d] || {}; Object.keys(r).forEach(id => { const f = FR_REAGE[id] && FR_REAGE[id][r[id]]; if (f) f.forEach(t => L.push(t)); }); });
+    return L.length ? L[(new Date().getDate() * 5 + new Date().getHours()) % L.length] : null;
+  } catch (_) { return null; }
+}
+function frStatsCard() {
+  try {
+    const ws = typeof workouts === "function" ? workouts() : []; if (!ws.length) return "";
+    const hj = TODAY(), dias = [...new Set(ws.map(w => w.data))].sort(), sem = ws.filter(w => w.data >= addDays(hj, -6)).length;
+    let seqT = 0; const ult = dias[dias.length - 1];
+    if (ult >= addDays(hj, -2)) { seqT = 1; let ref = ult; for (let i = dias.length - 2; i >= 0; i--) { if ((new Date(ref) - new Date(dias[i])) / 864e5 <= 2) { seqT++; ref = dias[i]; } else break; } }
+    const n = ws.length, fr = n < 5 ? "Começando a coleção. Todo mundo começa com um treino só." : n < 20 ? "A coleção cresce. O sofá já percebeu a ausência." : n < 50 ? "Isso já é hábito, não fase. O Rael finge que não está impressionado." : "Nível veterano. O Rael só pede que alongue.";
+    const cx = (v, l) => `<div class="grow" style="text-align:center"><div class="num" style="font-size:22px;font-weight:700">${v}</div><div class="xs muted">${l}</div></div>`;
+    return `<div class="card flat"><div class="row" style="gap:6px">${cx(n, n === 1 ? "treino" : "treinos")}${cx(sem, "nos últimos 7 dias")}${cx(seqT, "de sequência")}</div><div class="xs muted" style="margin-top:6px;text-align:center">Sequência de treino: uma folga entre dois treinos não quebra.</div><div class="fr-fala">${esc(fr)}</div></div>`;
+  } catch (_) { return ""; }
+}
 // ---- Frases do Rael, rodada 5: ironia carinhosa, falando COM o usuário (30/10/2026) ----
 // {nome} vira o nome do perfil de quem está logado (sem nome: "você"; ", {nome}" some). Nunca escrever nome fixo aqui.
 function frNomeUsuario() { return P().nome || ""; }
@@ -3890,11 +3923,12 @@ function viewPerfil() {
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label></div>`;
-  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v11</span></h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.</div></div>`;
-  h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}</div>
+  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v12</span></h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.</div></div>`;
+  h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}${bkGet(BKK) ? ` Último backup: ${ddmm(bkGet(BKK))}.` : " Nenhum backup feito ainda."}</div>
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
+  h += `<div class="card stack"><h2>Enviar feedback</h2><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
   h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
   h += `<div class="xs muted" style="text-align:center;padding:8px 0">Frangômetro, versão teste. ${/^(rael|israel)$/i.test((p.nome || "").trim()) ? "Presente do Lucas pro Rael. " : ""}Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
   return `<div class="stack">${h}</div>`;
@@ -3922,11 +3956,38 @@ ON.metasAuto = el => { updP(p => { p.metasAuto = el.checked; if (!el.checked) p.
 ACT.saveMetas = () => { updP(p => { p.metas = {}; ["kcal", "p", "c", "g", "f", "agua"].forEach(k => { p.metas[k] = num($("#mt_" + k).value); }); }); render(); toast("Metas salvas"); };
 ON.prefs = () => { updP(p => { p.incremento = num($("#prInc").value); p.metMusc = num($("#prMet").value); p.somarTreino = $("#prSomar").checked; }); render(); toast("Preferências salvas"); };
 function backupJSON() { const docs = {}; for (const k in ST.docs) if (!ST.docs[k]._del) docs[k] = ST.docs[k]; return JSON.stringify({ app: "rael-fit", v: 1, exportado: new Date().toISOString(), docs }); }
+// lembrete de backup: só no modo local; depois de 7 dias sem backup aparece na tela inicial (adia por 2 dias)
+const BKK = "frango:bk", BKI = "frango:bkini", BKS = "frango:bksn";
+const bkGet = k => { try { return localStorage.getItem(k) || ""; } catch (_) { return ""; } };
+const bkSet = (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} };
+const bkDiasDesde = d => Math.floor((Date.now() - new Date(d + "T12:00:00").getTime()) / 864e5);
+function bkBanner() {
+  if (ST.mode === "nuvem") return "";
+  if (!bkGet(BKI)) bkSet(BKI, TODAY());
+  if (bkGet(BKS) >= TODAY()) return "";
+  const u = bkGet(BKK), dias = bkDiasDesde(u || bkGet(BKI));
+  if (dias < 7 || !Object.keys(ST.docs).some(k => k.startsWith("dia-") || k.startsWith("treino-"))) return "";
+  return `<div class="card flat"><div class="small">${u ? "Faz " + dias + " dias sem backup." : "Você ainda não fez backup."} Se o celular limpar os dados do navegador, tudo some. Leva 5 segundos.</div><div class="row" style="margin-top:8px;gap:8px"><button class="btn pri sm" data-act="exportar">Fazer backup agora</button><button class="btn ghost sm" data-act="bkDepois">Lembrar depois</button></div></div>`;
+}
+ACT.bkDepois = () => { bkSet(BKS, addDays(TODAY(), 2)); render(); };
 ACT.exportar = async () => {
+  bkSet(BKK, TODAY());
   const data = backupJSON(), name = "rael-fit-" + norm(nomeU()).replace(/[^a-z0-9]+/g, "-") + "-" + TODAY() + ".json";
   if (CAP.dl) { try { await CAP.dl.save({ filename: name, data }); toast("Backup salvo"); return; } catch (e) { if (e && e.code === "not_granted") return; } }
   if (!window.claude) { try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "application/json" })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast("Backup baixado"); return; } catch (e) {} }
   openSheet({ title: "Backup", body: `<div class="small ink2">Copie este texto e guarde (no WhatsApp para você mesmo, por exemplo). Para restaurar, use "Colar backup".</div><textarea id="bkTxt" readonly style="min-height:200px;font-size:12px">${esc(data)}</textarea>`, foot: `<button class="btn pri block" data-act="bkCopy">Copiar backup</button>` });
+};
+// feedback: monta a mensagem (com versão e aparelho) e abre o compartilhar do celular, com print opcional
+ACT.fbOpen = () => openSheet({ title: "Enviar feedback", body: `<label class="f">Tipo<select id="fbTipo"><option>Erro</option><option>Ideia</option><option>Dúvida</option><option>Elogio</option></select></label><label class="f" style="margin-top:8px">O que aconteceu ou o que você sugere<textarea id="fbTxt" style="min-height:140px" placeholder="Conte o que você fez, o que esperava e o que aconteceu"></textarea></label><label class="f" style="margin-top:8px">Print (opcional)<input type="file" id="fbImg" accept="image/*"></label><div class="xs muted" style="margin-top:8px">Vai junto: versão do app, aparelho e seu nome no perfil. Nenhum dado de refeição ou treino é enviado.</div>`, foot: `<button class="btn pri block" data-act="fbSend">Enviar pelo celular</button>` });
+ACT.fbSend = async () => {
+  const txt = ($("#fbTxt") || {}).value || ""; if (!txt.trim()) { toast("Escreva o feedback primeiro."); return; }
+  const mv = document.querySelector('meta[name="app-ver"]'), ua = navigator.userAgent || "", ap = /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Android/.test(ua) ? "Android" : "computador", nav = /CriOS|Chrome/.test(ua) ? "Chrome" : /Safari/.test(ua) ? "Safari" : /Firefox/.test(ua) ? "Firefox" : "navegador";
+  const nome = (P().nome || "").trim(), msg = `Feedback Frangômetro (${($("#fbTipo") || {}).value || "Erro"})\nVersão: ${mv ? mv.content : "?"}\nAparelho: ${ap}, ${nav}${nome ? "\nNome: " + nome : ""}\n\n${txt.trim()}`;
+  const f = $("#fbImg") && $("#fbImg").files && $("#fbImg").files[0];
+  try {
+    if (navigator.share) { const d = { text: msg }; if (f && navigator.canShare && navigator.canShare({ files: [f] })) d.files = [f]; await navigator.share(d); closeAllSheets(); toast("Obrigado pelo feedback!"); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(msg); closeAllSheets(); toast("Mensagem copiada. Cole no WhatsApp" + (f ? " e anexe o print." : ".")); } catch (e) { toast("Não consegui copiar. Tire um print da mensagem e envie."); }
 };
 ACT.bkCopy = () => { const t = $("#bkTxt"); try { navigator.clipboard.writeText(t.value).then(() => toast("Backup copiado"), () => { t.select(); toast("Texto selecionado: copie pelo menu"); }); } catch (e) { t.select(); } };
 function restore(txt) {
