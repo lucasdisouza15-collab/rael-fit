@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030h"><script>(function(){try{var V="v7-20261030h";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030i"><script>(function(){try{var V="v7-20261030i";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2660,7 +2660,7 @@ const FR2 = {
   sabado: ["Sábado: treino extra opcional. A palavra “opcional” está muito bem escrita.", "Se rolar treino, ótimo. Se não, meu sábado mantém a agenda original.", "Uma sessão extra hoje? Eu vou consultar meu departamento de preguiça.", "Sábado chegou. O tênis está pronto; eu ainda estou em modo rascunho.", "Treino opcional: até o cronômetro veio sem pressão.", "Sábado livre. A academia está aberta e minha negociação também.", "Um treino extra cabe no dia. Também cabe um café sem pressa.", "A ideia de treinar apareceu. Eu pedi para ela aguardar na recepção.", "Hoje pode ter sessão extra. Meu sofá já protocolou uma objeção.", "Sábado e tênis: uma combinação possível, não um contrato assinado.", "Treino a mais? Eu gosto de opções que não vêm com multa.", "Se você for treinar, eu torço. De longe, por questão de logística.", "A sessão extra está disponível. Meu entusiasmo está consultando o calendário."],
   domingo: ["Domingo: descanso, patins ou caminhada. Eu voto em decidir depois do café.", "Patins no domingo. Eu trouxe capacete e uma confiança moderada.", "Dia de descansar ou passear. Minha agenda aprovou as duas opções.", "Domingo pede calma. Até meus pensamentos estão andando de pantufas.", "Caminhada marcada? Eu vou escolher uma rota com bons bancos.", "Patins ou descanso: duas formas válidas de não discutir com a academia.", "Hoje a rua está convidando. Eu estou avaliando o convite pela janela.", "Descanso no programa. Se aparecer uma caminhada, não vou fazer cena.", "Domingo sem obrigação de treino. Meu despertador pode tirar folga também.", "Uma caminhada leve combina com o dia. Eu já escolhi a trilha sonora.", "Dia de passeio ou sofá. Eu apoio a democracia, principalmente quando tem almofada.", "Domingo chegou; vou deixar o plano aberto e a janela também."]
 };
-function fr2(cat) { const l = FR2[cat]; let h = 0; const s = TODAY() + cat + (new Date().getHours() >= 12 ? "t" : "m"); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return l[h % l.length]; }
+function fr2(cat) { const l = FR2[cat]; let h = 0; const s = TODAY() + cat + new Date().getHours(); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return l[h % l.length]; }
 const fr2r = cat => FR2[cat][Math.floor(Math.random() * FR2[cat].length)];
 
 const FR_FRASES = {
@@ -2680,7 +2680,7 @@ const FR_FRASES = {
   seq: { 2: "Dois dias seguidos. Já pedi ao calendário uma sala VIP.", 3: "Três dias: você deixou meu alarme sem função. Que audácia.", 7: "Uma semana! Vou atualizar meu currículo para \"testemunha ocular\".", 10: "Dez dias seguidos. Estou fingindo que previa isso desde o começo.", 30: "Trinta dias seguidos. Estou emocionado; não espalha, tenho reputação." },
   volta: { 3: "Três dias sem abrir o app. Eu já ia mandar um pombo-correio.", 7: "Faz uma semana? Eu deixei a notificação no rascunho. Achei mais elegante." }
 };
-function frPick(cat) { const l = FR_FRASES[cat]; let h = 0; const s = TODAY() + cat; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return l[h % l.length]; }
+function frPick(cat) { const l = FR_FRASES[cat]; let h = 0; const s = TODAY() + cat + new Date().getHours(); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return l[h % l.length]; }
 function frAbertura() { const hr = new Date().getHours(); if (dowOf(TODAY()) === 0) return frPick("domingo"); if (hr < 12) return frPick("manha"); if (hr >= 18) return frPick("noite"); return frPick("tarde"); }
 
 // Limites do medidor: decisão desta versão (ajustável): abaixo de 80% da meta = Pintinho, 80 a 105% = Frango, acima de 105% = Galo Alfa
@@ -2792,7 +2792,7 @@ const FRASES = {
 function frase(cat, rnd) {
   const l = FRASES[cat] || FRASES.curta;
   if (rnd || cat === "fim" || cat === "descanso") return l[Math.floor(Math.random() * l.length)];
-  let h = 0; const s = TODAY() + cat; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  let h = 0; const s = TODAY() + cat + new Date().getHours(); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return l[h % l.length];
 }
 const nomeU = () => (P().nome || "").trim() || "você";
@@ -2944,16 +2944,19 @@ function frBalState() { try { return JSON.parse(localStorage.getItem("frango:bal
 function frBalSet(k, ate) { try { const s = frBalState(); s[k] = ate; localStorage.setItem("frango:balao", JSON.stringify(s)); } catch (_) {} }
 function frBalaoDo(c) {
   if (!c.hoje || c.tab === "perfil" || c.tab === "evo") return null;
+  if (typeof FR_RESP !== "undefined" && FR_RESP && Date.now() < FR_RESP.ate) return { k: "r", txt: FR_RESP.txt, resp: [] };
   const s = frBalState(), agora = Date.now();
   const ok = k => !(s[k] > agora);
   let k = null;
   if (c.treinavel && !c.treinou && !c.mexeu && !c.ativo && c.hr >= 17 && ok("treino")) k = "treino";
   else if (!c.temComida && c.hr >= 13 && ok("comida")) k = "comida";
-  if (!k) return null;
+  const pq = typeof frPergEscolhe === "function" ? frPergEscolhe(c, ok) : null;
+  if (!k || (pq && c.hr % 2 === 0)) return pq;
   const l = FR_BALAO[k], txt = frNome(l[(new Date().getDate() + c.hr) % l.length].replace("{h}", c.hr));
   return { k, txt, resp: FR_BAL_RESP[k] };
 }
 ACT.frBal = ds => {
+  if (String(ds.k).indexOf("q:") === 0) { frPergRespond(ds.k.slice(2), +ds.a); return; }
   const k = ds.k, a = ds.a, fim = new Date(); fim.setHours(23, 59, 59, 999);
   if (a === "ir") { frBalSet(k, Date.now() + 3600e3); (k === "treino" ? ACT.goTreino : ACT.goComer)(ds); return; }
   if (a === "depois") { frBalSet(k, Date.now() + 2 * 3600e3); toast(k === "treino" ? "Combinado. O Rael anota que você prometeu." : "Fechado. Eu pergunto de novo daqui a pouco."); }
@@ -3144,6 +3147,154 @@ function frCenaApp(c) {
   FR_ULT = { slot, salt, cena: r }; return r;
 }
 setInterval(() => { try { const ae = document.activeElement; if ((ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) || SHEET.stack.length || FR_ULT.slot === Math.floor(Date.now() / FR_SLOT_MS)) return; render(); } catch (_) {} }, 60000);
+
+// ---- Frases extra, rodada 6 (30/10/2026): mais alternância; a escolha agora muda a cada hora ----
+const FR_MAIS = {
+  manha: [
+    "Bom dia. O Rael já acordou, mas a crista só levanta depois do café.",
+    "Manhã, {nome}. A água ainda está na geladeira e a sua motivação, na fila do pão.",
+    "Dia novo, planilha em branco. Hoje o frango promete não julgar até o almoço.",
+    "Se der, começa o dia com um copo d'água. O café entra em segundo, como coadjuvante.",
+    "Acordou. Já é meio caminho andado. O outro meio é não pular o café da manhã.",
+    "Bom dia, {nome}. Proteína no café da manhã é o tipo de adulto que o Rael quer ver."
+  ],
+  tarde: [
+    "Tarde. A hora em que o 'só um cafezinho' vira um lanche completo.",
+    "Passou do meio-dia. Se o almoço foi bom, anota; se foi ótimo, anota duas vezes.",
+    "O Rael vê a tarde como o intervalo entre o almoço e o próximo erro de planejamento.",
+    "Meio da tarde, {nome}. Uma fruta agora evita o ataque à padaria depois.",
+    "Já bebeu água hoje ou o Rael precisa abrir um boletim de ocorrência?",
+    "A tarde é longa, mas o treino de hoje não vai se fazer sozinho."
+  ],
+  noite: [
+    "Noite, {nome}. Última chamada para anotar o dia antes que a memória mude a história.",
+    "O dia acabou. O Rael não julga, só escreve em letras pequenas.",
+    "Janta lançada? A cozinha sabe o que rolou, o app só descobre se você contar.",
+    "Fecha o dia com água e juízo. A geladeira de madrugada que se vire sozinha.",
+    "Boa noite. Amanhã tem mais: mais café, mais treino, mais conversa sobre o sofá.",
+    "Quem dorme bem treina melhor. Isso não é frase de coach, é fisiologia."
+  ],
+  domingo: [
+    "Domingo. Até o frango descansa. Só não esquece de anotar o churrasco.",
+    "Domingo é dia de recarregar. A balança que espere até segunda.",
+    "Hoje o Rael só cobra água e boa vontade. O resto fica para a semana.",
+    "Domingo à tarde: o momento perfeito para planejar as marmitas e ignorar o despertador."
+  ],
+  refeicao: [
+    "Anotado. O Rael confere depois se o tamanho do prato bate com o da promessa.",
+    "Refeição na conta. Nada de culpa; só dado.",
+    "Lançado. Se tiver salada, o frango aplaude. Se tiver pastel, o frango anota e respira.",
+    "Registrei. Seu eu do futuro agradece o seu eu do presente por ter anotado.",
+    "Mais uma refeição para a história. Hoje ela entra no histórico com dignidade."
+  ],
+  treino: [
+    "Treino fechado. O Rael ia dizer algo sarcástico, mas hoje fica o respeito.",
+    "Foi lá e fez. Esse é o tipo de coisa que o frango não tem pernas para fazer.",
+    "Mais um treino no placar. A constância é o suplemento que ninguém vende.",
+    "Treinou, {nome}. Agora é comer bem e dormir; o músculo cresce fora da academia.",
+    "O treino acabou, o orgulho começa. Dá uma hidratada que o Rael cuida do resto."
+  ],
+  pulou: [
+    "Hoje o treino não rolou. Tudo bem; amanhã o Rael cobra com carinho redobrado.",
+    "Pulou o treino. O halter sentiu, mas vai superar.",
+    "Dia de sofá declarado. Que ele seja curto e a volta seja forte."
+  ],
+  meta: [
+    "Meta batida. O Rael abre uma exceção e diz: estou orgulhoso.",
+    "No alvo. Isso é mais difícil que acertar o horário do ônibus.",
+    "Calorias no ponto. O Rael não tem o que reclamar, e isso quase nunca acontece.",
+    "Dentro da meta, {nome}. Amanhã a gente repete e vira rotina."
+  ],
+  agua: [
+    "Água lançada. Seu rim manda um abraço e o Rael, uma crista levantada.",
+    "Mais um copo. Hidratar é o único vício que o Rael aprova sem ressalvas.",
+    "Anotei a água. A pele agradece, o treino também, e o frango nem precisa opinar.",
+    "Bebeu água, {nome}? Isso. O básico bem feito também é conquista."
+  ]
+};
+const FR_MAIS2 = {
+  vazio: [
+    "Nada lançado ainda. Se comeu, conta; se não, o Rael pergunta o motivo.",
+    "O dia está sem comida no app. O frango suspeita de lanche sem testemunhas.",
+    "Registro vazio. Não precisa ser perfeito, só precisa existir."
+  ],
+  passou: [
+    "Passou da meta. Foi um dia, não uma sentença. O Rael só pede água e juízo amanhã.",
+    "Calorias a mais hoje. Normal. O problema é virar rotina, não um dia.",
+    "Excedeu, mas anotou. Isso já faz de você melhor que quem finge que não comeu."
+  ],
+  folga: [
+    "Folga do treino. Uma caminhada leve não ofende o descanso.",
+    "Dia de descanso é dia de recuperar. O Rael só pede proteína e sono.",
+    "Sem treino hoje, mas a água continua valendo."
+  ],
+  sabado: [
+    "Sábado. Hoje o Rael aceita pizza, desde que seja anotada com honestidade.",
+    "Sábado é dia de relaxar sem perder o fio. Combinado?",
+    "Fim de semana: liberdade com planilha. O frango acompanha de longe."
+  ],
+  proteina: [
+    "Proteína batida. O músculo agradece e o Rael anota com orgulho.",
+    "Meta de proteína feita. Isso é o tipo de dia que merece ovo no jantar.",
+    "Proteína completa. O frango faz uma reverência discreta."
+  ]
+};
+try {
+  Object.keys(FR_MAIS).forEach(k => { if (FR_FRASES[k]) FR_FRASES[k].push(...FR_MAIS[k]); });
+  Object.keys(FR_MAIS2).forEach(k => { if (FR2[k]) FR2[k].push(...FR_MAIS2[k]); });
+  FRASES.hoje = [].concat(FR_FRASES.manha, FR_FRASES.tarde, FR_FRASES.noite);
+  FRASES.agua = FR2.aguaManha.concat(FR_FRASES.agua);
+} catch (_) {}
+
+// ---- Perguntas do Rael com resposta (balão com botões). Cada opção: [rótulo, resposta do Rael, cena opcional] ----
+// Uma pergunta por vez, escolhida entre as que combinam com a hora, o dia e o que já foi feito.
+const FR_PERG = [
+  { id: "acordou", q: "Como você acordou hoje?", on: c => c.hr >= 5 && c.hr < 12,
+    o: [["Pronto pra guerra", "Gostei da energia. Usa ela hoje, que o treino agradece.", "forte"], ["Normal", "Normal também conta. Dia comum, bom dia comum.", "manha"], ["Destruído", "Respeita o corpo hoje. Descanso e comida boa também são plano.", "bocejo"]] },
+  { id: "sono", q: "Quantas horas você dormiu?", on: c => c.hr >= 5 && c.hr < 13,
+    o: [["Menos de 6h", "Pouco sono segura o músculo e aumenta a fome. Hoje pega leve e dorme mais cedo.", "bocejo"], ["6 a 8h", "Na faixa. O corpo agradece e o Rael também.", "meditando"], ["Mais de 8h", "Dormiu como se fosse profissional. Isso é recuperação, não preguiça.", "soneca"]] },
+  { id: "cafe", q: "Já tomou café da manhã?", on: c => c.hr >= 6 && c.hr < 11 && !c.temComida,
+    o: [["Já", "Então lança aqui para o Rael acreditar.", "cafeina"], ["Ainda não", "Come algo com proteína antes de sair voando.", "cafeina"], ["Pulei", "Entendo, mas ovo ou iogurte não leva nem dois minutos.", "relogio"]] },
+  { id: "agua", q: "Como está a água hoje?", on: c => c.hr >= 10 && c.hr < 21 && !c.aguaOk,
+    o: [["Já bebi bastante", "Ótimo. Não esquece de lançar para eu acreditar.", "hidratado"], ["Pouca", "Então vai agora, um copo inteiro. Eu espero.", "agua"], ["Nem lembrei", "Pronto, já lembrou. O primeiro copo é por minha conta.", "agua"]] },
+  { id: "fome", q: "Bateu aquela fome da tarde?", on: c => c.hr >= 15 && c.hr < 18,
+    o: [["Bateu forte", "Fruta, iogurte ou castanha salvam. A padaria só empata.", "geladeira"], ["Controlada", "Respeito. Segura a onda e janta bem.", "alongando"], ["Nem sinto", "Então anota o lanche, se teve. Fome silenciosa também existe.", "meditando"]] },
+  { id: "treinoOnte", q: "Dor muscular hoje, depois do treino de ontem?", on: c => c.hr >= 6 && c.hr < 14 && !c.treinou,
+    o: [["Nenhuma", "Então hoje dá para treinar com vontade.", "forte"], ["Só cansaço", "Aquecimento bom e carga normal resolve.", "alongando"], ["Dor forte", "Dor forte pede descanso ou treino leve. Alonga e bebe água.", "alongando"]] },
+  { id: "foi", q: "Como foi o treino de hoje?", on: c => c.treinou,
+    o: [["Pesado", "Pesado e feito. O Rael aplaude em silêncio para não acordar o sofá.", "forte"], ["Tranquilo", "Tranquilo também soma. O importante é aparecer.", "aplauso"], ["Bati recorde", "Recorde! Isso vai pro histórico e para a minha admiração.", "fogo"]] },
+  { id: "dor", q: "Sentiu alguma dor estranha no treino?", on: c => c.treinou,
+    o: [["Nenhuma", "Perfeito. Corpo inteiro e planilha em dia.", "aplauso"], ["Só cansaço", "Normal. Hidrata e come proteína.", "hidratado"], ["Dor de verdade", "Dor de verdade merece respeito. Se continuar amanhã, procura um profissional.", "alongando"]] },
+  { id: "proteina", q: "Já pensou de onde vem a proteína de hoje?", on: c => c.hr >= 11 && c.hr < 20 && c.temComida && !c.estourou,
+    o: [["Frango ou ovo", "Clássico. O Rael só pede que não seja só o meu primo.", "almoco"], ["Whey", "Prático e aprovado. Só não esquece da comida de verdade.", "shake"], ["Ainda não sei", "Pensa em ovo, iogurte ou frango. Qualquer um cumpre a missão.", "pensando"]] },
+  { id: "passou", q: "Passou da meta hoje. Foi de propósito?", on: c => c.estourou,
+    o: [["Foi liberado", "Dia livre declarado. O Rael só pede que amanhã volte ao plano.", "pizza"], ["Escapou", "Escapa. O que importa é a semana, não um dia.", "alongando"], ["Nem vi", "Agora viu. Respira, bebe água e fecha o dia sem repetir.", "hidratado"]] },
+  { id: "dia", q: "Que nota você dá pro seu dia?", on: c => c.hr >= 20,
+    o: [["Boa", "Boa nota merece sono bom. Amanhã a gente repete.", "aplauso"], ["Média", "Média também é dia. Amanhã tem mais uma chance.", "noite"], ["Ruim", "Dia ruim acontece. Dorme, amanhã o Rael começa de novo com você.", "sofa"]] },
+  { id: "sabado", q: "Vai ter churrasco ou pizza hoje?", on: c => c.dow === 6 && c.hr >= 10 && c.hr < 20,
+    o: [["Vai sim", "Aproveita sem culpa. Só anota depois com honestidade.", "pizza"], ["Não", "Então segue o plano, que está bom.", "sabado"], ["Talvez", "Talvez já é meio sim. Se rolar, lança aqui.", "relogio"]] },
+  { id: "marmita", q: "Já preparou a comida da semana?", on: c => c.dow === 0 && c.hr >= 9 && c.hr < 20,
+    o: [["Já", "Isso! Semana organizada começa no domingo.", "aplauso"], ["Vou fazer", "Faz hoje. Segunda-feira com marmita pronta muda tudo.", "relogio"], ["Nem pensei", "Então pensa agora: arroz, feijão e uma proteína resolvem a semana.", "pensando"]] },
+  { id: "energia", q: "Como está sua energia agora?", on: c => c.hr >= 13 && c.hr < 20 && !c.treinou,
+    o: [["Alta", "Então é hora de treinar, não de pensar.", "forte"], ["Mais ou menos", "Come algo leve e vai assim mesmo. Treino puxa a energia.", "cafeina"], ["Baixa", "Pega leve hoje: caminhada ou treino curto já conta.", "soneca"]] }
+];
+let FR_RESP = null; // resposta do Rael, mostrada no balão por alguns segundos
+function frPergRespond(id, a) {
+  const q = FR_PERG.find(x => x.id === id); if (!q || !q.o[a]) return;
+  const op = q.o[a], fim = new Date(); fim.setHours(23, 59, 59, 999);
+  frBalSet("q:" + id, fim.getTime());
+  try { const k = "frango:resp", o = JSON.parse(localStorage.getItem(k) || "{}"), d = TODAY(); (o[d] = o[d] || {})[id] = op[0]; const ks = Object.keys(o).sort(); while (ks.length > 30) delete o[ks.shift()]; localStorage.setItem(k, JSON.stringify(o)); } catch (_) {}
+  FR_RESP = { txt: op[1], ate: Date.now() + 9000 };
+  setTimeout(() => { if (FR_RESP && Date.now() >= FR_RESP.ate) { FR_RESP = null; try { if (!SHEET.stack.length) render(); } catch (_) {} } }, 9200);
+  if (op[2] && typeof FR_EX !== "undefined") frReage(op[2], 7000); else { try { render(); } catch (_) {} }
+}
+// perguntas que combinam com o momento e ainda não foram respondidas hoje
+function frPergEscolhe(c, ok) {
+  const el = FR_PERG.filter(q => ok("q:" + q.id) && q.on(c));
+  if (!el.length) return null;
+  const q = el[(new Date().getDate() * 7 + c.hr) % el.length];
+  return { k: "q:" + q.id, txt: frNome(q.q), resp: q.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) };
+}
 // ---- Frases do Rael, rodada 5: ironia carinhosa, falando COM o usuário (30/10/2026) ----
 // {nome} vira o nome do perfil de quem está logado (sem nome: "você"; ", {nome}" some). Nunca escrever nome fixo aqui.
 function frNomeUsuario() { return P().nome || ""; }
