@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030f"><script>(function(){try{var V="v7-20261030f";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v7-20261030g"><script>(function(){try{var V="v7-20261030g";fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3097,25 +3097,43 @@ let FR_ULT = { slot: -1, salt: 0, cena: "" };
 const FR_SLOT_MS = 3600000; // a cena é reavaliada a cada 1 hora
 function frCenaApp0(c, dia) {
   if (FR_REACAO && Date.now() < FR_REACAO.ate) return FR_REACAO.cena;
-  const v = n => dia % n;
+  const P = L => L[dia % L.length]; // escolhe dentro do grupo que combina com o momento
+  const h = c.hr, dow = c.dow;
   if (c.pensando) return "pensando";
   if (c.ativo) return "treinando";
-  if (c.correndo) return v(2) ? "fone" : "corrida";
-  if (c.treinou) { const L = (c.seq || 0) >= 3 ? ["fogo", "forte", "aplauso"] : ["forte", "aplauso"]; return L[dia % L.length]; }
-  if (c.passou) return v(2) ? "rei" : "alfa";
+  if (c.correndo) return P(["fone", "corrida"]);
+  // treinou hoje: comemoração. fogo só com sequência; água ok soma "hidratado"
+  if (c.treinou) {
+    const L = ["forte", "aplauso", "shake", "danca"];
+    if ((c.seq || 0) >= 3) L.push("fogo");
+    if (c.aguaOk) L.push("hidratado");
+    if (h >= 21) return P(["forte", "aplauso", "noite", "meditando"]);
+    return P(L);
+  }
+  if (c.passou) return P(["rei", "alfa"]);
   if (c.estourou) return "pizza";
-  if (c.hr < 5) return "geladeira";
-  if (c.nivel === "Pintinho" && c.temComida && c.hr >= 14) return "pintinho";
-  if (c.aguaOk && c.hr >= 15 && v(2) === 0) return "hidratado";
-  if ((c.seq || 0) >= 5 && v(3) === 0) return "fogo";
-  if (c.dow === 0 && c.hr >= 8 && c.hr < 18) return v(2) ? "meditando" : "domingo";
-  if (c.dow === 6 && c.hr >= 11 && c.hr < 18) return "sabado";
-  if (!c.temComida && c.hr >= 13 && c.hr < 22 && v(3) === 0) return "relogio";
-  if (c.hr >= 5 && c.hr < 9) return ["manha", "cafeina", "bocejo"][v(3)];
-  if (c.hr >= 13 && c.hr < 16 && v(2) === 0) return "soneca";
-  if (c.hr >= 19 && c.treinavel && !c.treinou && !c.mexeu) return v(2) ? "sofa" : "noite";
-  if (c.hr >= 12 && c.hr < 18 && c.treinavel === false && c.dow !== 0 && c.dow !== 6 && v(3) === 0) return "alongando";
-  return frCenaAgora(false, new Date(2000, 0, 1, c.hr));
+  if (c.nivel === "Pintinho" && c.temComida && h >= 14 && h < 22 && dia % 3 === 0) return "pintinho";
+  if (h < 5) return P(["geladeira", "bocejo", "soneca"]);
+  if (h < 9) { const L = ["manha", "cafeina", "bocejo", "alongando"]; if (c.aguaOk) L.push("hidratado"); return P(L); }
+  if (dow === 0 && h < 18) return P(["domingo", "meditando", "sofa", "soneca", "alongando"]);
+  if (dow === 6 && h >= 11 && h < 18) return P(["sabado", "fone", "cafeina", "alongando"]);
+  if (h < 11) return P(["manha", "cafeina", "alongando", "fone"]);
+  if (h < 14) {
+    if (c.temComida) return P(["almoco", "almoco", "hidratado", "alongando"].filter(x => x !== "hidratado" || c.aguaOk));
+    return P(["relogio", "almoco", "geladeira"]);
+  }
+  if (h < 18) {
+    const L = ["soneca", "cafeina", "alongando", "fone"];
+    if (c.aguaOk) L.push("hidratado");
+    if (!c.temComida) L.push("relogio");
+    if (c.treinavel === false) L.push("alongando", "meditando");
+    return P(L);
+  }
+  if (h < 22) {
+    if (c.treinavel && !c.mexeu) return P(["sofa", "noite", "relogio"]);
+    return P(["noite", "meditando", "fone", "sofa"]);
+  }
+  return P(["noite", "bocejo", "soneca", "meditando"]);
 }
 // nunca repete a cena anterior quando há outra opção (a corrida pós-exercício continua mandando)
 function frCenaApp(c) {
