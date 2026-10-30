@@ -524,6 +524,720 @@ const MODELOS = [
   {nome:"Treino B (costas, bíceps)",desc:"ABC",itens:[["puxada-frente",4,8,12,90],["remada-baixa",3,8,12,90],["remada-unilateral",3,8,12,75],["pulldown",3,10,15,60],["rosca-direta",3,8,12,60],["rosca-martelo",3,10,12,60]]},
   {nome:"Treino C (pernas, abdômen)",desc:"ABC",itens:[["agachamento-livre",4,8,12,120],["leg-press-45",3,10,12,90],["cadeira-extensora",3,10,15,60],["mesa-flexora",3,10,15,60],["panturrilha-pe",4,12,15,60],["abdominal-infra",3,12,20,45]]}
 ];
+// ---------- Banco de alimentos: ampliação (por 100 g ou 100 ml) ----------
+// Mesmo formato do FOOD_BASE. Entra SEMPRE no fim da lista, para não mudar o índice (b0, b1...) dos itens já lançados.
+// fonte: T = referência TACO/Unicamp, valor aproximado conferido de memória (arredondado); E = estimativa por rótulos comuns (NÃO CONFIRMADO).
+FOOD_BASE.push(
+  // ---- Cereais e massas ----
+  ["Arroz branco cozido (com óleo e sal)",130,2.5,28.0,1.0,1.0,"Cereais","T",null],
+  ["Arroz parboilizado cozido",123,2.6,26.0,0.3,1.0,"Cereais","T",null],
+  ["Arroz com brócolis",120,2.8,22.0,2.5,1.5,"Cereais","E",null],
+  ["Macarrão integral cozido",124,5.3,26.5,0.5,3.9,"Cereais","E",null],
+  ["Macarrão instantâneo (cozido, sem tempero)",190,4.5,27.0,7.0,1.2,"Cereais","E",null],
+  ["Espaguete ao sugo",135,4.4,24.0,2.3,1.8,"Cereais","E",null],
+  ["Nhoque de batata cozido",150,4.0,32.0,0.6,1.5,"Cereais","E",null],
+  ["Lasanha à bolonhesa",170,9.0,15.0,8.0,1.0,"Prontos","E",null],
+  ["Farofa de farinha de mandioca",406,1.5,75.0,12.0,6.0,"Cereais","E",null],
+  ["Farinha de trigo",360,9.8,75.1,1.4,2.3,"Cereais","T",null],
+  ["Farinha de milho (flocão)",356,7.2,79.0,1.5,5.0,"Cereais","T",null],
+  ["Fubá de milho",353,7.2,78.0,1.9,5.5,"Cereais","T",null],
+  ["Farinha de aveia",390,13.9,66.6,8.5,9.1,"Cereais","E",null],
+  ["Farinha de arroz",363,1.3,80.1,0.3,2.5,"Cereais","T",null],
+  ["Quinoa cozida",120,4.4,21.3,1.9,2.8,"Cereais","E",null],
+  ["Milho verde cozido",98,3.2,17.1,1.2,4.6,"Cereais","T",null],
+  ["Pipoca de panela (com óleo)",448,9.9,59.0,19.0,10.0,"Cereais","E",null],
+  ["Polenta cozida",70,1.6,15.0,0.5,1.5,"Cereais","E",null],
+  ["Cuscuz de milho com ovo",150,6.5,20.0,5.0,2.0,"Cereais","E",null],
+  ["Cuscuz de tapioca (cozido)",150,0.5,36.0,0.1,0.5,"Cereais","E",null],
+  ["Tapioca com queijo e coco",235,5.5,34.0,8.5,1.0,"Cereais","E",null],
+  ["Mingau de aveia (com leite)",75,3.5,11.0,2.0,1.0,"Cereais","E",null],
+  ["Cereal matinal de milho (flocos)",375,7.0,84.0,0.7,3.0,"Cereais","E",30,"porção"],
+  ["Barra de cereal",385,5.0,70.0,9.0,5.0,"Doces","E",25,"unidade"],
+  ["Granola sem açúcar",440,12.0,58.0,16.0,9.0,"Cereais","E",null],
+  ["Chia (semente)",486,16.5,42.1,30.7,34.4,"Oleaginosas","T",null],
+  ["Linhaça (semente)",495,14.1,43.3,32.3,33.5,"Oleaginosas","T",null],
+  ["Farelo de aveia",246,17.3,66.2,7.0,15.4,"Cereais","T",null],
+  // ---- Pães, bolos e biscoitos ----
+  ["Pão de forma sem casca",270,7.5,52.0,3.5,2.0,"Pães","E",25,"fatia"],
+  ["Pão integral (padaria)",255,9.0,49.0,3.5,6.0,"Pães","E",50,"unidade"],
+  ["Pão sírio / pão pita",275,9.1,55.7,1.2,2.2,"Pães","E",50,"unidade"],
+  ["Pão de hambúrguer",290,9.0,52.0,4.8,2.6,"Pães","E",60,"unidade"],
+  ["Pão de hot dog",290,9.0,52.0,4.8,2.6,"Pães","E",50,"unidade"],
+  ["Pão de leite",320,8.5,56.0,6.5,2.0,"Pães","E",50,"unidade"],
+  ["Pão doce (de padaria)",330,8.0,57.0,7.5,2.0,"Pães","E",60,"unidade"],
+  ["Pão de batata",300,7.5,53.0,5.5,2.0,"Pães","E",50,"unidade"],
+  ["Pão de queijo congelado (assado)",330,6.0,38.0,17.0,0.6,"Pães","E",30,"unidade"],
+  ["Torrada tradicional",375,11.0,75.0,3.5,4.0,"Pães","E",8,"unidade"],
+  ["Biscoito de água e sal",430,9.5,70.0,12.5,2.5,"Pães","E",5,"unidade"],
+  ["Biscoito recheado de chocolate",480,6.0,70.0,19.0,2.5,"Doces","E",13,"unidade"],
+  ["Biscoito maisena",443,8.1,75.2,12.0,2.1,"Pães","T",6,"unidade"],
+  ["Biscoito de polvilho (assado)",470,1.0,65.0,22.0,0.5,"Pães","E",null],
+  ["Bolo simples de baunilha",360,6.0,56.0,12.0,0.8,"Doces","E",60,"fatia"],
+  ["Bolo de chocolate",410,5.5,57.0,18.0,1.8,"Doces","E",60,"fatia"],
+  ["Bolo de cenoura com cobertura",395,5.0,56.0,17.0,1.5,"Doces","E",60,"fatia"],
+  ["Bolo de milho",300,5.0,45.0,11.0,1.5,"Doces","E",60,"fatia"],
+  ["Broa de milho",370,7.0,70.0,6.0,3.0,"Pães","E",50,"unidade"],
+  ["Rosca / sonho com recheio",340,7.0,50.0,12.0,1.5,"Doces","E",90,"unidade"],
+  ["Croissant",406,8.2,45.8,21.0,2.6,"Pães","E",60,"unidade"],
+  ["Panqueca simples (massa)",190,6.0,28.0,6.0,1.0,"Pães","E",50,"unidade"],
+  ["Crepioca (ovo e tapioca)",180,9.0,17.0,8.0,0.5,"Pães","E",90,"unidade"],
+  ["Pão de queijo de frigideira (sem glúten)",210,8.0,16.0,13.0,0.5,"Pães","E",null],
+  ["Wrap / tortilha de trigo",310,8.5,52.0,7.0,2.5,"Pães","E",60,"unidade"],
+  // ---- Tubérculos e raízes ----
+  ["Batata inglesa assada",93,2.5,21.0,0.1,2.2,"Tubérculos","E",null],
+  ["Purê de batata",85,2.0,14.0,2.5,1.2,"Tubérculos","E",null],
+  ["Batata-doce assada",90,2.0,21.0,0.1,3.3,"Tubérculos","E",null],
+  ["Batata-doce crua",118,1.3,28.2,0.1,2.6,"Tubérculos","T",null],
+  ["Batata sauté",110,2.0,17.0,3.5,1.7,"Tubérculos","E",null],
+  ["Batata palha",540,6.0,50.0,35.0,4.0,"Prontos","E",null],
+  ["Mandioca frita",250,1.0,35.0,12.0,2.0,"Tubérculos","E",null],
+  ["Mandioquinha (batata-baroa) cozida",80,0.9,18.9,0.2,1.8,"Tubérculos","T",null],
+  ["Cará cozido",96,2.3,23.0,0.1,1.5,"Tubérculos","T",null],
+  ["Beterraba cozida",32,1.3,7.2,0.1,1.9,"Tubérculos","T",null],
+  ["Beterraba crua",49,1.9,11.1,0.1,3.4,"Tubérculos","T",null],
+  ["Cenoura cozida",30,0.8,6.7,0.2,2.6,"Tubérculos","T",null],
+  ["Nabo cozido",22,0.7,5.2,0.1,1.6,"Tubérculos","E",null],
+  ["Rabanete cru",14,1.4,2.7,0.1,1.6,"Verduras","E",null],
+  // ---- Leguminosas e soja ----
+  ["Feijão carioca cozido com caldo",76,4.8,13.6,0.5,8.5,"Leguminosas","T",null],
+  ["Feijão branco cozido",138,9.7,24.3,0.5,6.9,"Leguminosas","E",null],
+  ["Feijão fradinho cozido",116,7.5,19.0,0.7,6.0,"Leguminosas","E",null],
+  ["Feijão-verde (feijão de corda) cozido",118,7.0,20.0,0.7,6.5,"Leguminosas","E",null],
+  ["Feijão tropeiro",190,8.0,17.0,10.0,5.0,"Prontos","E",null],
+  ["Ervilha em lata (drenada)",70,4.6,12.0,0.4,4.0,"Leguminosas","E",null],
+  ["Ervilha cozida",88,6.0,14.0,0.4,5.5,"Leguminosas","E",null],
+  ["Soja cozida",151,12.5,9.9,6.8,5.6,"Leguminosas","E",null],
+  ["Proteína de soja texturizada (hidratada)",100,13.0,8.0,0.5,2.5,"Leguminosas","E",null],
+  ["Tofu",76,8.1,1.9,4.8,0.3,"Leguminosas","E",null],
+  ["Hambúrguer de soja / grão-de-bico",190,10.0,16.0,9.0,4.0,"Leguminosas","E",80,"unidade"],
+  ["Homus de grão-de-bico",177,5.0,14.3,10.9,4.0,"Leguminosas","E",null],
+  ["Pasta de grão-de-bico (falafel assado)",230,9.0,28.0,9.0,6.0,"Leguminosas","E",30,"unidade"],
+  // ---- Carnes bovinas ----
+  ["Filé mignon grelhado",220,32.8,0.0,9.3,0.0,"Carnes","T",null],
+  ["Maminha grelhada",210,30.0,0.0,9.5,0.0,"Carnes","E",null],
+  ["Picanha grelhada",290,28.0,0.0,19.5,0.0,"Carnes","E",null],
+  ["Fraldinha grelhada",250,29.0,0.0,14.5,0.0,"Carnes","E",null],
+  ["Coxão mole cozido",219,32.4,0.0,8.9,0.0,"Carnes","T",null],
+  ["Coxão duro cozido",211,31.9,0.0,8.4,0.0,"Carnes","T",null],
+  ["Lagarto cozido",190,32.0,0.0,6.5,0.0,"Carnes","E",null],
+  ["Músculo cozido",194,31.2,0.0,6.7,0.0,"Carnes","T",null],
+  ["Acém cozido",215,30.0,0.0,10.0,0.0,"Carnes","E",null],
+  ["Costela bovina assada",330,25.0,0.0,25.0,0.0,"Carnes","E",null],
+  ["Costela bovina cozida",300,25.0,0.0,22.0,0.0,"Carnes","E",null],
+  ["Carne moída (patinho) refogada",200,28.0,0.0,9.0,0.0,"Carnes","E",null],
+  ["Bife à milanesa (frito)",260,20.0,13.0,14.0,0.5,"Carnes","E",100,"unidade"],
+  ["Bife de fígado grelhado",190,27.0,3.0,7.5,0.0,"Carnes","T",null],
+  ["Fígado bovino cozido",162,26.0,3.0,4.7,0.0,"Carnes","E",null],
+  ["Língua cozida",240,20.0,0.0,17.0,0.0,"Carnes","E",null],
+  ["Rabada cozida",220,28.0,0.0,12.0,0.0,"Carnes","E",null],
+  ["Carne seca cozida / desfiada",250,36.0,0.0,11.0,0.0,"Carnes","E",null],
+  ["Jerked beef / paçoca de carne",300,35.0,5.0,15.0,0.5,"Carnes","E",null],
+  ["Almôndega de carne (assada)",210,15.0,6.0,13.5,0.5,"Carnes","E",30,"unidade"],
+  ["Hambúrguer bovino (grelhado)",230,20.0,3.0,15.0,0.0,"Carnes","E",90,"unidade"],
+  ["Strogonoff de carne",160,12.0,5.0,10.0,0.5,"Prontos","E",null],
+  ["Escondidinho de carne seca",170,9.0,18.0,7.0,1.5,"Prontos","E",null],
+  ["Carne de panela com legumes",135,14.0,6.0,6.0,1.2,"Prontos","E",null],
+  // ---- Aves ----
+  ["Peito de frango cozido",163,31.5,0.0,3.2,0.0,"Carnes","T",null],
+  ["Peito de frango desfiado",158,30.0,0.0,3.5,0.0,"Carnes","E",null],
+  ["Peito de frango à milanesa (frito)",260,23.0,14.0,13.0,0.5,"Carnes","E",100,"unidade"],
+  ["Filé de frango empanado (nuggets)",290,15.0,18.0,17.0,1.0,"Prontos","E",20,"unidade"],
+  ["Coxa de frango cozida sem pele",175,26.0,0.0,7.5,0.0,"Carnes","E",null],
+  ["Sobrecoxa de frango assada",220,24.0,0.0,13.5,0.0,"Carnes","E",null],
+  ["Coxinha da asa assada",230,25.0,0.0,14.0,0.0,"Carnes","E",null],
+  ["Frango assado (inteiro, sem pele)",190,29.0,0.0,8.0,0.0,"Carnes","E",null],
+  ["Frango frito (pedaço com pele)",290,24.0,8.0,18.0,0.3,"Carnes","E",null],
+  ["Frango xadrez",120,13.0,6.0,4.5,0.8,"Prontos","E",null],
+  ["Frango ao molho de tomate",130,17.0,4.0,5.0,0.5,"Prontos","E",null],
+  ["Estrogonofe de frango",160,13.0,5.0,9.5,0.4,"Prontos","E",null],
+  ["Peito de peru defumado (fatiado)",105,17.0,2.0,3.0,0.0,"Embutidos","E",15,"fatia"],
+  ["Peru assado",165,28.0,0.0,5.0,0.0,"Carnes","E",null],
+  ["Pato assado sem pele",200,24.0,0.0,11.0,0.0,"Carnes","E",null],
+  ["Fígado de frango cozido",167,26.0,0.9,6.5,0.0,"Carnes","T",null],
+  ["Coração de frango grelhado",215,26.0,0.0,12.0,0.0,"Carnes","E",null],
+  // ---- Suína e embutidos ----
+  ["Bisteca suína grelhada",280,26.0,0.0,19.0,0.0,"Carnes","E",null],
+  ["Pernil suíno assado",262,32.1,0.0,14.0,0.0,"Carnes","T",null],
+  ["Costelinha suína assada",350,25.0,0.0,27.0,0.0,"Carnes","E",null],
+  ["Bacon frito",541,37.0,1.4,42.0,0.0,"Embutidos","T",8,"fatia"],
+  ["Linguiça de frango grelhada",210,17.0,2.0,15.0,0.0,"Embutidos","E",null],
+  ["Linguiça calabresa frita",330,17.0,2.0,28.0,0.0,"Embutidos","E",null],
+  ["Salsicha cozida",260,12.0,3.0,22.0,0.0,"Embutidos","T",50,"unidade"],
+  ["Presunto cozido (fatia)",110,15.0,2.0,4.5,0.0,"Embutidos","T",15,"fatia"],
+  ["Mortadela",270,13.0,4.0,22.0,0.0,"Embutidos","T",15,"fatia"],
+  ["Salame",430,22.0,2.0,37.0,0.0,"Embutidos","E",8,"fatia"],
+  ["Peito de peru (blanquet)",95,14.0,3.0,2.5,0.0,"Embutidos","E",15,"fatia"],
+  ["Patê de presunto / fígado",250,10.0,6.0,21.0,0.0,"Embutidos","E",null],
+  ["Torresmo frito",550,28.0,0.0,48.0,0.0,"Embutidos","E",null],
+  // ---- Peixes e frutos do mar ----
+  ["Tilápia frita",245,22.0,8.0,14.0,0.3,"Peixes","E",null],
+  ["Tilápia assada",128,26.0,0.0,2.7,0.0,"Peixes","E",null],
+  ["Pescada branca frita",215,22.0,6.0,11.0,0.2,"Peixes","E",null],
+  ["Pescada cozida",110,22.0,0.0,2.0,0.0,"Peixes","E",null],
+  ["Merluza grelhada",100,20.0,0.0,2.0,0.0,"Peixes","E",null],
+  ["Salmão cru (filé)",208,20.0,0.0,13.0,0.0,"Peixes","E",null],
+  ["Salmão assado",210,25.0,0.0,12.0,0.0,"Peixes","E",null],
+  ["Atum fresco grelhado",150,29.0,0.0,3.0,0.0,"Peixes","E",null],
+  ["Atum em lata (em óleo, drenado)",175,26.0,0.0,7.5,0.0,"Peixes","E",null],
+  ["Sardinha fresca grelhada",165,25.0,0.0,6.5,0.0,"Peixes","E",null],
+  ["Bacalhau cozido (dessalgado)",140,30.0,0.0,1.7,0.0,"Peixes","E",null],
+  ["Camarão frito (empanado)",250,17.0,15.0,14.0,0.5,"Peixes","E",null],
+  ["Camarão na manteiga",180,20.0,2.0,10.0,0.0,"Peixes","E",null],
+  ["Lula grelhada",125,22.0,3.0,2.0,0.0,"Peixes","E",null],
+  ["Polvo cozido",164,30.0,4.4,2.1,0.0,"Peixes","E",null],
+  ["Siri / caranguejo cozido",95,19.0,0.0,1.5,0.0,"Peixes","E",null],
+  ["Marisco cozido",148,25.0,5.0,3.0,0.0,"Peixes","E",null],
+  ["Ostra",68,7.0,4.0,2.5,0.0,"Peixes","E",null],
+  ["Moqueca de peixe",135,15.0,4.0,6.5,0.5,"Prontos","E",null],
+  ["Peixe frito (posta)",240,22.0,5.0,14.0,0.2,"Peixes","E",null],
+  ["Atum em lata ao natural (peixe, drenado)",116,26.0,0.0,1.0,0.0,"Peixes","E",null],
+  ["Surimi / kani",95,8.0,12.0,0.5,0.0,"Peixes","E",null],
+  ["Sushi (arroz e peixe)",150,6.0,28.0,1.5,0.5,"Prontos","E",30,"unidade"],
+  ["Sashimi de salmão",150,20.0,0.0,7.0,0.0,"Peixes","E",20,"fatia"],
+  ["Temaki de salmão",220,8.0,34.0,5.0,1.0,"Prontos","E",150,"unidade"],
+  // ---- Ovos ----
+  ["Ovo de galinha inteiro (cru)",143,13.0,1.6,9.5,0.0,"Ovos","T",50,"unidade"],
+  ["Ovo mexido (com óleo)",190,13.0,1.5,14.5,0.0,"Ovos","E",50,"unidade"],
+  ["Omelete simples (2 ovos)",154,11.0,0.6,12.0,0.0,"Ovos","E",null],
+  ["Omelete com queijo e presunto",200,14.0,1.5,15.0,0.0,"Ovos","E",null],
+  ["Gema de ovo",322,15.9,3.6,26.5,0.0,"Ovos","T",17,"unidade"],
+  ["Ovo de codorna cozido",158,13.1,0.4,11.1,0.0,"Ovos","E",10,"unidade"],
+  ["Ovo cozido + 2 claras",110,17.0,0.8,4.0,0.0,"Ovos","E",null],
+  // ---- Laticínios ----
+  ["Leite semidesnatado",50,3.3,4.8,1.7,0.0,"Laticínios","E",null],
+  ["Leite em pó integral",497,26.0,38.0,27.0,0.0,"Laticínios","E",null],
+  ["Leite condensado",320,7.0,55.0,8.0,0.0,"Laticínios","E",null],
+  ["Creme de leite",221,2.2,3.0,22.0,0.0,"Laticínios","E",null],
+  ["Leite de coco",166,1.2,2.2,17.1,0.0,"Laticínios","E",null],
+  ["Leite vegetal (amêndoa, sem açúcar)",18,0.5,1.0,1.1,0.2,"Bebidas","E",null],
+  ["Leite de soja",49,3.8,3.5,2.0,0.3,"Bebidas","E",null],
+  ["Leite de aveia",45,1.0,6.7,1.5,0.8,"Bebidas","E",null],
+  ["Iogurte desnatado",43,4.1,6.0,0.3,0.0,"Laticínios","E",null],
+  ["Iogurte de frutas",90,2.8,15.0,1.7,0.0,"Laticínios","E",null],
+  ["Iogurte grego zero gordura",56,9.0,4.0,0.2,0.0,"Laticínios","E",null],
+  ["Iogurte proteico",65,10.0,5.0,0.5,0.0,"Laticínios","E",null],
+  ["Coalhada",75,4.0,6.0,3.5,0.0,"Laticínios","E",null],
+  ["Kefir",60,3.5,4.5,3.0,0.0,"Laticínios","E",null],
+  ["Queijo prato",360,24.0,1.5,29.0,0.0,"Laticínios","T",20,"fatia"],
+  ["Queijo parmesão ralado",431,38.0,4.0,29.0,0.0,"Laticínios","T",null],
+  ["Queijo cottage",98,11.1,3.4,4.3,0.0,"Laticínios","E",null],
+  ["Queijo ricota",140,12.6,3.8,8.1,0.0,"Laticínios","T",null],
+  ["Queijo mussarela de búfala",250,18.0,1.5,19.0,0.0,"Laticínios","E",null],
+  ["Queijo provolone",351,26.0,2.0,26.0,0.0,"Laticínios","E",null],
+  ["Queijo gorgonzola",353,21.4,2.3,28.7,0.0,"Laticínios","E",null],
+  ["Queijo brie",334,20.8,0.5,27.7,0.0,"Laticínios","E",null],
+  ["Queijo de coalho grelhado",320,22.0,2.0,25.0,0.0,"Laticínios","E",50,"espeto"],
+  ["Queijo cream cheese",350,6.0,4.0,34.0,0.0,"Laticínios","E",null],
+  ["Queijo minas padrão",330,20.0,3.0,26.0,0.0,"Laticínios","E",null],
+  ["Requeijão light",160,10.0,5.0,11.0,0.0,"Laticínios","E",null],
+  ["Manteiga com sal",726,0.6,0.0,82.0,0.0,"Gorduras","T",null],
+  ["Margarina",596,0.0,0.7,66.0,0.0,"Gorduras","E",null],
+  ["Chantilly",250,2.0,15.0,20.0,0.0,"Laticínios","E",null],
+  ["Sorvete de creme",208,3.6,25.0,10.5,0.5,"Doces","E",60,"bola"],
+  ["Sorvete de frutas / sorbet",130,0.5,32.0,0.1,0.8,"Doces","E",60,"bola"],
+  ["Picolé de frutas",80,0.2,20.0,0.1,0.3,"Doces","E",60,"unidade"],
+  ["Milkshake de chocolate",120,3.0,18.0,4.0,0.5,"Bebidas","E",null],
+  ["Danone / iogurte batido tipo sobremesa",110,3.0,17.0,3.0,0.0,"Laticínios","E",null],
+  // ---- Frutas ----
+  ["Banana-da-terra frita",170,1.0,35.0,3.7,2.0,"Frutas","E",null],
+  ["Banana maçã",87,1.8,22.0,0.1,2.0,"Frutas","E",null],
+  ["Maçã sem casca",50,0.3,13.0,0.1,1.2,"Frutas","E",null],
+  ["Pera",57,0.4,15.0,0.1,3.1,"Frutas","E",null],
+  ["Pêssego",44,0.9,10.6,0.2,1.4,"Frutas","E",null],
+  ["Ameixa fresca",46,0.7,11.4,0.3,1.4,"Frutas","E",null],
+  ["Ameixa seca",240,2.2,64.0,0.4,7.1,"Frutas","E",null],
+  ["Damasco seco",241,3.4,62.6,0.5,7.3,"Frutas","E",null],
+  ["Uva passa",299,3.1,79.2,0.5,3.7,"Frutas","E",null],
+  ["Tâmara seca",282,2.5,75.0,0.4,8.0,"Frutas","E",24,"unidade"],
+  ["Figo fresco",74,0.8,19.2,0.3,2.9,"Frutas","E",null],
+  ["Goiaba vermelha",54,1.1,13.0,0.4,6.2,"Frutas","T",null],
+  ["Caju",43,1.0,10.3,0.3,1.7,"Frutas","T",null],
+  ["Cajá",46,1.4,11.6,0.2,2.0,"Frutas","E",null],
+  ["Graviola",62,1.0,15.8,0.4,1.9,"Frutas","E",null],
+  ["Jaca",88,1.3,22.0,0.3,1.2,"Frutas","E",null],
+  ["Maracujá (polpa)",68,2.0,12.3,2.1,1.1,"Frutas","E",null],
+  ["Acerola",33,0.9,8.0,0.2,1.5,"Frutas","T",null],
+  ["Pitanga",38,0.9,9.0,0.2,1.2,"Frutas","E",null],
+  ["Carambola",46,0.9,9.6,0.2,2.4,"Frutas","E",null],
+  ["Coco fresco (polpa)",406,3.7,10.4,42.0,5.4,"Frutas","T",null],
+  ["Coco ralado seco",603,5.3,28.0,56.0,7.0,"Frutas","E",null],
+  ["Kiwi",51,1.3,11.5,0.6,2.7,"Frutas","E",null],
+  ["Limão (suco)",22,0.4,6.9,0.1,0.4,"Frutas","E",null],
+  ["Tangerina (mexerica)",38,0.8,9.6,0.1,1.0,"Frutas","T",null],
+  ["Melão",29,0.7,7.5,0.0,0.3,"Frutas","T",null],
+  ["Mamão formosa",45,0.8,11.6,0.1,1.8,"Frutas","E",null],
+  ["Framboesa",52,1.2,11.9,0.7,6.5,"Frutas","E",null],
+  ["Mirtilo (blueberry)",57,0.7,14.5,0.3,2.4,"Frutas","E",null],
+  ["Cereja",63,1.1,16.0,0.2,2.1,"Frutas","E",null],
+  ["Romã",83,1.7,18.7,1.2,4.0,"Frutas","E",null],
+  ["Abacate (polpa)",96,1.2,6.0,8.4,6.3,"Frutas","T",null],
+  ["Salada de frutas",65,0.7,16.0,0.2,1.5,"Frutas","E",null],
+  ["Bananinha / goiabada (doce em barra)",290,0.5,74.0,0.3,3.0,"Doces","E",null],
+  ["Açaí na tigela (com granola e banana)",190,2.5,29.0,7.5,3.0,"Doces","E",null],
+  ["Açaí com guaraná (polpa com xarope)",110,1.0,21.0,2.5,2.0,"Doces","E",null],
+  // ---- Verduras e legumes ----
+  ["Rúcula",25,2.6,3.7,0.7,1.6,"Verduras","E",null],
+  ["Agrião",17,2.7,2.3,0.2,2.1,"Verduras","E",null],
+  ["Alface roxa / americana",15,1.4,2.9,0.2,1.5,"Verduras","E",null],
+  ["Couve-flor cozida",23,1.9,4.5,0.2,2.1,"Verduras","T",null],
+  ["Couve crua",27,2.9,4.3,0.5,3.1,"Verduras","T",null],
+  ["Couve-manteiga refogada",64,2.5,5.0,4.5,3.3,"Verduras","E",null],
+  ["Repolho cru",17,0.9,3.9,0.1,1.9,"Verduras","T",null],
+  ["Repolho roxo cru",31,1.4,7.4,0.2,2.1,"Verduras","E",null],
+  ["Espinafre refogado",30,3.3,3.8,0.6,2.1,"Verduras","E",null],
+  ["Brócolis cru",25,3.6,4.4,0.3,2.9,"Verduras","T",null],
+  ["Vagem cozida",25,1.6,5.2,0.2,2.5,"Verduras","T",null],
+  ["Abobrinha cozida",15,1.1,3.0,0.2,1.2,"Verduras","T",null],
+  ["Abobrinha refogada",50,1.5,4.0,3.0,1.2,"Verduras","E",null],
+  ["Berinjela cozida",19,0.6,4.5,0.1,2.5,"Verduras","T",null],
+  ["Berinjela frita",120,1.0,8.0,9.5,2.5,"Verduras","E",null],
+  ["Pimentão verde",21,1.1,4.9,0.2,2.6,"Verduras","T",null],
+  ["Pimentão vermelho",26,1.0,6.0,0.3,2.1,"Verduras","E",null],
+  ["Quiabo cozido",14,1.4,2.7,0.1,3.0,"Verduras","T",null],
+  ["Jiló cozido",30,1.2,6.0,0.2,2.5,"Verduras","E",null],
+  ["Maxixe cru",15,1.1,3.0,0.1,1.5,"Verduras","E",null],
+  ["Palmito em conserva",23,1.8,4.3,0.4,1.5,"Verduras","E",null],
+  ["Aspargo cozido",20,2.2,3.9,0.1,2.1,"Verduras","E",null],
+  ["Cogumelo champignon (cozido)",20,2.5,3.0,0.3,1.5,"Verduras","E",null],
+  ["Cogumelo shimeji refogado",50,3.0,5.0,2.0,2.0,"Verduras","E",null],
+  ["Salada de tomate com cebola",35,0.9,6.0,0.8,1.2,"Verduras","E",null],
+  ["Salada de tomate, alface e cenoura",20,1.0,4.0,0.2,1.5,"Verduras","E",null],
+  ["Salada de maionese (legumes)",155,2.5,12.0,10.5,1.5,"Prontos","E",null],
+  ["Salada de grão-de-bico",120,5.5,15.0,4.5,4.5,"Prontos","E",null],
+  ["Salada caprese",140,8.0,3.0,11.0,0.8,"Prontos","E",null],
+  ["Tomate seco",258,14.1,55.8,3.0,12.3,"Verduras","E",null],
+  ["Tomate cereja",18,0.9,3.9,0.2,1.2,"Verduras","E",null],
+  ["Molho de tomate caseiro",35,1.2,6.5,0.7,1.5,"Verduras","E",null],
+  ["Extrato de tomate",70,2.4,15.0,0.5,2.0,"Verduras","E",null],
+  ["Abóbora cabotiá cozida",48,1.0,11.0,0.3,2.0,"Verduras","E",null],
+  ["Abóbora japonesa assada",40,1.0,9.0,0.1,1.5,"Verduras","E",null],
+  ["Cebola refogada",90,1.2,8.0,6.0,1.5,"Verduras","E",null],
+  ["Alho cru",113,7.0,23.9,0.2,4.3,"Verduras","E",3,"dente"],
+  ["Gengibre cru",80,1.8,18.0,0.8,2.0,"Verduras","E",null],
+  ["Azeitona verde",145,1.0,3.8,15.3,3.3,"Verduras","E",4,"unidade"],
+  ["Pepino em conserva",11,0.3,2.3,0.1,1.2,"Verduras","E",null],
+  ["Picles",18,0.3,3.0,0.2,1.0,"Verduras","E",null],
+  ["Salada de couve com limão",40,2.5,5.0,1.5,2.5,"Verduras","E",null],
+  ["Sopa de legumes",35,1.2,6.5,0.7,1.2,"Prontos","E",null],
+  ["Caldo verde",70,3.0,8.0,3.0,1.5,"Prontos","E",null],
+  ["Canja de galinha",50,4.0,6.0,1.2,0.4,"Prontos","E",null],
+  ["Sopa de feijão",80,4.0,11.0,2.2,3.5,"Prontos","E",null],
+  ["Creme de abóbora",50,1.2,8.5,1.5,1.2,"Prontos","E",null],
+  // ---- Oleaginosas e sementes ----
+  ["Amêndoa",579,21.2,21.6,49.9,12.5,"Oleaginosas","E",null],
+  ["Castanha de caju crua",553,18.2,30.2,43.9,3.3,"Oleaginosas","E",null],
+  ["Nozes",654,15.2,13.7,65.2,6.7,"Oleaginosas","E",null],
+  ["Pistache",560,20.0,28.0,45.0,10.0,"Oleaginosas","E",null],
+  ["Avelã",628,15.0,17.0,61.0,10.0,"Oleaginosas","E",null],
+  ["Macadâmia",718,7.9,13.8,75.8,8.6,"Oleaginosas","E",null],
+  ["Amendoim cru",544,27.2,20.3,43.9,8.0,"Oleaginosas","T",null],
+  ["Paçoca",510,16.0,56.0,26.0,3.0,"Doces","E",20,"unidade"],
+  ["Pé de moleque",490,11.0,55.0,26.0,3.0,"Doces","E",20,"unidade"],
+  ["Semente de girassol",584,20.8,20.0,51.5,8.6,"Oleaginosas","E",null],
+  ["Semente de abóbora",559,30.2,10.7,49.0,6.0,"Oleaginosas","E",null],
+  ["Gergelim",573,17.7,23.5,49.7,11.8,"Oleaginosas","E",null],
+  ["Pasta de amendoim (com açúcar)",600,22.0,20.0,48.0,5.0,"Gorduras","E",null],
+  ["Pasta de castanha / amêndoa",600,20.0,18.0,52.0,8.0,"Gorduras","E",null],
+  ["Mix de castanhas",600,17.0,22.0,50.0,6.0,"Oleaginosas","E",null],
+  // ---- Gorduras e molhos ----
+  ["Azeite de dendê",884,0.0,0.0,100.0,0.0,"Gorduras","E",null],
+  ["Óleo de coco",862,0.0,0.0,100.0,0.0,"Gorduras","E",null],
+  ["Maionese",360,1.0,6.0,37.0,0.0,"Gorduras","E",15,"colher de sopa"],
+  ["Maionese light",230,0.8,10.0,20.0,0.0,"Gorduras","E",15,"colher de sopa"],
+  ["Ketchup",100,1.5,25.0,0.3,0.5,"Gorduras","E",15,"colher de sopa"],
+  ["Mostarda",67,4.4,5.8,3.3,3.3,"Gorduras","E",10,"colher de chá"],
+  ["Molho shoyu",60,8.0,5.0,0.1,0.8,"Gorduras","E",15,"colher de sopa"],
+  ["Molho de pimenta",15,0.5,3.0,0.2,0.5,"Gorduras","E",null],
+  ["Molho branco (bechamel)",130,3.0,8.0,9.5,0.3,"Prontos","E",null],
+  ["Molho pesto",430,5.0,5.0,43.0,1.0,"Gorduras","E",null],
+  ["Molho de iogurte (tzatziki)",70,3.0,4.0,4.5,0.3,"Prontos","E",null],
+  ["Molho barbecue",150,1.0,35.0,0.5,0.5,"Gorduras","E",null],
+  ["Vinagrete",45,0.8,5.0,2.5,1.0,"Verduras","E",null],
+  ["Guacamole",155,2.0,8.5,14.0,6.0,"Prontos","E",null],
+  ["Geleia de frutas",260,0.4,65.0,0.1,0.5,"Doces","E",20,"colher de sopa"],
+  ["Doce de leite",315,5.5,59.0,6.5,0.0,"Doces","E",20,"colher de sopa"],
+  // ---- Doces e sobremesas ----
+  ["Açúcar mascavo",376,0.1,96.0,0.0,0.0,"Doces","E",null],
+  ["Adoçante (líquido / pó)",0,0.0,0.0,0.0,0.0,"Doces","E",null],
+  ["Chocolate meio amargo (50%)",530,5.0,56.0,32.0,7.0,"Doces","E",25,"quadradinho"],
+  ["Chocolate amargo (70%)",580,8.0,34.0,43.0,10.0,"Doces","E",25,"quadradinho"],
+  ["Chocolate branco",540,6.0,60.0,32.0,0.0,"Doces","E",25,"quadradinho"],
+  ["Brigadeiro",410,5.0,60.0,17.0,0.5,"Doces","E",20,"unidade"],
+  ["Beijinho",420,3.0,60.0,19.0,1.5,"Doces","E",20,"unidade"],
+  ["Pudim de leite",190,4.5,28.0,7.0,0.0,"Doces","E",120,"fatia"],
+  ["Mousse de maracujá",230,3.0,24.0,14.0,0.3,"Doces","E",null],
+  ["Gelatina",64,1.5,14.0,0.0,0.0,"Doces","E",null],
+  ["Arroz-doce",132,2.5,25.0,2.6,0.3,"Doces","E",null],
+  ["Canjica / curau",130,3.0,26.0,1.8,1.5,"Doces","E",null],
+  ["Cocada",410,2.0,65.0,16.0,3.0,"Doces","E",30,"unidade"],
+  ["Pamonha",170,3.0,32.0,3.0,1.8,"Doces","E",null],
+  ["Torta de limão (fatia)",300,4.0,38.0,15.0,0.5,"Doces","E",100,"fatia"],
+  ["Torta de frutas",270,3.0,38.0,12.0,1.0,"Doces","E",100,"fatia"],
+  ["Churros recheado",380,5.0,45.0,19.0,1.0,"Doces","E",80,"unidade"],
+  ["Sorvete de chocolate",216,3.8,28.0,10.0,1.0,"Doces","E",60,"bola"],
+  ["Rapadura",385,0.5,98.0,0.1,0.0,"Doces","E",null],
+  ["Marshmallow / bala de goma",330,3.0,80.0,0.0,0.0,"Doces","E",null],
+  ["Bombom",530,6.0,60.0,30.0,1.5,"Doces","E",15,"unidade"],
+  ["Nutella / creme de avelã",540,6.0,58.0,31.0,3.0,"Doces","E",15,"colher de sopa"],
+  // ---- Salgados e pratos prontos ----
+  ["Pão de queijo recheado",320,8.0,35.0,16.0,0.5,"Pães","E",50,"unidade"],
+  ["Coxinha de frango (frita)",290,9.0,29.0,15.0,1.2,"Prontos","E",80,"unidade"],
+  ["Pastel de queijo (frito)",340,9.0,34.0,19.0,1.0,"Prontos","E",80,"unidade"],
+  ["Pastel de forno de frango",260,11.0,27.0,12.0,1.0,"Prontos","E",80,"unidade"],
+  ["Empada de frango",340,9.0,32.0,20.0,1.0,"Prontos","E",60,"unidade"],
+  ["Esfiha de carne",260,11.0,30.0,10.0,1.0,"Prontos","E",80,"unidade"],
+  ["Kibe frito",270,13.0,22.0,15.0,2.0,"Prontos","E",60,"unidade"],
+  ["Kibe assado",200,16.0,18.0,8.0,2.0,"Prontos","E",100,"unidade"],
+  ["Quibe de forno",190,14.0,18.0,8.0,2.0,"Prontos","E",null],
+  ["Enroladinho de salsicha",320,9.0,30.0,18.0,1.0,"Prontos","E",50,"unidade"],
+  ["Bolinho de bacalhau",270,12.0,20.0,16.0,1.0,"Prontos","E",40,"unidade"],
+  ["Risoles de queijo",300,9.0,30.0,16.0,1.0,"Prontos","E",70,"unidade"],
+  ["Hot dog (completo, com salsicha)",250,9.0,24.0,13.0,1.5,"Prontos","E",180,"unidade"],
+  ["Cheeseburger (lanche)",260,13.0,24.0,12.0,1.2,"Prontos","E",180,"unidade"],
+  ["X-salada (lanche completo)",230,11.0,22.0,10.0,1.2,"Prontos","E",230,"unidade"],
+  ["X-bacon (lanche completo)",270,14.0,22.0,14.0,1.2,"Prontos","E",260,"unidade"],
+  ["Pizza de calabresa",270,10.0,31.0,12.0,1.5,"Prontos","E",120,"fatia"],
+  ["Pizza margherita",250,10.0,30.0,10.0,1.5,"Prontos","E",120,"fatia"],
+  ["Pizza de frango com catupiry",275,11.0,29.0,13.0,1.4,"Prontos","E",120,"fatia"],
+  ["Pizza portuguesa",260,11.0,28.0,11.5,1.5,"Prontos","E",120,"fatia"],
+  ["Sanduíche natural (frango e salada)",150,9.0,17.0,5.0,2.0,"Prontos","E",160,"unidade"],
+  ["Misto quente",300,13.0,28.0,15.0,1.2,"Prontos","E",120,"unidade"],
+  ["Sanduíche de pão com ovo",230,10.0,25.0,10.0,1.0,"Prontos","E",120,"unidade"],
+  ["Tapioca com ovo",200,9.0,28.0,6.0,0.5,"Prontos","E",120,"unidade"],
+  ["Cuscuz com carne seca",200,12.0,24.0,6.0,2.0,"Prontos","E",null],
+  ["Baião de dois",150,7.5,22.0,4.0,3.5,"Prontos","E",null],
+  ["Vaca atolada",160,13.0,8.0,8.0,1.0,"Prontos","E",null],
+  ["Carne de sol com macaxeira",190,16.0,15.0,8.0,1.5,"Prontos","E",null],
+  ["Arroz carreteiro",160,8.0,22.0,4.5,1.0,"Prontos","E",null],
+  ["Feijão tropeiro com bacon",230,9.0,19.0,13.0,5.0,"Prontos","E",null],
+  ["Galinhada",150,10.0,18.0,4.0,0.8,"Prontos","E",null],
+  ["Bobó de camarão",160,9.0,14.0,8.0,1.5,"Prontos","E",null],
+  ["Vatapá",170,8.0,13.0,10.0,1.0,"Prontos","E",null],
+  ["Caruru",95,6.0,6.0,5.5,2.5,"Prontos","E",null],
+  ["Tutu de feijão",125,6.0,16.0,4.0,4.5,"Prontos","E",null],
+  ["Pão de açúcar / bolo de rolo",350,5.0,60.0,10.0,1.5,"Doces","E",60,"fatia"],
+  ["Lanche de padaria (pão com manteiga)",290,7.0,45.0,9.0,1.5,"Prontos","E",60,"unidade"],
+  // ---- Bebidas ----
+  ["Água",0,0.0,0.0,0.0,0.0,"Bebidas","E",null],
+  ["Água com gás",0,0.0,0.0,0.0,0.0,"Bebidas","E",null],
+  ["Café com leite (sem açúcar)",30,1.8,2.4,1.3,0.0,"Bebidas","E",null],
+  ["Café com leite e açúcar",55,1.7,8.0,1.3,0.0,"Bebidas","E",null],
+  ["Cappuccino",60,2.5,8.0,2.0,0.2,"Bebidas","E",null],
+  ["Chá (sem açúcar)",1,0.0,0.2,0.0,0.0,"Bebidas","E",null],
+  ["Chá gelado com açúcar",30,0.0,7.5,0.0,0.0,"Bebidas","E",null],
+  ["Suco de laranja (industrializado)",45,0.7,10.7,0.2,0.1,"Bebidas","E",null],
+  ["Suco de uva integral",65,0.5,16.0,0.1,0.0,"Bebidas","E",null],
+  ["Suco de maracujá (com açúcar)",45,0.3,11.0,0.1,0.1,"Bebidas","E",null],
+  ["Suco de abacaxi (com açúcar)",50,0.3,12.5,0.1,0.2,"Bebidas","E",null],
+  ["Suco de acerola (com açúcar)",40,0.3,9.5,0.1,0.2,"Bebidas","E",null],
+  ["Suco verde (couve, limão, maçã)",30,0.6,7.0,0.1,0.8,"Bebidas","E",null],
+  ["Vitamina de banana com leite",75,2.8,12.5,1.6,0.8,"Bebidas","E",null],
+  ["Vitamina de abacate",140,2.2,9.5,10.0,2.5,"Bebidas","E",null],
+  ["Vitamina de mamão com aveia",70,2.5,12.5,1.0,1.0,"Bebidas","E",null],
+  ["Shake de whey com leite",80,10.0,6.0,1.5,0.0,"Suplementos","E",null],
+  ["Shake de whey com água",70,14.0,2.0,0.8,0.0,"Suplementos","E",null],
+  ["Água de coco (caixinha)",22,0.0,5.3,0.0,0.0,"Bebidas","E",null],
+  ["Isotônico",24,0.0,6.0,0.0,0.0,"Bebidas","E",null],
+  ["Energético",45,0.0,11.0,0.0,0.0,"Bebidas","E",null],
+  ["Guaraná / refrigerante de frutas",42,0.0,10.5,0.0,0.0,"Bebidas","E",null],
+  ["Refrigerante de limão",40,0.0,10.0,0.0,0.0,"Bebidas","E",null],
+  ["Chá matte com limão",20,0.0,5.0,0.0,0.0,"Bebidas","E",null],
+  ["Cerveja long neck (pilsen)",42,0.4,3.6,0.0,0.0,"Bebidas","E",null],
+  ["Cerveja sem álcool",20,0.3,4.5,0.0,0.0,"Bebidas","E",null],
+  ["Vinho tinto",85,0.1,2.7,0.0,0.0,"Bebidas","E",null],
+  ["Vinho branco",82,0.1,2.6,0.0,0.0,"Bebidas","E",null],
+  ["Caipirinha",150,0.1,12.0,0.0,0.0,"Bebidas","E",null],
+  ["Vodca / cachaça (dose)",230,0.0,0.0,0.0,0.0,"Bebidas","E",null],
+  ["Whisky (dose)",250,0.0,0.0,0.0,0.0,"Bebidas","E",null],
+  ["Chocolate quente",95,3.0,13.0,3.5,0.5,"Bebidas","E",null],
+  ["Leite com achocolatado",75,3.0,11.0,2.0,0.3,"Bebidas","E",null],
+  ["Achocolatado em pó",380,4.0,86.0,2.5,6.0,"Bebidas","E",null],
+  // ---- Suplementos e fitness ----
+  ["Whey protein isolado",370,88.0,2.0,1.0,0.0,"Suplementos","E",30,"scoop"],
+  ["Whey protein concentrado",400,75.0,8.0,6.0,0.0,"Suplementos","E",30,"scoop"],
+  ["Albumina (pó)",380,80.0,5.0,1.5,0.0,"Suplementos","E",30,"scoop"],
+  ["Caseína (pó)",370,78.0,6.0,2.0,0.0,"Suplementos","E",30,"scoop"],
+  ["Proteína vegetal (ervilha)",380,78.0,5.0,6.0,3.0,"Suplementos","E",30,"scoop"],
+  ["Creatina (pó)",0,0.0,0.0,0.0,0.0,"Suplementos","E",5,"colher"],
+  ["Maltodextrina",380,0.0,95.0,0.0,0.0,"Suplementos","E",null],
+  ["Dextrose / carboidrato em pó",380,0.0,95.0,0.0,0.0,"Suplementos","E",null],
+  ["Barra de proteína",360,30.0,35.0,12.0,6.0,"Suplementos","E",45,"unidade"],
+  ["Pasta de amendoim proteica",570,32.0,18.0,41.0,7.0,"Gorduras","E",null],
+  ["Iogurte proteico (200 g)",65,10.0,5.0,0.5,0.0,"Laticínios","E",200,"pote"],
+  ["Pipoca doce / de micro-ondas",470,6.0,55.0,25.0,8.0,"Doces","E",null],
+  ["Frango desfiado temperado (marmita fit)",150,25.0,3.0,4.0,0.5,"Prontos","E",null],
+  ["Marmita fit (arroz, feijão, frango, legumes)",125,9.0,16.0,2.5,2.5,"Prontos","E",null],
+  ["Panqueca de aveia e banana",160,6.5,22.0,5.5,2.5,"Prontos","E",60,"unidade"],
+  ["Pão low carb",230,16.0,12.0,12.0,6.0,"Pães","E",50,"unidade"],
+  ["Bolo de caneca (fit)",210,10.0,22.0,8.0,3.0,"Doces","E",null],
+  ["Overnight oats (aveia com iogurte)",120,6.0,17.0,3.0,2.5,"Prontos","E",null]
+);
+// ---------- Exercícios: novos + instruções e dicas (parte 1: peito, costas, ombros, braços) ----------
+// EX_INFO[id] = [músculos principais, "como fazer" (passos separados por " › "), dica, erro comum]
+// Texto de orientação geral de técnica, não substitui um profissional; reduzir a carga em caso de dor.
+const EX_INFO = {};
+const EX_NOVOS = [
+  // [id, nome, grupo, equipamento, tipo]
+  ["supino-incl-smith","Supino inclinado no Smith","Peito","Smith","carga"],
+  ["supino-halter-neutro","Supino com halteres (pegada neutra)","Peito","Halter","carga"],
+  ["crucifixo-inclinado","Crucifixo inclinado com halteres","Peito","Halter","carga"],
+  ["crossover-baixo","Crossover na polia baixa","Peito","Polia","carga"],
+  ["flexao-inclinada","Flexão com os pés elevados","Peito","Peso corporal","corpo"],
+  ["flexao-apoiada","Flexão com apoio elevado (fácil)","Peito","Peso corporal","corpo"],
+  ["flexao-diamante","Flexão diamante","Tríceps","Peso corporal","corpo"],
+  ["puxada-neutra","Puxada com pegada neutra","Costas","Polia","carga"],
+  ["puxada-unilateral","Puxada unilateral na polia","Costas","Polia","carga"],
+  ["barra-neutra","Barra fixa pegada neutra","Costas","Peso corporal","corpo"],
+  ["remada-invertida","Remada invertida (australiana)","Costas","Peso corporal","corpo"],
+  ["remada-polia-alta","Remada alta na polia","Costas","Polia","carga"],
+  ["remada-smith","Remada curvada no Smith","Costas","Smith","carga"],
+  ["terra-sumo","Levantamento terra sumô","Costas","Barra","carga"],
+  ["rack-pull","Rack pull","Costas","Barra","carga"],
+  ["encolhimento-barra","Encolhimento com barra","Costas","Barra","carga"],
+  ["desenvolvimento-smith","Desenvolvimento no Smith","Ombros","Smith","carga"],
+  ["desenvolvimento-militar","Desenvolvimento militar em pé","Ombros","Barra","carga"],
+  ["elevacao-lateral-inclinado","Elevação lateral deitado de lado","Ombros","Halter","carga"],
+  ["crucifixo-inverso-polia","Crucifixo inverso na polia","Ombros","Polia","carga"],
+  ["pike-pushup","Flexão pike (ombro)","Ombros","Peso corporal","corpo"],
+  ["rosca-spider","Rosca spider","Bíceps","Barra W","carga"],
+  ["rosca-polia-alta","Rosca na polia alta (duplo bíceps)","Bíceps","Polia","carga"],
+  ["rosca-zottman","Rosca Zottman","Bíceps","Halter","carga"],
+  ["rosca-21","Rosca 21","Bíceps","Barra W","carga"],
+  ["triceps-halter-testa","Tríceps testa com halter","Tríceps","Halter","carga"],
+  ["triceps-halter-cabeca","Tríceps francês unilateral com halter","Tríceps","Halter","carga"],
+  ["triceps-polia-unilateral","Tríceps polia unilateral","Tríceps","Polia","carga"],
+  ["triceps-corda-testa","Tríceps testa na polia com corda","Tríceps","Polia","carga"],
+  ["dead-hang","Pendurar na barra (dead hang)","Antebraço","Peso corporal","tempo"],
+  ["rosca-punho-inversa","Rosca de punho inversa","Antebraço","Barra","carga"]
+];
+Object.assign(EX_INFO, {
+  // ---- Peito ----
+  "supino-reto-barra": ["Peitoral, tríceps, ombro anterior", "Deite no banco com os olhos sob a barra, pés firmes no chão › Pegada um pouco mais larga que os ombros, escápulas juntas e para baixo › Desça a barra de forma controlada até tocar de leve a linha do peito › Empurre até estender os braços sem travar os cotovelos", "Mantenha o peito aberto e os pés fixos; use sempre o apoio de segurança ou um parceiro.", "Tirar o glúteo do banco ou quicar a barra no peito."],
+  "supino-reto-halter": ["Peitoral, tríceps, ombro anterior", "Sente com os halteres sobre as coxas e deite, levando-os à altura do peito › Cotovelos a cerca de 45° do tronco › Desça até sentir o alongamento do peito › Suba juntando os halteres sem bater um no outro", "Os halteres dão mais amplitude que a barra: use cargas menores e controle a descida.", "Abrir demais os cotovelos (90° com o tronco) e sobrecarregar o ombro."],
+  "supino-incl-barra": ["Parte superior do peitoral, ombro anterior", "Banco inclinado entre 30° e 45° › Escápulas juntas, pegada pouco além dos ombros › Desça a barra até a parte alta do peito › Empurre em linha levemente curva até estender", "Inclinação alta demais transfere o trabalho para o ombro; fique perto de 30°.", "Banco muito inclinado e barra descendo no pescoço."],
+  "supino-incl-halter": ["Parte superior do peitoral", "Banco entre 30° e 45° › Levante os halteres e alinhe sobre o peito › Desça controlando até os cotovelos ficarem um pouco abaixo do banco › Suba aproximando as mãos no topo", "Faça uma pausa curta embaixo para tirar o impulso.", "Balançar o tronco para ajudar na subida."],
+  "supino-decl-barra": ["Parte inferior do peitoral, tríceps", "Deite no banco declinado, prenda os pés › Retire a barra com ajuda ou use suporte › Desça à altura da parte baixa do peito › Empurre até estender sem travar", "Peça ajuda para tirar e recolocar a barra.", "Soltar a barra sem apoio de segurança."],
+  "supino-maquina": ["Peitoral, tríceps", "Ajuste o banco para a pegada ficar na altura do meio do peito › Costas apoiadas, escápulas juntas › Empurre até quase estender os braços › Volte devagar até sentir o peito alongar", "Boa opção para treinar perto da falha com segurança.", "Elevar os ombros em direção às orelhas."],
+  "supino-smith": ["Peitoral, tríceps", "Posicione o banco de modo que a barra desça no meio do peito › Escápulas juntas, pés firmes › Destrave a barra e desça controlando › Empurre e tranque rodando o punho para travar no gancho", "A trajetória é fixa: ajuste a posição do banco para não forçar o ombro.", "Banco muito à frente ou atrás da barra, o que força o ombro."],
+  "crucifixo-halter": ["Peitoral", "Deite com os halteres sobre o peito, palmas se olhando › Com cotovelos levemente flexionados, abra os braços em arco › Desça até sentir o alongamento, sem passar da linha dos ombros › Traga os halteres de volta como se abraçasse uma árvore", "Mantenha a flexão do cotovelo fixa durante todo o movimento.", "Esticar os braços e transformar o exercício em pullover."],
+  "peck-deck": ["Peitoral", "Ajuste o banco para os cotovelos ficarem na altura do peito › Costas coladas e ombros para baixo › Feche os braços à frente do peito, apertando no meio › Volte devagar sem deixar a pilha bater", "Pare um segundo com o peito contraído.", "Usar o ombro e impulso do tronco."],
+  "crossover": ["Peitoral", "Polias altas, um passo à frente, tronco levemente inclinado › Cotovelos semiflexionados › Traga as mãos até se encontrarem na frente do quadril ou peito › Volte controlando a abertura", "Troque a altura da polia para mudar a região do peito mais ativada.", "Dobrar e esticar os cotovelos (vira tríceps)."],
+  "flexao": ["Peitoral, tríceps, core", "Mãos um pouco mais largas que os ombros, corpo em linha reta › Contraia o abdômen e glúteos › Desça até o peito quase tocar o chão › Empurre estendendo os braços", "Se estiver pesado, apoie os joelhos ou use uma superfície elevada.", "Quadril caindo ou subindo no meio do movimento."],
+  "paralelas-peito": ["Peitoral inferior, tríceps", "Segure as barras paralelas, braços estendidos › Incline o tronco levemente para a frente › Desça controlando até os ombros ficarem na altura dos cotovelos › Suba empurrando", "Incline mais o tronco para focar o peito e fique ereto para focar o tríceps.", "Descer demais e forçar o ombro."],
+  "pullover": ["Peitoral, serrátil, latíssimo", "Deite no banco, halter seguro com as duas mãos acima do peito › Braços quase estendidos › Leve o halter para trás da cabeça em arco › Volte até acima do peito", "Mantenha o quadril baixo e a costela encaixada.", "Dobrar demais os cotovelos e virar um tríceps testa."],
+  "supino-incl-smith": ["Parte superior do peitoral", "Inclinação do banco de 30° › Posicione para a barra descer na parte alta do peito › Destrave, desça controlado › Empurre até estender sem travar", "Boa para focar a parte superior com mais estabilidade.", "Banco muito inclinado, o ombro faz tudo."],
+  "supino-halter-neutro": ["Peitoral, tríceps", "Pegada neutra (palmas se olhando) com os halteres ao lado do peito › Cotovelos junto ao corpo › Empurre para cima aproximando os halteres › Desça devagar", "Mais amigável para quem tem desconforto no ombro.", "Deixar os halteres balançarem."],
+  "crucifixo-inclinado": ["Parte superior do peitoral", "Banco a 30°, halteres acima do peito › Abra em arco com cotovelos semiflexionados › Desça até sentir o alongamento › Traga de volta", "Carga moderada: é um exercício de alongamento e controle.", "Jogar peso demais e perder a postura."],
+  "crossover-baixo": ["Parte superior do peitoral", "Polias na posição baixa, um passo à frente › Palmas voltadas para cima › Leve as mãos em arco até acima do queixo › Controle a volta", "Mantenha o tronco firme e o movimento só nos ombros.", "Usar o impulso do corpo."],
+  "flexao-inclinada": ["Parte superior do peitoral, ombros", "Pés em um banco, mãos no chão um pouco acima dos ombros › Corpo reto › Desça até quase tocar o chão › Empurre", "Quanto mais alto o apoio dos pés, mais difícil.", "Quadril caindo, lombar sobrecarregada."],
+  "flexao-apoiada": ["Peitoral, tríceps", "Mãos em um banco ou parede, corpo reto › Desça o peito até quase tocar › Empurre de volta", "Ótima para iniciar: quanto mais alto o apoio, mais fácil.", "Fazer só meia amplitude."],
+  // ---- Costas ----
+  "barra-fixa": ["Latíssimo, bíceps, romboides", "Pegada pronada um pouco mais larga que os ombros › Ombros para baixo e para trás, peito aberto › Puxe até o queixo passar da barra › Desça controlando até quase esticar os braços", "Se for difícil, use elástico ou a máquina assistida.", "Balançar o corpo e usar o impulso (kipping)."],
+  "barra-supinada": ["Latíssimo, bíceps", "Pegada supinada na largura dos ombros › Puxe levando o queixo à barra › Cotovelos junto ao corpo › Desça devagar até estender", "Faz mais bíceps do que a barra pronada.", "Subir só a cabeça sem puxar o peito."],
+  "encolhimento": ["Trapézio superior", "De pé com halteres ao lado do corpo › Eleve os ombros em direção às orelhas › Pare um segundo no alto › Desça devagar", "Não rode os ombros: sobe e desce em linha reta.", "Rodar os ombros em círculos."],
+  "hiperextensao": ["Lombar, glúteos, posteriores", "Quadril apoiado, pernas presas, corpo reto › Desça o tronco com a coluna neutra › Suba até alinhar o corpo, sem passar da linha reta", "Pare em linha reta, sem arquear excessivamente.", "Hiperestender a lombar no topo."],
+  "levantamento-terra": ["Posteriores, glúteos, lombar, trapézio", "Pés na largura do quadril, barra sobre o meio dos pés › Segure a barra, ombros sobre ela, coluna neutra › Empurre o chão e estenda quadris e joelhos juntos › Desça a barra rente às pernas controlando", "Mantenha a barra colada ao corpo o tempo todo.", "Arredondar a lombar ou puxar com os braços."],
+  "pulldown": ["Latíssimo", "Polia alta, braços quase estendidos à frente › Tronco levemente inclinado › Leve a barra ou corda em direção às coxas com os braços esticados › Volte devagar", "Pense em levar os cotovelos para o quadril.", "Dobrar os cotovelos e transformar em tríceps."],
+  "puxada-frente": ["Latíssimo, bíceps, romboides", "Sente com as coxas presas, pegada pronada larga › Peito aberto, ombros para baixo › Puxe a barra até a altura do queixo/clavícula › Volte controlando", "Inicie o movimento pelas escápulas, não pelos braços.", "Puxar a barra atrás da nuca."],
+  "puxada-triangulo": ["Latíssimo, bíceps", "Acople o triângulo, tronco levemente inclinado › Peito aberto › Puxe até o triângulo tocar o peito alto › Volte devagar", "A pegada neutra costuma ser mais confortável para os ombros.", "Jogar o corpo para trás."],
+  "remada-baixa": ["Dorsais, romboides, bíceps", "Sentado, pés apoiados, joelhos levemente flexionados › Costas retas, peito aberto › Puxe o triângulo até o abdômen, cotovelos junto ao corpo › Volte alongando sem arredondar", "Aperte as escápulas no final por um segundo.", "Balançar o tronco para frente e para trás."],
+  "remada-cavalinho": ["Dorsais médio, romboides, lombar", "Posicione-se sobre a barra com os pés firmes e o quadril para trás › Costas retas, tronco inclinado › Puxe a carga em direção ao peito › Desça devagar", "Mantenha o peito aberto e o pescoço neutro.", "Arredondar a lombar sob carga."],
+  "remada-curvada": ["Dorsais, romboides, trapézio, bíceps", "Pés na largura dos ombros, barra segura › Incline o tronco a cerca de 45° com a coluna neutra › Puxe a barra em direção ao umbigo › Desça controlado", "Imagine puxar os cotovelos para o teto.", "Subir o tronco para ajudar o movimento."],
+  "remada-maquina": ["Dorsais, romboides", "Ajuste o banco de modo que o peito encoste no apoio › Segure as pegadas e puxe os cotovelos para trás › Aperte as escápulas e volte controlando", "Faça pausa de um segundo no final do movimento.", "Esticar demais os ombros na volta."],
+  "remada-unilateral": ["Dorsais, romboides, bíceps", "Um joelho e uma mão apoiados no banco, coluna reta › Halter na outra mão, braço estendido › Puxe o halter em direção ao quadril, cotovelo junto ao corpo › Desça devagar", "Leve o cotovelo para o bolso de trás da calça.", "Girar o tronco para ajudar."],
+  "puxada-neutra": ["Latíssimo, bíceps", "Pegada neutra, peito aberto › Puxe até a altura do peito alto › Escápulas descem junto › Volte controlando", "Costuma ser mais confortável para ombros sensíveis.", "Inclinar o tronco demais para trás."],
+  "puxada-unilateral": ["Latíssimo", "Sentado, uma mão na pegada › Leve o cotovelo para baixo e para trás › Volte alongando o dorsal", "Mantenha o tronco parado.", "Girar o corpo."],
+  "barra-neutra": ["Latíssimo, bíceps", "Pegada neutra na barra paralela › Puxe até o queixo passar da barra › Desça controlando", "Mais fácil para o ombro que a pronada.", "Balançar o corpo."],
+  "remada-invertida": ["Dorsais, romboides, bíceps", "Deite sob uma barra baixa, segure-a e mantenha o corpo reto › Puxe o peito até a barra › Desça controlando", "Quanto mais horizontal o corpo, mais difícil.", "Deixar o quadril cair."],
+  "remada-polia-alta": ["Dorsais superior, romboides, deltoide posterior", "Sentado na polia alta com a corda ou barra › Puxe em direção ao rosto/peito abrindo os cotovelos › Volte devagar", "Pense em separar a corda no final.", "Usar o tronco como alavanca."],
+  "remada-smith": ["Dorsais, romboides", "Tronco inclinado, pegada pronada no Smith › Puxe a barra até o abdômen › Volte controlando", "Boa para treinar com mais estabilidade.", "Arredondar a coluna."],
+  "terra-sumo": ["Posteriores, glúteos, adutores, lombar", "Pés bem abertos, pontas levemente para fora › Pegada estreita por dentro das pernas › Peito aberto, empurre o chão abrindo os joelhos › Suba até estender o quadril", "Joelhos acompanham a direção dos pés.", "Quadril subindo antes do peito."],
+  "rack-pull": ["Lombar, trapézio, glúteos, posteriores", "Barra no suporte na altura dos joelhos › Segure, peito aberto, coluna neutra › Suba estendendo quadril e joelhos › Desça controlando até o suporte", "Permite carga alta com menos amplitude.", "Hiperestender a lombar no topo."],
+  "encolhimento-barra": ["Trapézio superior", "Barra à frente das coxas, pegada na largura dos ombros › Eleve os ombros sem dobrar os cotovelos › Pausa curta e desça", "Uso de straps ajuda quando a pegada limita.", "Mover a cabeça junto."],
+  // ---- Ombros ----
+  "arnold": ["Deltoides, tríceps", "Sentado, halteres à frente com palmas voltadas para você › Gire as palmas enquanto sobe os halteres acima da cabeça › Desça girando de volta", "Controle a rotação em vez de usar carga alta.", "Arquear a lombar."],
+  "crucifixo-inverso": ["Deltoide posterior, romboides", "Incline o tronco à frente com halteres pendurados › Abra os braços com cotovelos semiflexionados › Aperte as escápulas no final › Desça devagar", "Use carga leve e foque no ombro, não nas costas.", "Balançar o tronco para ajudar."],
+  "desenvolvimento-barra": ["Deltoides, tríceps", "Sentado ou em pé, barra à altura da clavícula › Empurre acima da cabeça, estendendo os braços › Desça devagar até o queixo", "Contraia o abdômen para proteger a lombar.", "Arquear demais as costas."],
+  "desenvolvimento-halter": ["Deltoides, tríceps", "Sentado com as costas apoiadas, halteres na altura das orelhas › Empurre para cima aproximando as mãos › Desça até os cotovelos ficarem a 90°", "Não precisa bater os halteres no topo.", "Trancar os cotovelos com força no alto."],
+  "desenvolvimento-maquina": ["Deltoides, tríceps", "Ajuste o banco para as pegadas ficarem na altura dos ombros › Empurre até estender sem travar › Volte controlando", "Ótima para chegar perto da falha com segurança.", "Elevar os ombros junto das orelhas."],
+  "elevacao-frontal": ["Deltoide anterior", "Em pé, halteres à frente das coxas › Eleve os braços até a altura dos ombros › Desça devagar", "O ombro anterior já trabalha muito em outros exercícios; use carga leve.", "Balançar o corpo para subir."],
+  "elevacao-lateral-polia": ["Deltoide medial", "De lado para a polia baixa, mão oposta segura › Eleve o braço lateralmente até a altura do ombro › Desça devagar", "A polia mantém tensão contínua, ótima para finalizar.", "Subir o ombro em direção à orelha."],
+  "elevacao-lateral": ["Deltoide medial", "Em pé, halteres ao lado do corpo, cotovelos levemente flexionados › Eleve até a altura dos ombros, mãos um pouco abaixo dos cotovelos › Desça devagar", "Imagine derramar água de um copo na ponta do dedo mindinho.", "Balançar o tronco e subir acima da linha dos ombros."],
+  "face-pull": ["Deltoide posterior, manguito rotador, trapézio médio", "Polia na altura do rosto com corda › Puxe a corda em direção ao rosto abrindo os cotovelos › Aperte as escápulas e volte controlando", "Ótimo para postura e saúde do ombro.", "Usar carga excessiva e puxar com as costas inclinadas."],
+  "remada-alta": ["Deltoide medial, trapézio", "Em pé com a barra à frente das coxas › Puxe até a altura do peito, cotovelos acima das mãos › Desça devagar", "Pegada mais larga reduz o estresse no ombro.", "Subir além da altura do peito com cotovelos muito altos."],
+  "desenvolvimento-smith": ["Deltoides, tríceps", "Banco quase reto, barra à altura do queixo › Empurre para cima › Desça controlado", "Alinhe o banco para a barra subir acima do ombro.", "Costas muito arqueadas."],
+  "desenvolvimento-militar": ["Deltoides, tríceps, core", "Em pé, barra na clavícula, glúteos e abdômen contraídos › Empurre a barra acima da cabeça, desviando o rosto › Desça controlando", "Segure a barra com firmeza e feche as costelas.", "Jogar o quadril para frente."],
+  "elevacao-lateral-inclinado": ["Deltoide medial", "Deite de lado em banco inclinado e eleve o braço lateralmente com halter leve › Desça devagar", "Boa para quem balança o corpo na versão em pé.", "Usar carga pesada demais."],
+  "crucifixo-inverso-polia": ["Deltoide posterior", "Polias cruzadas na altura dos ombros › Abra os braços para trás mantendo os cotovelos semiflexionados › Volte devagar", "Controle a volta, é onde o ombro mais trabalha.", "Puxar com os braços dobrados."],
+  "pike-pushup": ["Deltoides, tríceps", "Em posição de pirâmide, quadril alto e mãos no chão › Dobre os cotovelos descendo a cabeça em direção ao chão › Empurre voltando", "Eleve os pés para dificultar.", "Pegar pouca amplitude."],
+  // ---- Bíceps ----
+  "rosca-alternada": ["Bíceps", "Em pé, halteres ao lado, palmas para frente › Suba um halter de cada vez, cotovelo fixo ao corpo › Desça devagar", "Gire o punho levemente no topo para contrair mais.", "Balançar o corpo para ajudar."],
+  "rosca-concentrada": ["Bíceps", "Sentado, cotovelo apoiado na parte interna da coxa › Suba o halter até o ombro › Desça devagar", "Ótima para sentir o pico do bíceps.", "Mexer o ombro."],
+  "rosca-direta": ["Bíceps", "Em pé, barra com pegada na largura dos ombros › Cotovelos junto ao corpo › Suba até o peito e desça controlando", "Mantenha o corpo parado, só o antebraço se mexe.", "Jogar o quadril para ajudar."],
+  "rosca-inclinada": ["Bíceps (cabeça longa)", "Banco inclinado 45-60°, halteres pendurados › Suba sem mexer o cotovelo para frente › Desça até o alongamento total", "O alongamento do banco ativa mais a cabeça longa.", "Tirar o ombro do banco."],
+  "rosca-martelo": ["Braquial, braquiorradial, bíceps", "Em pé, palmas se olhando › Suba o halter sem girar o punho › Desça devagar", "Boa para antebraço e espessura do braço.", "Balançar o tronco."],
+  "rosca-polia": ["Bíceps", "Polia baixa, barra reta ou W › Cotovelos fixos ao lado do corpo › Suba e desça controlando", "A polia mantém a tensão o tempo todo.", "Abrir os cotovelos."],
+  "rosca-scott": ["Bíceps (cabeça curta)", "Braços apoiados no banco Scott, axilas encostadas › Suba a barra até quase o topo › Desça sem esticar totalmente", "Não solte no final, para não forçar o cotovelo.", "Descer rápido demais e esticar o cotovelo."],
+  "rosca-w": ["Bíceps, braquial", "Pegada na barra W, mãos nas curvas › Cotovelos junto ao corpo › Suba e desça devagar", "A barra W alivia o punho.", "Balançar o corpo."],
+  "rosca-spider": ["Bíceps", "Peito apoiado em banco inclinado, braços caídos à frente › Suba a barra W até o topo › Desça controlando", "Impede o balanço do corpo e isola o bíceps.", "Perder a amplitude na descida."],
+  "rosca-polia-alta": ["Bíceps", "Entre duas polias altas, braços abertos como o duplo bíceps › Puxe as mãos em direção às orelhas › Volte devagar", "Concentre a contração na parte de cima.", "Mexer os ombros."],
+  "rosca-zottman": ["Bíceps, antebraço", "Suba o halter com a palma para cima › No topo gire a palma para baixo › Desça devagar nessa posição", "Excelente para antebraço, use carga leve.", "Descer rápido."],
+  "rosca-21": ["Bíceps", "Barra W, 7 repetições da metade inferior, 7 da superior e 7 completas, sem pausa › Cotovelos fixos", "Use metade da carga normal, é muito intenso.", "Usar carga pesada e perder a técnica."],
+  // ---- Tríceps ----
+  "mergulho-banco": ["Tríceps, ombro anterior", "Mãos no banco atrás de você, pernas à frente › Desça dobrando os cotovelos até 90° › Empurre voltando", "Mantenha o corpo junto ao banco.", "Descer demais e forçar o ombro."],
+  "paralelas": ["Tríceps, peitoral inferior", "Barras paralelas, corpo vertical › Desça até 90° nos cotovelos › Empurre até estender", "Fique reto para enfatizar o tríceps.", "Cotovelos muito abertos."],
+  "supino-fechado": ["Tríceps, peitoral", "Pegada na largura dos ombros ou um pouco menor › Cotovelos junto ao corpo › Desça até o peito e empurre", "Evite pegada muito estreita, que força o punho.", "Abrir os cotovelos."],
+  "triceps-coice": ["Tríceps", "Tronco inclinado, cotovelo colado ao corpo › Estenda o antebraço para trás › Volte devagar", "Faça pausa curta com o braço esticado.", "Mexer o cotovelo."],
+  "triceps-corda": ["Tríceps", "Polia alta com corda, cotovelos ao lado do corpo › Estenda os braços para baixo abrindo a corda no final › Volte devagar", "Abra a corda no final para contrair mais.", "Inclinar o tronco e usar o peso do corpo."],
+  "triceps-frances": ["Tríceps (cabeça longa)", "Em pé ou sentado, halter ou barra acima da cabeça › Dobre os cotovelos levando o peso atrás da cabeça › Estenda voltando", "Mantenha os cotovelos fechados e apontando para cima.", "Abrir os cotovelos."],
+  "triceps-pulley": ["Tríceps", "Polia alta com barra reta, cotovelos ao lado › Estenda até esticar os braços › Volte devagar", "Mantenha o tronco firme.", "Subir o ombro."],
+  "triceps-testa": ["Tríceps", "Deitado, barra W acima do peito › Dobre os cotovelos levando a barra em direção à testa › Estenda de volta", "Cotovelos fixos apontados para o teto.", "Abrir os cotovelos."],
+  "flexao-diamante": ["Tríceps, peitoral", "Mãos juntas formando um losango sob o peito › Corpo reto › Desça e empurre", "Se estiver difícil, apoie os joelhos.", "Abrir os cotovelos."],
+  "triceps-halter-testa": ["Tríceps", "Deitado, halteres acima do peito › Dobre os cotovelos levando os halteres em direção às orelhas › Estenda", "Pegada neutra poupa o punho.", "Perder o controle na descida."],
+  "triceps-halter-cabeca": ["Tríceps (cabeça longa)", "Em pé, um halter atrás da cabeça com as duas mãos ou com uma › Estenda o braço acima da cabeça › Volte devagar", "Cotovelo apontando para o teto.", "Arquear a lombar."],
+  "triceps-polia-unilateral": ["Tríceps", "Polia alta, uma mão por vez, cotovelo fixo › Estenda e volte", "Corrige diferenças entre os braços.", "Mexer o ombro."],
+  "triceps-corda-testa": ["Tríceps", "Deitado de costas com a corda na polia baixa atrás da cabeça › Estenda os braços › Volte devagar", "Excelente alongamento do tríceps.", "Abrir os cotovelos."],
+  // ---- Antebraço ----
+  "farmer-walk": ["Antebraço, trapézio, core", "Pegue um peso pesado em cada mão › Ombros para trás, abdômen firme › Caminhe com passos curtos e controlados", "Aperte as mãos o mais forte que puder.", "Perder a postura e inclinar o tronco."],
+  "rosca-inversa": ["Braquiorradial, antebraço", "Pegada pronada na barra › Suba com cotovelos fixos › Desça devagar", "Use carga menor que na rosca direta.", "Dobrar os punhos."],
+  "rosca-punho": ["Flexores do antebraço", "Antebraço apoiado, punhos livres, palmas para cima › Dobre os punhos para cima › Desça devagar", "Mova só o punho e use carga leve.", "Usar impulso."],
+  "dead-hang": ["Antebraço, latíssimo, ombros", "Segure uma barra alta com os braços estendidos › Pendure-se com as escápulas ativas › Segure o tempo planejado", "Ótimo para descomprimir a coluna e treinar a pegada.", "Encolher os ombros em direção às orelhas."],
+  "rosca-punho-inversa": ["Extensores do antebraço", "Antebraço apoiado, palmas para baixo › Estenda os punhos para cima › Desça devagar", "Carga leve, repetições altas.", "Dobrar os cotovelos para ajudar."]
+});
+// ---------- Exercícios: novos + instruções e dicas (parte 2: pernas, glúteos, panturrilha, abdômen, corpo inteiro, cardio) ----------
+EX_NOVOS.push(
+  ["step-up","Step-up (subida no banco)","Quadríceps","Halter","carga"],
+  ["afundo-reverso","Afundo reverso","Quadríceps","Halter","carga"],
+  ["agachamento-salto","Agachamento com salto","Quadríceps","Peso corporal","corpo"],
+  ["wall-sit","Agachamento isométrico na parede","Quadríceps","Peso corporal","tempo"],
+  ["extensora-unilateral","Cadeira extensora unilateral","Quadríceps","Máquina","carga"],
+  ["agachamento-caixa","Agachamento na caixa","Quadríceps","Barra","carga"],
+  ["stiff-unilateral","Stiff unilateral com halter","Posteriores","Halter","carga"],
+  ["flexora-unilateral","Mesa flexora unilateral","Posteriores","Máquina","carga"],
+  ["flexora-bola","Flexão de pernas na bola","Posteriores","Peso corporal","corpo"],
+  ["hip-thrust-unilateral","Hip thrust unilateral","Glúteos","Peso corporal","corpo"],
+  ["kickback-quadrupede","Coice no chão (quatro apoios)","Glúteos","Peso corporal","corpo"],
+  ["agachamento-gluteo","Agachamento sumô com halter","Glúteos","Halter","carga"],
+  ["panturrilha-unilateral","Panturrilha unilateral no degrau","Panturrilha","Peso corporal","corpo"],
+  ["panturrilha-smith","Panturrilha no Smith","Panturrilha","Smith","carga"],
+  ["dead-bug","Dead bug","Abdômen","Peso corporal","corpo"],
+  ["hollow-hold","Prancha hollow (canoa)","Abdômen","Peso corporal","tempo"],
+  ["elevacao-pernas-solo","Elevação de pernas deitado","Abdômen","Peso corporal","corpo"],
+  ["pallof-press","Pallof press","Abdômen","Polia","carga"],
+  ["woodchop","Lenhador na polia","Abdômen","Polia","carga"],
+  ["abd-canivete","Abdominal canivete","Abdômen","Peso corporal","corpo"],
+  ["prancha-toque","Prancha com toque no ombro","Abdômen","Peso corporal","corpo"],
+  ["turkish-getup","Turkish get-up","Corpo inteiro","Kettlebell","carga"],
+  ["kb-clean","Kettlebell clean","Corpo inteiro","Kettlebell","carga"],
+  ["box-jump","Salto na caixa","Corpo inteiro","Peso corporal","corpo"],
+  ["battle-rope","Cordas navais","Corpo inteiro","Equipamento cardio","tempo"],
+  ["bear-crawl","Caminhada do urso","Corpo inteiro","Peso corporal","tempo"],
+  ["caminhada","Caminhada","Cardio","Equipamento cardio","cardio"],
+  ["esteira-inclinada","Esteira inclinada (caminhada)","Cardio","Equipamento cardio","cardio"],
+  ["natacao","Natação","Cardio","Equipamento cardio","cardio"],
+  ["patins","Patins","Cardio","Equipamento cardio","cardio"],
+  ["bike-rua","Bicicleta na rua","Cardio","Equipamento cardio","cardio"],
+  ["spinning","Spinning","Cardio","Equipamento cardio","cardio"]
+);
+Object.assign(EX_INFO, {
+  // ---- Quadríceps ----
+  "afundo": ["Quadríceps, glúteos", "Halteres ao lado do corpo, passo à frente › Desça o joelho de trás perto do chão, tronco reto › Empurre o chão voltando à posição inicial", "Passo longo foca o glúteo; passo curto foca o quadríceps.", "Joelho da frente passando muito dos dedos do pé e caindo para dentro."],
+  "agachamento-frontal": ["Quadríceps, core", "Barra apoiada na frente dos ombros, cotovelos altos › Desça controlando com o tronco ereto › Suba empurrando o chão", "Cotovelos altos mantêm a barra no lugar.", "Deixar os cotovelos caírem e arredondar as costas."],
+  "agachamento-goblet": ["Quadríceps, glúteos, core", "Segure um halter junto ao peito › Pés um pouco mais abertos que os ombros › Desça entre as pernas com o peito aberto › Suba empurrando o chão", "Ótimo para aprender o padrão do agachamento.", "Calcanhares saindo do chão."],
+  "agachamento-livre-pc": ["Quadríceps, glúteos", "Pés na largura dos ombros, braços à frente › Sente para trás como se fosse uma cadeira › Desça até as coxas ficarem paralelas ao chão › Suba empurrando o chão", "Se os calcanhares levantam, abra um pouco mais os pés.", "Joelhos para dentro."],
+  "agachamento-livre": ["Quadríceps, glúteos, posteriores, lombar", "Barra apoiada no trapézio, pés na largura dos ombros › Contraia o abdômen e desça sentando para trás › Desça até pelo menos as coxas paralelas ao chão › Suba empurrando o chão", "Mantenha o olhar à frente e o peito aberto.", "Joelhos entrando e lombar arredondando no fundo."],
+  "agachamento-smith": ["Quadríceps, glúteos", "Pés um pouco à frente da barra › Desça com as costas apoiadas na barra › Suba empurrando o chão", "Ajuste a posição dos pés para o joelho não forçar.", "Pés alinhados sob a barra, sobrecarregando o joelho."],
+  "bulgaro": ["Quadríceps, glúteos", "Pé de trás apoiado no banco, pé da frente um passo à frente › Desça o joelho de trás perto do chão › Suba empurrando o calcanhar da frente", "Incline o tronco levemente para mais glúteo.", "Pé da frente muito perto do banco."],
+  "cadeira-extensora": ["Quadríceps", "Ajuste o encosto para o joelho ficar na linha do eixo › Estenda as pernas até o topo, contraindo o quadríceps › Volte devagar", "Pausa curta com as pernas estendidas.", "Balançar o corpo e usar impulso."],
+  "hack": ["Quadríceps, glúteos", "Costas apoiadas, pés na plataforma na largura dos ombros › Desça até 90° ou mais › Empurre sem travar os joelhos", "Pés mais baixos focam o quadríceps; mais altos, o glúteo.", "Tirar a lombar do encosto."],
+  "leg-press-45": ["Quadríceps, glúteos, posteriores", "Costas e quadril apoiados, pés na plataforma › Desça até 90° nos joelhos sem tirar o quadril do banco › Empurre sem travar os joelhos", "Pés mais altos na plataforma exigem mais glúteo e posterior.", "Descer demais e levantar o quadril do banco."],
+  "leg-press-horizontal": ["Quadríceps, glúteos", "Costas no encosto, pés na plataforma › Dobre os joelhos controlando › Empurre sem travar", "Mantenha a lombar colada.", "Travar os joelhos no final."],
+  "passada": ["Quadríceps, glúteos", "Dê um passo longo à frente e desça o joelho de trás › Empurre com a perna da frente e avance o outro pé › Alterne os lados", "Mantenha o tronco reto e passos constantes.", "Passos curtos demais, joelho avançando muito."],
+  "sissy": ["Quadríceps", "Em pé, segure em um apoio › Incline o corpo para trás flexionando os joelhos e elevando os calcanhares › Volte controlando", "Exercício avançado, comece só com o peso do corpo.", "Forçar o joelho com carga alta."],
+  "step-up": ["Quadríceps, glúteos", "De frente para um banco, com halteres ao lado › Suba com uma perna só, estendendo o quadril › Desça devagar", "Empurre o chão pela perna de cima, sem impulso da outra.", "Dar impulso com a perna de baixo."],
+  "afundo-reverso": ["Glúteos, quadríceps", "Em pé, dê um passo atrás › Desça o joelho de trás quase ao chão › Volte empurrando o pé da frente", "Mais amigável para os joelhos que o avanço normal.", "Tronco inclinado demais para frente."],
+  "agachamento-salto": ["Quadríceps, glúteos, panturrilha", "Agache até as coxas ficarem paralelas ao chão › Salte explodindo para cima › Aterrisse suave e volte ao agachamento", "Aterrisse com os joelhos levemente flexionados.", "Aterrissar com as pernas retas."],
+  "wall-sit": ["Quadríceps", "Costas na parede, joelhos a 90° › Fique parado o tempo planejado", "Pés na linha dos joelhos.", "Apoiar as mãos nas coxas."],
+  "extensora-unilateral": ["Quadríceps", "Faça a extensão com uma perna por vez › Volte devagar", "Corrige desequilíbrio entre as pernas.", "Usar impulso."],
+  "agachamento-caixa": ["Quadríceps, glúteos, posteriores", "Agache até encostar na caixa atrás › Pausa rápida sem relaxar › Suba empurrando o chão", "Ótimo para treinar a profundidade certa.", "Sentar e relaxar na caixa."],
+  // ---- Posteriores ----
+  "cadeira-flexora": ["Posteriores de coxa", "Ajuste o apoio nas panturrilhas e o encosto › Flexione os joelhos levando os calcanhares para trás › Volte devagar", "Mantenha o quadril firme no banco.", "Levantar o quadril."],
+  "flexora-pe": ["Posteriores de coxa", "Em pé, apoio no tornozelo › Flexione o joelho levando o calcanhar ao glúteo › Volte devagar", "Mantenha o quadril parado.", "Balançar o corpo."],
+  "good-morning": ["Posteriores, glúteos, lombar", "Barra apoiada nos ombros, joelhos levemente flexionados › Incline o tronco para frente com a coluna reta e quadril para trás › Volte apertando o glúteo", "Use carga leve para treinar o padrão.", "Arredondar a lombar."],
+  "mesa-flexora": ["Posteriores de coxa", "Deite de bruços, tornozelos sob o rolo › Flexione os joelhos até o máximo › Volte devagar", "Quadril colado no banco.", "Levantar o quadril."],
+  "nordico": ["Posteriores de coxa", "Ajoelhado com os tornozelos presos › Desça o tronco para frente o mais lento possível › Use as mãos para voltar", "Avançado: comece com amplitude curta.", "Dobrar o quadril em vez de manter o corpo reto."],
+  "stiff-halter": ["Posteriores, glúteos", "Halteres à frente das coxas, joelhos levemente flexionados › Leve o quadril para trás descendo os halteres rente às pernas › Suba apertando o glúteo", "Costas retas o tempo todo.", "Dobrar os joelhos demais, virando agachamento."],
+  "stiff": ["Posteriores, glúteos, lombar", "Barra à frente das coxas, joelhos levemente flexionados › Leve o quadril para trás e desça a barra rente às pernas até sentir alongar › Suba apertando o glúteo", "Pare quando sentir o alongamento, sem arredondar a coluna.", "Arredondar a lombar."],
+  "terra-romeno": ["Posteriores, glúteos", "Barra à frente do quadril, joelhos levemente flexionados › Empurre o quadril para trás descendo a barra rente às pernas › Suba estendendo o quadril", "Mantenha a barra colada ao corpo.", "Tirar a barra do corpo."],
+  "stiff-unilateral": ["Posteriores, glúteos, equilíbrio", "Em pé numa perna só com halter › Incline o tronco e leve a outra perna para trás › Volte apertando o glúteo", "Use uma mão em apoio para equilíbrio no começo.", "Girar o quadril."],
+  "flexora-unilateral": ["Posteriores de coxa", "Mesa flexora com uma perna por vez › Controle a descida", "Ótimo para equilibrar as pernas.", "Usar impulso."],
+  "flexora-bola": ["Posteriores de coxa", "Deite de costas com os calcanhares sobre uma bola, quadril elevado › Dobre os joelhos puxando a bola em direção ao glúteo › Estenda devagar", "Mantenha o quadril alto o tempo todo.", "Deixar o quadril cair."],
+  // ---- Glúteos ----
+  "abducao-elastico": ["Glúteo médio", "Elástico acima dos joelhos › Abra as pernas mantendo o tronco estável › Volte devagar", "Útil como aquecimento antes de agachamentos.", "Girar o tronco para ajudar."],
+  "abducao": ["Glúteo médio", "Sentado, pernas junto aos apoios › Abra as pernas contra a resistência › Volte devagar", "Incline o tronco levemente para frente para mais glúteo.", "Usar impulso."],
+  "aducao": ["Adutores", "Sentado, pernas abertas nos apoios › Feche as pernas até juntar › Volte controlando", "Controle a abertura, sem deixar a pilha bater.", "Abrir demais e forçar a virilha."],
+  "elevacao-pelvica-maq": ["Glúteos", "Costas apoiadas, barra no quadril › Empurre o quadril para cima apertando o glúteo › Desça controlando", "Queixo levemente para o peito, olhar à frente.", "Hiperestender a lombar no topo."],
+  "elevacao-pelvica": ["Glúteos, posteriores", "Costas apoiadas no banco, barra sobre o quadril › Pés apoiados e joelhos a 90° no topo › Suba apertando o glúteo e desça controlando", "Faça uma pausa de 1 segundo no topo.", "Arquear a lombar em vez de subir pelo glúteo."],
+  "gluteo-maquina": ["Glúteos", "Nos quatro apoios na máquina › Empurre a perna para trás › Volte devagar", "Concentre a força no glúteo, sem arquear a lombar.", "Arquear a lombar."],
+  "gluteo-polia": ["Glúteos", "Tornozeleira na polia baixa, apoie as mãos › Leve a perna para trás › Volte devagar", "Mantenha o tronco firme.", "Rodar o quadril."],
+  "ponte-gluteo": ["Glúteos, posteriores", "Deitado, joelhos dobrados, pés no chão › Suba o quadril apertando o glúteo › Desça devagar", "Pausa no topo e queixo levemente recolhido.", "Empurrar com a lombar."],
+  "sumo": ["Glúteos, adutores, quadríceps", "Pés bem abertos, pontas para fora › Desça mantendo o tronco ereto › Suba empurrando o chão", "Joelhos acompanham a direção dos pés.", "Deixar o joelho entrar."],
+  "hip-thrust-unilateral": ["Glúteos", "Costas no banco, uma perna estendida › Suba o quadril com a outra perna apertando o glúteo › Desça devagar", "Mantenha o quadril nivelado.", "Girar o quadril."],
+  "kickback-quadrupede": ["Glúteos", "Nos quatro apoios, estenda uma perna para trás e para cima › Aperte o glúteo e volte", "Coluna neutra, sem arquear a lombar.", "Balançar o corpo."],
+  "agachamento-gluteo": ["Glúteos, adutores", "Halter entre as pernas, pés bem abertos › Desça mantendo o tronco ereto › Suba apertando o glúteo", "Boa para iniciantes.", "Joelhos para dentro."],
+  // ---- Panturrilha ----
+  "panturrilha-leg": ["Panturrilha", "No leg press, apenas a ponta dos pés na plataforma › Empurre elevando os calcanhares › Desça alongando", "Pausa curta no topo e na base.", "Dobrar os joelhos."],
+  "panturrilha-pc": ["Panturrilha", "Ponta dos pés num degrau, calcanhares livres › Suba o máximo possível › Desça abaixo do degrau devagar", "Segure em um apoio para equilíbrio.", "Fazer pouca amplitude."],
+  "panturrilha-pe": ["Panturrilha (gastrocnêmio)", "Em pé na máquina, ponta dos pés no apoio › Suba apertando a panturrilha › Desça alongando", "Pausa de 1 a 2 segundos no topo.", "Usar impulso de joelho."],
+  "panturrilha-sentado": ["Panturrilha (sóleo)", "Sentado, joelhos a 90° sob o apoio › Suba apertando › Desça devagar", "Sóleo responde bem a repetições mais altas.", "Fazer pouca amplitude."],
+  "panturrilha-unilateral": ["Panturrilha", "Em pé em uma perna só no degrau › Suba o máximo e desça alongando", "Segure em um apoio para equilíbrio.", "Dobrar o joelho."],
+  "panturrilha-smith": ["Panturrilha", "Barra do Smith nos ombros, ponta dos pés em um anilha › Suba e desça controlando", "Mantenha o tronco ereto.", "Usar impulso."],
+  // ---- Abdômen ----
+  "abdominal-infra": ["Reto abdominal inferior", "Deitado, pernas estendidas › Leve as pernas para cima dobrando o quadril, sem tirar a lombar do chão › Desça devagar", "Pressione a lombar no chão.", "Arquear a lombar ao descer as pernas."],
+  "abdominal-maquina": ["Reto abdominal", "Sentado na máquina, segure as alças › Flexione o tronco para frente contraindo o abdômen › Volte devagar", "Expire ao descer.", "Puxar com os braços."],
+  "abdominal-polia": ["Reto abdominal", "Ajoelhado, polia alta com corda atrás da cabeça › Flexione o tronco levando o cotovelo aos joelhos › Volte", "Mantenha o quadril parado.", "Usar o peso do corpo e não o abdômen."],
+  "abdominal-supra": ["Reto abdominal superior", "Deitado, joelhos dobrados, mãos atrás da cabeça › Eleve os ombros do chão contraindo o abdômen › Volte devagar", "Olhe para o teto, não puxe o pescoço.", "Puxar o pescoço com as mãos."],
+  "bicicleta-abd": ["Oblíquos, reto abdominal", "Deitado, mãos atrás da cabeça › Leve o cotovelo ao joelho oposto alternando › Mantenha as pernas em movimento controlado", "Gire o tronco, não só os cotovelos.", "Movimento rápido demais."],
+  "elevacao-pernas": ["Reto abdominal inferior, flexores do quadril", "Pendurado na barra › Eleve as pernas até o quadril ou mais alto › Desça devagar", "Incline o quadril para trás para focar o abdômen.", "Balançar o corpo."],
+  "prancha-lateral": ["Oblíquos, core", "De lado, apoio no antebraço, corpo reto › Eleve o quadril e segure", "Mantenha o corpo alinhado.", "Quadril caindo."],
+  "prancha": ["Core, lombar, ombros", "Antebraços no chão, corpo em linha reta › Contraia abdômen e glúteos › Segure o tempo planejado", "Respire normalmente e olhe para baixo.", "Quadril alto ou lombar afundada."],
+  "roda-abdominal": ["Abdômen, ombros, latíssimo", "De joelhos, mãos na roda › Role para frente mantendo o abdômen contraído › Volte puxando com o abdômen", "Comece com amplitude curta.", "Deixar a lombar afundar."],
+  "russian-twist": ["Oblíquos", "Sentado, tronco levemente inclinado, pés no chão ou elevados › Gire o tronco de um lado ao outro, com peso ou sem", "Gire o tronco inteiro, não só os braços.", "Arredondar as costas."],
+  "dead-bug": ["Core profundo", "Deitado, braços para cima e joelhos a 90° › Estenda o braço e a perna opostos devagar › Volte e alterne", "Lombar sempre colada no chão.", "Deixar a lombar arquear."],
+  "hollow-hold": ["Core", "Deitado, eleve ombros e pernas formando uma canoa › Segure com a lombar no chão", "Quanto mais baixas as pernas, mais difícil.", "Lombar saindo do chão."],
+  "elevacao-pernas-solo": ["Abdômen inferior", "Deitado, pernas estendidas › Eleve até 90° › Desça devagar sem encostar no chão", "Mãos sob o quadril ajudam.", "Arquear a lombar."],
+  "pallof-press": ["Core, oblíquos", "De lado para a polia, mãos junto ao peito › Estenda os braços à frente resistindo ao giro › Volte", "Mantenha o quadril parado.", "Girar o tronco."],
+  "woodchop": ["Oblíquos", "Polia alta, giro diagonal do tronco para baixo e para o lado › Volte controlado", "Gire pelo tronco, braços esticados.", "Usar só os braços."],
+  "abd-canivete": ["Reto abdominal", "Deitado, braços e pernas estendidos › Eleve braços e pernas juntos até se encontrarem › Desça devagar", "Mantenha o movimento fluido.", "Usar impulso."],
+  "prancha-toque": ["Core, ombros", "Em prancha alta, toque um ombro com a mão oposta alternando › Quadril parado", "Abra um pouco os pés para estabilidade.", "Girar o quadril."],
+  // ---- Corpo inteiro ----
+  "burpee": ["Corpo inteiro", "Agache e apoie as mãos no chão › Salte os pés para trás em prancha › Faça uma flexão › Volte e salte para cima", "Mantenha um ritmo constante.", "Deixar a lombar afundar na prancha."],
+  "clean": ["Corpo inteiro, posteriores, trapézio", "Barra no chão, pegada na largura dos ombros › Estenda quadril e joelhos explosivamente › Puxe a barra e receba na frente dos ombros", "Exercício técnico: aprenda com carga leve e orientação.", "Puxar só com os braços."],
+  "kb-swing": ["Posteriores, glúteos, core", "Kettlebell entre as pernas, quadril para trás › Estenda o quadril explosivamente levando o peso à altura do peito › Deixe voltar e repita", "O quadril faz a força, não os braços.", "Agachar em vez de dobrar o quadril."],
+  "mountain-climber": ["Core, ombros, pernas", "Em prancha alta, leve um joelho ao peito alternando rapidamente", "Quadril baixo e core firme.", "Quadril subindo."],
+  "polichinelo": ["Corpo inteiro, cardio", "Salte abrindo pernas e braços acima da cabeça › Volte saltando", "Ótimo aquecimento.", "Aterrissar com os joelhos duros."],
+  "thruster": ["Quadríceps, ombros, corpo inteiro", "Agachamento com peso à frente › Suba explosivamente empurrando o peso acima da cabeça", "Uma sequência fluida, sem pausa.", "Perder o abdômen firme."],
+  "turkish-getup": ["Corpo inteiro, ombros, core", "Deitado com o peso acima do ombro › Levante-se em etapas até ficar em pé, mantendo o braço estendido › Volte pelo mesmo caminho", "Aprenda sem peso primeiro.", "Perder o olhar no peso."],
+  "kb-clean": ["Posteriores, glúteos, ombros", "Kettlebell entre as pernas › Estenda o quadril e puxe o peso até a posição de rack › Volte controlado", "O peso deve girar rente ao corpo.", "Bater o peso no antebraço."],
+  "box-jump": ["Quadríceps, glúteos, panturrilha", "Em frente a uma caixa, agache levemente › Salte e aterrisse em cima da caixa com joelhos dobrados › Desça andando", "Desça sempre andando, nunca pulando.", "Aterrissar com as pernas retas."],
+  "battle-rope": ["Ombros, core, cardio", "Segure as cordas, joelhos dobrados › Faça ondas alternadas com os braços", "Comece com intervalos de 20 a 30 segundos.", "Usar só os braços e perder o core."],
+  "bear-crawl": ["Core, ombros, quadríceps", "Em quatro apoios, joelhos a poucos centímetros do chão › Avance com mão e pé opostos", "Mantenha as costas retas e o quadril baixo.", "Quadril alto."],
+  // ---- Cardio ----
+  "bike": ["Pernas, cardio", "Ajuste o banco na altura do quadril › Pedale em ritmo constante › Varie a resistência", "Mantenha a postura ereta.", "Banco baixo demais, forçando o joelho."],
+  "corda": ["Cardio, panturrilha", "Salte com a ponta dos pés, punhos soltos › Mantenha o ritmo", "Pulos baixos, rentes ao chão.", "Pular alto demais."],
+  "corrida-rua": ["Cardio, pernas", "Postura ereta, passos leves › Respire em ritmo estável › Aumente o tempo aos poucos", "Aumente no máximo 10% do volume por semana.", "Aumentar demais o ritmo no início."],
+  "eliptico": ["Cardio, pernas", "Pés firmes nos pedais, postura ereta › Movimentos suaves", "Boa opção de baixo impacto.", "Apoiar-se demais nas alças."],
+  "escada": ["Cardio, glúteos, quadríceps", "Suba os degraus alternando as pernas › Ritmo constante", "Evite apoiar o peso nas mãos.", "Inclinar demais o corpo."],
+  "esteira": ["Cardio, pernas", "Comece com aquecimento de 5 minutos › Mantenha o ritmo planejado › Faça desaceleração no final", "Inclinação de 1% simula a rua.", "Segurar nas barras e inclinar."],
+  "remo-ergometro": ["Costas, pernas, cardio", "Pernas empurram, depois o tronco, depois os braços › Volte na ordem inversa", "A força vem das pernas.", "Puxar só com os braços."],
+  "caminhada": ["Cardio, pernas", "Passos firmes, postura ereta, braços relaxados › Mantenha um ritmo que permita conversar", "Caminhar rápido por 30 minutos já conta como exercício.", "Andar olhando para o celular."],
+  "esteira-inclinada": ["Cardio, glúteos, panturrilha", "Inclinação de 5 a 12%, velocidade moderada › Postura ereta, sem se apoiar", "Pouco impacto e muito gasto.", "Segurar nas barras."],
+  "natacao": ["Corpo inteiro, cardio", "Respiração rítmica, braçadas longas › Pernas com batimento contínuo", "Aquecer com alguns minutos leves.", "Prender a respiração."],
+  "patins": ["Pernas, glúteos, equilíbrio, cardio", "Use proteção (capacete, joelheiras, cotoveleiras e munhequeiras) › Joelhos levemente flexionados, tronco à frente › Empurre alternando os lados", "Comece em pista plana e livre de trânsito.", "Rodar sem equipamento de proteção."],
+  "bike-rua": ["Pernas, cardio", "Capacete, banco na altura certa › Pedale em cadência constante", "Respeite o trânsito e use luzes ao anoitecer.", "Pedalar sem capacete."],
+  "spinning": ["Pernas, cardio", "Siga o ritmo da aula, ajuste resistência › Alterne sentado e em pé", "Mantenha a hidratação.", "Apertar o guidão e tensionar o ombro."]
+});
+EX_BASE.push(...EX_NOVOS);
 // ---------- utilidades ----------
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -1692,7 +2406,7 @@ function sessBody() {
   a.ex.forEach((x, xi) => {
     const sg = suggest(x.eid, x.item), [hk, hr] = setHead(x.tipo);
     const last = sg ? sg.last.ex.series.filter(s => s.ok).map(s => (s.kg !== "" && num(s.kg) ? fmt1(s.kg) + "×" : "") + (s.reps || "")).join(", ") : "";
-    h += `<div class="ex-card"><div class="row"><div class="grow"><div style="font-weight:700">${esc(x.nome)}</div><div class="xs muted">${x.item.min && x.item.max ? `Meta ${x.item.min}–${x.item.max} ${hr}` : ""}${x.item.desc ? ` · descanso ${x.item.desc}s` : ""}</div></div><button class="iconbtn" data-act="exMenu" data-x="${xi}" aria-label="Opções">${ICON.more}</button></div>
+    h += `<div class="ex-card"><div class="row"><div class="grow"><div style="font-weight:700">${esc(x.nome)}</div><div class="xs muted">${x.item.min && x.item.max ? `Meta ${x.item.min}–${x.item.max} ${hr}` : ""}${x.item.desc ? ` · descanso ${x.item.desc}s` : ""}</div></div><button class="iconbtn" data-act="exInfo" data-id="${esc(x.eid)}" aria-label="Como fazer" style="font-weight:800">?</button><button class="iconbtn" data-act="exMenu" data-x="${xi}" aria-label="Opções">${ICON.more}</button></div>
       ${last ? `<div class="xs ink2" style="margin-top:4px">Última vez (${ddmm(sg.last.w.data)}): ${esc(last)}</div>` : ""}
       ${sg && sg.up && x.tipo === "carga" ? `<div style="margin-top:6px"><span class="pill good">Subiu de nível: ${fmt1(sg.kg)} kg hoje</span></div>` : ""}
       <table class="sets" style="margin-top:6px"><thead><tr><th>Série</th>${hk ? `<th>${hk}</th>` : ""}<th>${hr}</th><th aria-label="Feita"></th></tr></thead><tbody>
@@ -1800,11 +2514,24 @@ ON.exQ = el => { ui.exFiltro.q = el.value; $("#exRes").innerHTML = exLibList(exF
 ON.exE = el => { ui.exFiltro.e = el.value; render(); };
 ACT.exG = ds => { ui.exFiltro.g = ds.g; render(); };
 ACT.newExLib = () => { XP.cb = null; XP.q = ui.exFiltro.q; XP.g = ui.exFiltro.g; ACT.newEx(); };
+// instruções do exercício (EX_INFO): músculos, como fazer, dica e erro comum; sem texto próprio, usa uma orientação geral do grupo
+function exComoFazer(ex) {
+  const i = EX_INFO[ex.id], geral = {
+    carga: "Escolha uma carga que permita fazer todas as repetições com boa técnica › Controle a descida e a subida, sem impulso › Respire: solte o ar no esforço › Pare 1 a 2 repetições antes da falha em exercícios mais técnicos",
+    corpo: "Posição inicial firme, abdômen contraído › Movimento controlado, sem balançar › Amplitude completa que não cause dor › Se estiver fácil, aumente as repetições; se difícil, adapte",
+    tempo: "Assuma a posição e mantenha o corpo alinhado › Respire de forma contínua, sem prender o ar › Pare se perder a postura",
+    cardio: "Aqueça 3 a 5 minutos em ritmo leve › Mantenha um ritmo em que ainda consiga falar frases curtas › Hidrate-se e desacelere no final"
+  };
+  const m = i ? i[0] : ex.grupo, passos = (i ? i[1] : geral[ex.tipo] || geral.carga).split(" › "), dica = i ? i[2] : "Prefira técnica à carga: se perder a postura, reduza o peso.", erro = i ? i[3] : "Usar impulso do corpo no lugar do músculo alvo.";
+  return `<div class="card flat"><div class="eyebrow">Como fazer</div><div class="small muted" style="margin:2px 0 6px">Músculos: ${esc(m)}</div><ol style="margin:0 0 8px 18px;padding:0;line-height:1.45">${passos.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
+    <div class="small"><b>Dica:</b> ${esc(dica)}</div><div class="small" style="margin-top:4px"><b>Erro comum:</b> ${esc(erro)}</div><div class="xs muted" style="margin-top:6px">Orientação geral. Em caso de dor ou dúvida, reduza a carga e procure um profissional.</div></div>`;
+}
 ACT.exInfo = ds => {
   const ex = exById(ds.id), b = bestOf(ds.id);
   const pts = workouts().slice().reverse().map(w => { const x = (w.ex || []).find(z => z.eid === ds.id); if (!x) return null; const v = Math.max(0, ...x.series.filter(s => s.tipo !== "aq").map(s => x.tipo === "carga" ? e1rm(num(s.kg), num(s.reps)) : num(s.reps))); return v ? { x: w.data, y: v } : null; }).filter(Boolean);
   const hist = workouts().filter(w => (w.ex || []).some(z => z.eid === ds.id)).slice(0, 8);
   openSheet({ title: ex.nome, body: `<div class="small muted">${esc(ex.grupo)} · ${esc(ex.equip)}</div>
+    ${exComoFazer(ex)}
     ${b.e1rm ? `<div class="grid2"><div class="card flat stat"><span>Maior carga</span><b>${fmt1(b.kg)} kg</b></div><div class="card flat stat"><span>1RM estimado</span><b>${fmt1(b.e1rm)} kg</b></div></div>` : ""}
     ${pts.length > 1 ? `<div class="card flat"><div class="eyebrow">${ex.tipo === "carga" ? "1RM estimado por treino" : "Melhor série por treino"}</div>${lineChart(pts, { unit: ex.tipo === "carga" ? "kg" : "", color: "--prot", h: 170 })}</div>` : ""}
     ${hist.length ? `<div class="card flat"><div class="eyebrow">Últimos treinos</div><div class="list">${hist.map(w => { const x = w.ex.find(z => z.eid === ds.id); const [hk] = setHead(x.tipo); return `<div class="li"><div class="grow"><div class="t">${ddmm(w.data)}</div><div class="s tnum">${x.series.map(s => (hk && num(s.kg) ? fmt1(s.kg) + "×" : "") + s.reps).join(", ")}</div></div></div>`; }).join("")}</div></div>` : `<div class="empty">Ainda sem registros deste exercício.</div>`}
@@ -1876,6 +2603,12 @@ function frMovTipos(td) {
   (day(td).atv || []).forEach(a => { if ((a.min || 0) >= 20) s.add(norm(a.nome || "outro")); });
   return [...s];
 }
+// quando terminou o último exercício que não é musculação (0 = nenhum). Aqui: hora do lançamento em "outras atividades" (o id nasce com a hora).
+function frMovFim(td) {
+  let fim = 0;
+  (day(td).atv || []).forEach(a => { if ((a.min || 0) < 20) return; const t = parseInt(String(a.id || "").slice(0, 8), 36); if (t > 1.6e12 && t > fim) fim = t; });
+  return fim;
+}
 // nota do dia a partir dos dados do app
 function frNotaDe(td) {
   const p = P(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, x = frPlanoDe(td), feitos = treinosDo(td);
@@ -1931,7 +2664,7 @@ function frTopo(tab, td) {
   else if (tabela) { rot = tabela[0]; fala = tabela[1](); }
   else { if (feitos.length || a) fala = treinoFala; else if (sem >= 7) fala = FR_FRASES.volta[7]; else if (sem >= 3) fala = FR_FRASES.volta[3]; else if (temComida) fala = comidaFala; else fala = treinoFala; }
   if (tab === "comer" && sem >= 3 && !temComida) fala = sem >= 7 ? FR_FRASES.volta[7] : FR_FRASES.volta[3];
-  const hoje = td === TODAY(), ctx = { hoje, tab, hr, dow, treinavel: !!treinavel, treinou: feitos.length > 0, mexeu: frMovTipos(td).length > 0, ativo: !!a, passou: nv.k === "galo", nivel: nv.n, temComida };
+  const hoje = td === TODAY(), ctx = { hoje, tab, hr, dow, treinavel: !!treinavel, treinou: feitos.length > 0, mexeu: frMovTipos(td).length > 0, correndo: (() => { const f = frMovFim(td); return f > 0 && Date.now() - f < 1800e3 && Date.now() >= f; })(), ativo: !!a, passou: nv.k === "galo", nivel: nv.n, temComida };
   const bal = frBalaoDo(ctx); ctx.pensando = !!bal && bal.k === "treino";
   let cena = hoje ? frCenaApp(ctx) : (humor === "feliz" ? "danca" : "tarde");
   if (tab === "evo") cena = humor === "feliz" ? "danca" : "pesando";
@@ -1963,7 +2696,7 @@ function frase(cat, rnd) {
 const nomeU = () => (P().nome || (PID() === "main" ? "Rael" : "") || "você").trim() || "Rael";
 
 // voz do Rael Frango nos prompts da IA (coach, análise, sugestão de refeição)
-const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: humor seco, autoirônico, preguiçoso de forma carinhosa (café em negociação, crista torta, aplaude sentado, sofá que faz proposta convincente). Fala curto, com ironia e um carinho escondido; quando o usuário vai bem, finge que não está impressionado. Zoeira leve é bem-vinda, sem caricatura e sem autoajuda motivacional. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Meta batida. A balança perdeu o argumento por hoje." / "Pulou o treino? Rael entende: o sofá fez uma proposta convincente." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
+const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: ironia carinhosa de verdade, com sarcasmo e tiradas curtas, falando DIRETAMENTE com o usuário e tirando sarro do que ele fez (ou deixou de fazer) hoje: sofá, preguiça, pizza, pão de queijo, o "amanhã eu começo". Piadas de frango são bem-vindas (crista, choco, galinheiro, aplaudir sentado). Quando o usuário vai bem, finge que não está impressionado e solta um elogio disfarçado de reclamação. Sem a palavra "campeão", sem autoajuda motivacional, sem caricatura e sem forçar a barra: uma tirada boa vale mais que três meh. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Treinou? Agora o sofá pode voltar a te desejar, mas você pagou o aluguel dele." / "Pizza registrada. Sem julgamento, só um suspiro profissional." / "17h e o treino ainda não apareceu. O sofá deve estar mandando um abraço." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
 // ---- Nota do dia (0 a 100): premia fazer o dia certo, não comer mais ----
 // Nota fracionada: cada item vale a fração da meta do dia inteiro já cumprida. Pesos: calorias 35, proteína 25, atividade 25 (qualquer exercício de 20 min ou mais: treino, caminhada, aeróbico, patins, bike; folga planejada também vale), água 10, registro 5. Bônus de +5 por mais de um tipo de exercício no dia (a nota nunca passa de 100). Níveis: Pintinho < 40, Frango 40–79, Galo Alfa ≥ 80.
 const FR_NOTA = { cal: 35, prot: 25, treino: 25, agua: 10, reg: 5, bonus: 5, a: 40, b: 80 };
@@ -2092,7 +2825,7 @@ function frCenaApp(c) {
   if (c.pensando) return "pensando";
   if (c.ativo) return "treinando";
   if (c.treinou) return "forte";
-  if (c.mexeu) return "corrida";
+  if (c.correndo) return "corrida"; // só nos 30 min depois do exercício; depois volta para a cena da hora
   if (c.passou) return "alfa";
   if (c.nivel === "Pintinho" && c.temComida && c.hr >= 14) return "pintinho";
   if (c.dow === 0 && c.hr >= 8 && c.hr < 18) return "domingo";
@@ -2126,7 +2859,7 @@ function frBalaoDo(c) {
   if (c.treinavel && !c.treinou && !c.mexeu && !c.ativo && c.hr >= 17 && ok("treino")) k = "treino";
   else if (!c.temComida && c.hr >= 13 && ok("comida")) k = "comida";
   if (!k) return null;
-  const l = FR_BALAO[k], txt = l[(new Date().getDate() + c.hr) % l.length].replace("{h}", c.hr);
+  const l = FR_BALAO[k], txt = frNome(l[(new Date().getDate() + c.hr) % l.length].replace("{h}", c.hr));
   return { k, txt, resp: FR_BAL_RESP[k] };
 }
 ACT.frBal = ds => {
@@ -2136,6 +2869,271 @@ ACT.frBal = ds => {
   else { frBalSet(k, fim.getTime()); toast("Registrado: hoje o sofá venceu. O Rael não conta pra ninguém."); }
   render();
 };
+// ---- Frases do Rael, rodada 5: ironia carinhosa, falando COM o usuário (30/10/2026) ----
+// {nome} vira o nome do perfil de quem está logado (sem nome: "você"; ", {nome}" some). Nunca escrever nome fixo aqui.
+function frNomeUsuario() { return P().nome || ""; }
+function frVozNome() { const n = (frNomeUsuario() || "").trim().split(/\s+/)[0]; return n ? `\nO usuário se chama ${n}: chame-o assim quando fizer sentido, nunca por outro nome.` : "\nO usuário não cadastrou o nome: fale só em \"você\"."; }
+function frNome(s) {
+  let n = ""; try { n = (frNomeUsuario() || "").trim(); } catch (_) {}
+  const pri = n.split(/\s+/)[0] || "";
+  return String(s).replace(/,\s*\{nome\}/g, pri ? ", " + pri : "").replace(/\{nome\}/g, pri || "você");
+}
+const FR_EXTRA = {
+  manha: [
+    "Bom dia, {nome}. O café ainda está no plano; a motivação, em recuperação judicial.",
+    "Acordou cedo? Suspeito. O Rael só acorda cedo quando a casa pega fogo.",
+    "Bom dia. O sol já nasceu e eu ainda estou tentando decidir se aprovo.",
+    "Abriu o app antes do café. Corajoso ou desesperado. Possivelmente os dois.",
+    "Mais um dia para fingir que o despertador não foi uma agressão pessoal.",
+    "Bom dia, {nome}. Hoje a gente tenta acertar a refeição antes que a padaria tente por você.",
+    "Manhã. Aquele horário em que todo mundo promete que hoje vai ser diferente.",
+    "O Rael acordou com uma única meta: não ser notado antes das dez.",
+    "Bom dia. Pão de queijo ainda é carboidrato, só para constar.",
+    "Café da manhã é a refeição mais importante do dia. Ou foi isso que o pão francês me contou.",
+    "Olha só quem acordou com disposição. Anota aí: o dia está sob observação.",
+    "Bom dia. Se a manhã tem cara, ela está com a minha: amassada."
+  ],
+  tarde: [
+    "Tarde. Aquele momento em que o almoço pede uma soneca e a soneca pede um advogado.",
+    "A tarde chegou. A energia, nem tanto. Combinamos de tentar mesmo assim.",
+    "Metade do dia já passou. Se está indo bem, finge que é normal. Se não, tem tempo.",
+    "O Rael, a essa hora, só quer saber quem inventou o 'só mais uma reunião'.",
+    "Tarde, {nome}. Nem o sofá sabe se deve te chamar ou te deixar em paz.",
+    "Lanche da tarde é um direito constitucional. Só não vale ser a refeição mais trabalhada do dia.",
+    "Já bebeu água hoje ou só viveu de café e expectativa?",
+    "Depois do almoço o corpo pede paz e o app pede treino. Tente ouvir os dois.",
+    "A tarde é longa. Dá para fazer uma boa e uma ruim. Escolhe a boa, que o Rael tá olhando.",
+    "O Rael às quatro da tarde: fantasia de gente produtiva, alma de travesseiro."
+  ],
+  noite: [
+    "Noite. A hora oficial do 'só um pedacinho' e do 'amanhã eu começo'.",
+    "O dia fecha. A sua nota decide se hoje foi de Pintinho ou de Galo. Sem pressão.",
+    "Boa noite, {nome}. Janta leve e vá dormir cedo; o Rael entende, sono é o suplemento mais barato.",
+    "Se ainda não bebeu água hoje, é a sua última chance de salvar a reputação.",
+    "A cozinha está aberta, mas o Rael recomenda que o filtro de bom senso esteja ligado.",
+    "Noite chegando. A geladeira vai chamar. Você sabe o que ela quer; ela sabe o que você quer.",
+    "Última volta do dia. Fecha as metas e vai descansar. O Rael também precisa de silêncio para criticar à vontade.",
+    "A essa hora, qualquer decisão é tomada pelo cansaço. O app é só testemunha."
+  ],
+  domingo: [
+    "Domingo. O único dia em que 'não fiz nada' conta como relatório.",
+    "Domingo, {nome}. O Rael tem uma agenda cheia: sofá, pantufa e talvez uma ideia.",
+    "Dia de descanso é treino com outro nome. Pelo menos foi o que eu disse ao meu bíceps.",
+    "Hoje a única meta obrigatória é não desmarcar a segunda-feira.",
+    "Se der, uma caminhada. Se não der, um passeio até a cozinha vale como cardio? Não. Mas obrigado por perguntar.",
+    "Domingo: sem pressa, sem culpa e com almoço de família. Controle o pudim, não a vida.",
+    "O Rael declara domingo: dia oficial de pensar em treinar. Pensar também gasta caloria? Eu adoraria."
+  ],
+  refeicao: [
+    "Anotado. O arroz subiu na minha estima; o feijão, ainda mais.",
+    "Registrado. O prato ficou melhor que a desculpa que você ia inventar.",
+    "Lancei aqui. E sim, eu vi o segundo prato. Eu vejo tudo, só não comento.",
+    "Isso aí. Nada como um almoço que não precisa de legenda.",
+    "Refeição lançada. Se foi pizza, a gente conversa depois com delicadeza e um copo d'água.",
+    "Feito. O Rael só não vai opinar sobre o tamanho da porção, porque está comendo também.",
+    "Mais uma anotação. Seu futuro eu agradece o dado, o passado ainda pergunta pelo doce.",
+    "Calorias contabilizadas. Culpa, só se você pedir.",
+    "Boa. Comeu direito sem eu precisar pedir. Estou desconfiando de você.",
+    "Registrado. Mastigue devagar; o Rael aprendeu que a comida não corre.",
+    "Pronto. Prato bonito, nutrientes no lugar. Quem é você e onde guardou o miojo?",
+    "Anotei. Se foi salada, parabéns; se foi 'salada' entre aspas, também, mas com ressalvas.",
+    "Lançado! Sem anotação, a comida não conta. Com anotação, ela conta e ainda dá pontos.",
+    "Refeição registrada. O dia agradece e a balança finge que não ouviu.",
+    "Sempre que você anota, um frango é salvo da dúvida. Ou algo assim."
+  ],
+  treino: [
+    "Treino feito. Agora o sofá pode voltar a te desejar, mas você pagou o aluguel dele.",
+    "Treinou! Pode se sentar. Mas não faz disso um hábito de domingo.",
+    "Treino registrado. Seu corpo está processando a ofensa; amanhã ele cobra.",
+    "Olha só: levantou peso e nenhuma desculpa. Hoje foi um bom dia.",
+    "Mais um treino no histórico. O Rael só quer saber quem vai levar a toalha amanhã.",
+    "Treinou, {nome}? Então hoje a crista está alta e o Rael está insuportável de orgulho.",
+    "Feito. O ferro agradeceu a visita; o sofá, nem tanto.",
+    "Treino entregue. Pode comer sem culpa, mas só um pouco de culpa fica bem.",
+    "Quanta disposição. Eu me senti inspirado a assistir a você treinando, sentado.",
+    "Treino fechado. Sua lombar mandou um recado: 'amanhã eu respondo'.",
+    "Séries concluídas. O Rael faz uma reverência com a cabeça e uma careta com o bico.",
+    "Registrei o treino. Teu corpo vai chorar amanhã, mas é choro de gente em evolução.",
+    "Treinou hoje. Aquele sofá deve estar fazendo terapia.",
+    "O treino aconteceu de verdade. Vou pedir ao calendário para guardar essa data.",
+    "Feito. Hoje você foi mais constante que o sinal de wifi daqui."
+  ],
+  perna: [
+    "Perna treinada. Amanhã a escada vira esporte radical.",
+    "Dia de perna concluído. Sentar no vaso agora é conteúdo de suspense.",
+    "Fez perna, {nome}. A coxa está processando o ocorrido; o Rael sugere condolências.",
+    "Perna feita. Nos próximos dois dias você anda como um frango recém-saído do forno.",
+    "Treinou perna e voltou vivo. Mereceu um respeito e uma cadeira confortável.",
+    "Agachou com vontade. A gravidade perdeu a discussão hoje, mas volta amanhã.",
+    "Leg day cumprido. Pode chorar baixinho quando for descer o meio-fio.",
+    "Perna feita. Seu equilíbrio hoje é uma obra de arte, e amanhã, uma piada.",
+    "Parabéns pela perna. Quem treina perna merece o jantar, o sofá e o silêncio do elevador."
+  ],
+  pulou: [
+    "Pulou o treino? O Rael entende. O sofá teve um argumento forte e você, um dia difícil.",
+    "Hoje não rolou. Tudo bem; a gente anota e amanhã fala sobre o sofá com mais firmeza.",
+    "Sem treino hoje. O Rael finge que acreditou na desculpa, por educação.",
+    "O dia acabou sem treino. O halter ficou esperando e parece que vai sobreviver.",
+    "Faltou hoje? Acontece. Só não vira costume, que o sofá aprende rápido.",
+    "Treino ausente. O Rael deixou uma luz acesa, caso você volte a ter vergonha.",
+    "Sem treino, mas com muita criatividade nas justificativas. Isso também é cardio, só não conta nos pontos.",
+    "Hoje a rotina tirou folga e esqueceu de avisar. Amanhã a gente retoma, combinado?",
+    "O treino não apareceu. Sem drama: o Rael também falta aos próprios compromissos, mas ele é um frango.",
+    "Dia sem treino. Estou me segurando para não fazer uma piada sobre sofá. Quase consegui."
+  ],
+  meta: [
+    "Meta batida. Hoje você foi o frango de capa de revista, e eu o fotógrafo ressentido.",
+    "Calorias no alvo. Estou fingindo que isso não me impressionou. Está difícil.",
+    "Meta cumprida. Alguém pode avisar a balança que hoje ela vai ter de respeitar.",
+    "Dentro da meta. O pudim ficou de fora e ninguém foi preso.",
+    "Você acertou a meta, {nome}. O Rael está com a crista tão alta que bateu no teto.",
+    "Meta em dia. Eu disse que você dava conta; só não falei em voz alta para não estragar.",
+    "Fechou o dia nos números. Vou até fingir que sempre acreditei nisso.",
+    "Meta alcançada. Pode comemorar com uma água gelada, que é a única festa que não tem ressaca."
+  ],
+  agua: [
+    "Água registrada. O Rael anota cada copo; o rim, cada golada.",
+    "Hidratou. Uma pequena vitória contra o café com açúcar.",
+    "Bebeu água, {nome}. Estou com tanto orgulho que quase bebo também.",
+    "Mais um copo. Seu corpo é 70% água e você está só repondo o estoque.",
+    "Água lançada. O frango aprova; o filtro também.",
+    "Beber água é o treino mais fácil que existe. E você ainda passa por esse sacrifício. Valente.",
+    "Copo cheio, nota subindo. Matemática que o Rael gosta.",
+    "Água não é comida, mas dá pontos. É o único atalho legal que existe aqui."
+  ],
+  aguaManha: [
+    "Bom dia e água. Já começou melhor que a maioria das manhãs do Rael.",
+    "Um copo logo cedo? Quem é você e o que fez com a pessoa que dormia até tarde?",
+    "Água de manhã. Pequeno gesto, grande bocejo.",
+    "Hidratação antes do café. O Rael tira o chapéu, que não tem, e a crista, que treme."
+  ],
+  vazio: [
+    "Nenhuma comida anotada. Ou você jejuou com classe ou esqueceu de contar.",
+    "Prato vazio no app. A geladeira, aposto, está cheia de segredos.",
+    "Sem registros ainda. O Rael está começando a achar que você vive de ar e boa intenção.",
+    "O app está tão vazio quanto a promessa de 'amanhã eu começo'. Vamos preencher?",
+    "Nenhuma refeição lançada. O Rael ainda confia em você. Por enquanto.",
+    "Sem comida registrada hoje. O estômago sabe; o app, não. E o Rael pergunta."
+  ],
+  passou: [
+    "Passou da meta. O Rael não vai convocar coletiva de imprensa, mas está com a sobrancelha levantada.",
+    "Meta ultrapassada, {nome}. Amanhã a gente negocia com o prato, hoje o pudim venceu.",
+    "Calorias além do combinado. Respire fundo e feche o dia sem repetir.",
+    "A meta ficou para trás. Ela te deseja boa sorte, uma água e juízo.",
+    "Passou. Sem drama: ninguém virou pintinho por uma sobremesa. Só não faça disso rotina.",
+    "O número ficou alto. Mas o Rael ainda gosta de você, só que com menos crédito.",
+    "Estourou, mas registrou. Ser honesto com o app é mais raro que dieta de domingo."
+  ],
+  proteina: [
+    "Proteína no alvo. A massa magra manda um abraço e um 'finalmente'.",
+    "Meta de proteína batida. Os músculos aprovam em silêncio e com um pouco de dor.",
+    "Proteína em dia, {nome}. Até o frango acha que você está comendo demais dele.",
+    "Bateu a proteína. Agora é só treinar para o músculo saber o que fazer com ela.",
+    "Proteína no verde. O Rael anota isso e esconde o ciúme.",
+    "Hoje a proteína foi levada a sério. O frango dentro do prato agradece a homenagem."
+  ],
+  folga: [
+    "Folga planejada. O sofá agradece, o app também, e o Rael faz cara de quem nunca julgou.",
+    "Dia de descanso. O músculo cresce no sofá; é ciência, não preguiça. Principalmente.",
+    "Hoje a agenda manda descansar. Se quiser caminhar, o Rael não vai reclamar, só dar nota.",
+    "Folga do treino, não da água. O Rael lembra que descanso também é meta.",
+    "Sem treino hoje. Mas se der para esticar as pernas, ganhar o dia é opcional e bonito.",
+    "Dia livre de ferro. Aproveita para fazer qualquer coisa que não seja ficar parado o tempo todo."
+  ],
+  sabado: [
+    "Sábado. Treino extra é opcional; ser feliz é obrigatório. Mas um não atrapalha o outro.",
+    "Sábado, {nome}: pode treinar, passear ou fingir que treina. O Rael só quer saber da pizza.",
+    "Hoje é dia de se mexer sem pressão. Qualquer exercício vale, até levantar pelo controle remoto.",
+    "Sábado, o dia em que a motivação sai de férias e deixa o café da manhã de plantão.",
+    "Se der, um treino. Se não, uma caminhada. Se não, uma boa soneca. O Rael só não aceita o 'nada' com cara de nada."
+  ],
+  peito: [
+    "Peito e braço hoje. O espelho já arrumou a iluminação.",
+    "Dia de empurrar peso. Seja o supino, seja a vida, mas empurre.",
+    "Peito no treino. Pode esticar o ombro, o ego vem junto sem custo.",
+    "Hoje tem supino. Eu só espero que alguém segure a barra com mais vontade que o Rael.",
+    "Treino de peito hoje. O Rael está de óculos escuros para não ofuscar a vaidade.",
+    "Peito e tríceps: a combinação que faz a camisa perguntar se ela não está apertada."
+  ],
+  costas: [
+    "Dia de costas. Quem puxa bem, anda direito; quem puxa mal, reclama da postura.",
+    "Costas hoje. Ninguém vê, mas todo mundo sente quando a camiseta fica melhor.",
+    "Puxada e remada. Aquelas partes do corpo que você só vê com ajuda de dois espelhos.",
+    "Treino de costas: o único em que o resultado fica atrás de você. Literalmente.",
+    "Costas e bíceps hoje. O Rael confia no espelho dos outros para elogiar."
+  ],
+  pernas: [
+    "Dia de pernas. A escada de casa já foi avisada e está se preparando para o pior.",
+    "Hoje tem agachamento. O Rael, por precaução, já pediu uma cadeira de emergência.",
+    "Perna é aquele treino que todo mundo promete e poucos entregam. Hoje é você.",
+    "Dia de pernas: onde se separam os frangos dos pintinhos. E o elevador dos corajosos.",
+    "Leg day. Se a perna não tremer, não valeu. Se tremer, parabéns, mas cuidado com a escada."
+  ],
+  perfil: [
+    "Ajustes e metas. Fique à vontade, o Rael só observa e finge que não está dando palpite.",
+    "Aqui é o painel de controle da sua rotina. Eu só entro quando chamado, o que é uma exceção para mim.",
+    "Perfil e metas: o lugar onde você pode ser sincero sem plateia.",
+    "Mexeu nas metas? O Rael espera que tenha sido por bom senso e não por ansiedade."
+  ],
+  evo: [
+    "Gráficos prontos. Números não mentem, só omitem o que você comeu às 23h.",
+    "Evolução: a linha sobe, desce e ocasionalmente dá uma pirueta. Como a vida.",
+    "Seus números estão aí. O Rael olha para eles com orgulho, medo e um pouco de inveja.",
+    "Peso, treinos e hábitos. O app anota tudo; a vergonha, só você.",
+    "A curva fala sozinha. O Rael só traduz: continue assim e ninguém precisa reclamar.",
+    "Olha o gráfico: uma jornada com altos, baixos e um domingo suspeito."
+  ],
+  descanso: [
+    "O intervalo acabou. O Rael tinha acabado de se acomodar e já vão te tirar do conforto.",
+    "Descanso encerrado. A cadeira imaginária protesta e eu a apoio.",
+    "Hora da próxima série. Sim, ela existe e sim, ela vai doer.",
+    "O cronômetro apitou. Eu sei, eu também odeio quando o tempo passa.",
+    "Série seguinte. Respira, pega o peso e finge que é fácil.",
+    "Acabou a pausa. Para o ferro, o tempo é sempre curto e o sofá, longo."
+  ],
+  pesoReg: [
+    "Peso registrado. Eu e a balança vamos manter isso entre nós, ela e eu.",
+    "Número anotado. O Rael lê a balança com a seriedade de quem lê horóscopo.",
+    "Pesou, {nome}. Que isso sirva de dado, não de sentença.",
+    "Peso lançado. Lembre-se: a balança é uma opinião, não um veredito.",
+    "Peso anotado. Amanhã ele pode mudar de ideia, como o Rael com a segunda-feira.",
+    "Registrei o número. Ele não define você; define só o gráfico."
+  ],
+  foraDeCasa: [
+    "Comeu fora? O Rael registra, respeita e pede só que o prato tenha sido pelo menos bonito.",
+    "Refeição fora de casa. O cardápio estava cheio de opções, a decisão foi sua. Anotado.",
+    "Anotei o lanche. A embalagem fez mais barulho que o seu arrependimento, que foi nenhum.",
+    "Comida de restaurante: onde o 'só uma porção' vem com batata de brinde.",
+    "Comeu fora e voltou para contar. Isso é mais honesto que muito diário.",
+    "Anotado. O cardápio nem sabia que ia virar caloria no meu app."
+  ]
+};
+const FR_BALAO_EXTRA = {
+  treino: [
+    "Já são {h}h e nenhum treino registrado. O sofá está oferecendo parcelamento sem juros.",
+    "{h}h e nada de treino por aqui. Você vai, ou o Rael pede pizza em seu nome?",
+    "O halter está te olhando faz horas. Ele não pisca, mas está decepcionado.",
+    "Treino hoje? A resposta pode ser 'sim', 'depois' ou 'o sofá venceu'. O Rael aceita todas, anota e julga em silêncio.",
+    "{h}h e o treino continua em modo avião. Quer ligar o aparelho ou prefere terminar a novela?",
+    "Sem treino registrado ainda. Eu confio em você. Só não confio no seu sofá."
+  ],
+  comida: [
+    "{h}h e nenhuma comida lançada. Jejum intermitente ou esquecimento intermitente?",
+    "Nada anotado hoje. Ou você virou fotossíntese ou esqueceu de contar.",
+    "O prato sumiu do registro. O Rael tem uma teoria envolvendo pão de queijo.",
+    "O dia já avançou e o app continua vazio. Será que o miojo deu um golpe silencioso?",
+    "Já almoçou? Se sim, anota. Se não, o Rael pergunta com carinho e uma pitada de pânico.",
+    "Seu estômago sabe o que comeu. O app não sabe. Conta pra ele?"
+  ]
+};
+FR_FRASES.manha.push(...FR_EXTRA.manha); FR_FRASES.tarde.push(...FR_EXTRA.tarde); FR_FRASES.noite.push(...FR_EXTRA.noite);
+FR_FRASES.domingo.push(...FR_EXTRA.domingo); FR_FRASES.refeicao.push(...FR_EXTRA.refeicao); FR_FRASES.treino.push(...FR_EXTRA.treino);
+FR_FRASES.perna.push(...FR_EXTRA.perna); FR_FRASES.pulou.push(...FR_EXTRA.pulou); FR_FRASES.meta.push(...FR_EXTRA.meta); FR_FRASES.agua.push(...FR_EXTRA.agua);
+["aguaManha", "vazio", "passou", "proteina", "folga", "sabado", "peito", "costas", "pernas", "perfil", "evo", "descanso", "pesoReg", "foraDeCasa"].forEach(k => { FR2[k].push(...FR_EXTRA[k]); });
+FR_BALAO.treino.push(...FR_BALAO_EXTRA.treino); FR_BALAO.comida.push(...FR_BALAO_EXTRA.comida);
+FRASES.hoje = [].concat(FR_FRASES.manha, FR_FRASES.tarde, FR_FRASES.noite);
+FRASES.agua = FR2.aguaManha.concat(FR_FRASES.agua);
+FRASES.peso = FR2.pesoReg;
 // Tela de abertura: fundo azul, Rael animado e o nome do app. Aparece ao abrir e some sozinha (toque para pular).
 function frSplash(ms) {
   if (window.__frSplashFeito || document.getElementById("fr-splash")) return; window.__frSplashFeito = true;
@@ -2543,6 +3541,8 @@ ACT.delKey = () => { try { localStorage.removeItem(KEY_LS); localStorage.removeI
   w("agua", "agua", 5000, ds => num(ds.v) > 0);
   w("savePeso", "pesando", 6000);
 })();
+// nome do usuário logado nas frases ({nome}); sem nome, "você"
+(function () { const o1 = frPick, o2 = fr2, o3 = frase; frPick = c => frNome(o1(c)); fr2 = c => frNome(o2(c)); frase = (c, r) => frNome(o3(c, r)); })();
 try { frSplash(); } catch (_) {}
 </script>
 <!-- frangometro teste 2026-10-30f -->
