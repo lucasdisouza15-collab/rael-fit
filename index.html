@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v10-20261030u"><script>(function(){try{var V="v10-20261030u";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v11-20261030v"><script>(function(){try{var V="v11-20261030v";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2511,8 +2511,35 @@ ACT.viewWorkout = ds => {
   UIc.confirm = null;
   openSheet({ title: w.nome, body: () => `<div class="small muted">${DOWL[dowOf(w.data)]}, ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${fmt(volume(w))} kg de volume · ~${fmt(kcalTreino(w))} kcal</div>
     ${w.ex.map(x => { const [hk, hr] = setHead(x.tipo); return `<div class="ex-card"><div style="font-weight:700">${esc(x.nome)}</div><div class="small ink2 tnum" style="margin-top:4px">${x.series.map((s, i) => `${stLbl(x.series, i)}: ${hk ? fmt1(s.kg) + " " + hk + " × " : ""}${s.reps} ${hr}`).join("<br>")}</div></div>`; }).join("")}
-    ${UIc.confirm === "delW" ? confirmBox("Apagar este treino do histórico?", "delWorkout", { id: w.id }) : ""}`,
-    foot: `<button class="btn danger" data-act="delWorkoutAsk">Apagar</button><button class="btn block" data-act="repeatWorkout" data-id="${w.id}">Repetir este treino</button>` });
+    `,
+    foot: () => UIc.confirm === "delW" ? `<button class="btn" data-act="cancelConfirm">Cancelar</button><button class="btn danger block" data-act="delWorkout" data-id="${w.id}">Apagar este treino</button>` : `<button class="btn danger" data-act="delWorkoutAsk">Apagar</button><button class="btn" data-act="rotinaDoTreino" data-id="${w.id}">Criar rotina</button><button class="btn block" data-act="repeatWorkout" data-id="${w.id}">Repetir este treino</button>` });
+};
+// cria uma rotina a partir de um treino do histórico (exercícios, séries de trabalho, faixa de repetições e aquecimento como W)
+function rotinaDeTreino(w) {
+  return (w.ex || []).map(x => {
+    const tr = x.series.filter(s => s.tipo !== "aq"), rp = tr.map(s => num(s.reps)).filter(v => v > 0), n = Math.max(1, tr.length || x.series.length);
+    const mn = rp.length ? Math.min(...rp) : 8, mx = rp.length ? Math.max(...rp) : 12, aq = x.series.length - tr.length;
+    return { eid: x.eid, series: n, aq: Math.min(2, aq), min: Math.max(1, Math.min(mn, mx)), max: Math.max(mn, mx, 1), desc: x.item && x.item.desc != null ? x.item.desc : (/supino|remada curvada|agachamento|terra|desenvolvimento/i.test(x.nome || "") ? 120 : 75) };
+  });
+}
+function nomeRotinaLivre(base) {
+  const nrm = s => String(s || "").toLowerCase().replace(/\s+/g, " ").trim(), usados = new Set((P().rotinas || []).map(r => nrm(r.nome)));
+  let n = (base || "Rotina").trim().slice(0, 56) || "Rotina", c = n, i = 2; while (usados.has(nrm(c))) c = n + " (" + i++ + ")"; return c;
+}
+ACT.rotinaDoTreino = ds => {
+  const w = getDoc("treino-" + ds.id); if (!w) return;
+  const it = rotinaDeTreino(w), nome = nomeRotinaLivre(w.nome);
+  openSheet({ title: "Criar rotina", body: `<div class="small ink2">A rotina usa os exercícios deste treino, o número de séries de trabalho, a faixa de repetições e o aquecimento (que abre como série W). As cargas vêm do seu histórico.</div>
+    <label class="f" style="margin-top:10px">Nome da rotina<input type="text" id="wrNome" value="${esc(nome)}" maxlength="60"></label>
+    <div class="list" style="margin-top:8px">${it.map(i => { const e = exById(i.eid); return `<div class="li"><div class="grow"><div class="t">${esc(e.nome)}</div><div class="s">${i.aq ? "W + " : ""}${i.series} série${i.series === 1 ? "" : "s"} · ${i.min === i.max ? i.min : i.min + "–" + i.max} reps</div></div></div>`; }).join("")}</div>`,
+    foot: `<button class="btn pri block" data-act="rotinaDoTreinoGo" data-id="${w.id}">Criar rotina</button>` });
+};
+ACT.rotinaDoTreinoGo = ds => {
+  const w = getDoc("treino-" + ds.id); if (!w) return;
+  const nome = nomeRotinaLivre(($("#wrNome") || {}).value || w.nome), itens = rotinaDeTreino(w);
+  if (!itens.length) { toast("Esse treino não tem exercícios."); return; }
+  updP(p => { p.rotinas = (p.rotinas || []).concat([{ id: uid(), nome, itens }]); });
+  closeAllSheets(); ui.sub.treino = "rotinas"; render(); toast("Rotina \"" + nome + "\" criada.");
 };
 ACT.delWorkoutAsk = () => { UIc.confirm = "delW"; redrawSheet(); };
 ACT.delWorkout = ds => { UIc.confirm = null; delDoc("treino-" + ds.id); closeSheet(); toast("Treino apagado"); };
@@ -3863,7 +3890,7 @@ function viewPerfil() {
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label></div>`;
-  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v10</span></h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.</div></div>`;
+  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v11</span></h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.</div></div>`;
   h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}</div>
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
