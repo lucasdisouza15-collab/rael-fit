@@ -2583,10 +2583,10 @@ function hvExId(nome, novos) {
   return id;
 }
 function hvImportar(txt) {
-  const rows = hvCsv(txt); if (rows.length < 2) { toast("Arquivo vazio ou fora do formato do Hevy."); return; }
+  const rows = hvCsv(txt); if (rows.length < 2) return { erro: "O arquivo está vazio ou não é um CSV. Primeira linha lida: " + String(txt).slice(0, 80) };
   const H = rows[0].map(h => norm(h).trim().replace(/\s+/g, "_")), ix = n => H.indexOf(n);
   const cT = ix("title"), cS = ix("start_time"), cE = ix("end_time"), cX = ix("exercise_title"), cI = ix("set_index"), cTy = ix("set_type"), cKg = ix("weight_kg"), cLb = ix("weight_lbs"), cR = ix("reps"), cD = ix("duration_seconds"), cKm = ix("distance_km");
-  if (cS < 0 || cX < 0) { toast("Não parece o CSV do Hevy (faltam as colunas de data e exercício)."); return; }
+  if (cS < 0 || cX < 0) return { erro: "Não parece o CSV de treinos do Hevy: faltam as colunas de data (start_time) e de exercício (exercise_title). Colunas encontradas: " + rows[0].slice(0, 14).join(", ") };
   const novos = {}, treinos = {};
   rows.slice(1).forEach(r => {
     const ini = hvData(r[cS]); if (!ini) return; const key = "hv" + ini;
@@ -2599,14 +2599,32 @@ function hvImportar(txt) {
     else x.series.push({ kg: r1(kg), reps, ok: true, tipo: warm ? "aq" : "" });
   });
   const lista = Object.values(treinos).filter(w => w.ex.some(x => x.series.length));
-  if (!lista.length) { toast("Não achei treinos nesse arquivo."); return; }
+  if (!lista.length) return { erro: "Li " + (rows.length - 1) + " linhas, mas não achei nenhum treino válido (datas ou exercícios não reconhecidos). Exemplo de data na primeira linha: " + (rows[1][cS] || "vazia") };
   const ja = new Set(workouts().map(w => w.id));
   const novosW = lista.filter(w => !ja.has(w.id));
   if (Object.keys(novos).length) updP(p => { p.exCustom = (p.exCustom || []).concat(Object.values(novos).filter(e => !(p.exCustom || []).some(c => c.id === e.id)).map(e => ({ id: e.id, nome: e.nome, grupo: e.grupo, equip: e.equip, tipo: e.tipo }))); });
   novosW.forEach(w => { delete w._ix; w.ex.forEach(x => { x.item.series = x.series.length; }); putDoc("treino-" + w.id, w); });
-  render(); toast(novosW.length + " treino" + (novosW.length === 1 ? "" : "s") + " importado" + (novosW.length === 1 ? "" : "s") + (lista.length > novosW.length ? " (" + (lista.length - novosW.length) + " já estavam aqui)" : "") + (Object.keys(novos).length ? ". " + Object.keys(novos).length + " exercício(s) novo(s) criado(s)." : "."));
+  render();
+  return { n: novosW.length, ja: lista.length - novosW.length, ex: Object.keys(novos).length, series: novosW.reduce((a, w) => a + w.ex.reduce((b, x) => b + x.series.length, 0), 0) };
 }
-ON.hevyImp = el => { const f = el.files && el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { hvImportar(r.result); } catch (e) { console.error(e); toast("Não consegui ler esse arquivo."); } }; r.readAsText(f); el.value = ""; };
+function hvMostra(body, fechar) { replaceSheet({ title: "Importar do Hevy", body, foot: fechar ? `<button class="btn pri block" data-act="sheetClose">Fechar</button>` : "" }); }
+ON.hevyImp = el => {
+  const f = el.files && el.files[0]; if (!f) return; el.value = "";
+  openSheet({ title: "Importar do Hevy", body: `<div class="row"><span class="spin"></span><span>Lendo o arquivo ${esc(f.name)}…</span></div>` });
+  const r = new FileReader();
+  r.onerror = () => hvMostra(`<div class="card small" style="color:var(--bad)">Não consegui abrir o arquivo. Tente de novo ou envie o CSV para o Lucas.</div>`, true);
+  r.onload = () => {
+    setTimeout(() => {
+      try {
+        const buf = new Uint8Array(r.result), u16 = buf[0] === 0xFF && buf[1] === 0xFE, txt = new TextDecoder(u16 ? "utf-16le" : "utf-8").decode(buf);
+        const o = hvImportar(txt);
+        if (o.erro) { hvMostra(`<div class="card small" style="color:var(--bad)">${esc(o.erro)}</div>`, true); return; }
+        hvMostra(`<div class="card"><div class="num" style="font-size:22px;font-weight:600">${o.n} treino${o.n === 1 ? "" : "s"} importado${o.n === 1 ? "" : "s"}</div><div class="small ink2" style="margin-top:6px">${o.series} séries lançadas no histórico.${o.ja ? " " + o.ja + " já estava" + (o.ja === 1 ? "" : "m") + " aqui e foi pulado." : ""}${o.ex ? " " + o.ex + " exercício(s) novo(s) criado(s) na sua lista." : ""}</div></div><div class="xs muted">Veja em Treino, Histórico.</div>`, true);
+      } catch (e) { console.error(e); hvMostra(`<div class="card small" style="color:var(--bad)">Algo deu errado ao ler o arquivo: ${esc(String(e && e.message || e))}</div>`, true); }
+    }, 60);
+  };
+  r.readAsArrayBuffer(f);
+};
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
