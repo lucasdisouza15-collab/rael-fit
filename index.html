@@ -2664,10 +2664,10 @@ function frTopo(tab, td) {
   else if (tabela) { rot = tabela[0]; fala = tabela[1](); }
   else { if (feitos.length || a) fala = treinoFala; else if (sem >= 7) fala = FR_FRASES.volta[7]; else if (sem >= 3) fala = FR_FRASES.volta[3]; else if (temComida) fala = comidaFala; else fala = treinoFala; }
   if (tab === "comer" && sem >= 3 && !temComida) fala = sem >= 7 ? FR_FRASES.volta[7] : FR_FRASES.volta[3];
-  const hoje = td === TODAY(), ctx = { hoje, tab, hr, dow, treinavel: !!treinavel, treinou: feitos.length > 0, mexeu: frMovTipos(td).length > 0, correndo: (() => { const f = frMovFim(td); return f > 0 && Date.now() - f < 1800e3 && Date.now() >= f; })(), ativo: !!a, passou: nv.k === "galo", nivel: nv.n, temComida };
+  const hoje = td === TODAY(), ctx = { hoje, tab, hr, dow, treinavel: !!treinavel, treinou: feitos.length > 0, mexeu: frMovTipos(td).length > 0, correndo: (() => { const f = frMovFim(td); return f > 0 && Date.now() - f < 1800e3 && Date.now() >= f; })(), ativo: !!a, passou: nv.k === "galo", nivel: nv.n, temComida, seq, estourou: temComida && t.kcal > meta * 1.1, aguaOk: !!(m.agua && (d.agua || 0) >= m.agua) };
   const bal = frBalaoDo(ctx); ctx.pensando = !!bal && bal.k === "treino";
   let cena = hoje ? frCenaApp(ctx) : (humor === "feliz" ? "danca" : "tarde");
-  if (tab === "evo") cena = humor === "feliz" ? "danca" : "pesando";
+  if (tab === "evo") { const ps2 = frPesos(); const subiu = ps2.length > 1 && ps2[ps2.length - 1].kg > ps2[ps2.length - 2].kg + 0.3; cena = humor === "feliz" ? "danca" : subiu ? "susto" : (new Date().getDate() % 2 ? "espelho" : "pesando"); }
   const corpo = bal ? `<div class="fr-fala">${esc(bal.txt)}</div><div class="fr-resp">${bal.resp.map(r => `<button class="${r[0]}" data-act="frBal" data-k="${bal.k}" data-a="${r[1]}">${r[2]}</button>`).join("")}</div>` : `<div class="fr-fala">${esc(fala)}</div>`;
   return `<div class="fr-top">${frRaelCena(cena, 104)}<div class="fr-bal"><div class="eyebrow">${esc(rot)}</div>${corpo}</div></div>`;
 }
@@ -2730,6 +2730,7 @@ function frNotaChips(n) {
 // Rael Frango animado. frRaelCena(cena, tam): cenas = manha, tarde, noite, treinando, forte, cansado, comemora.
 // Usa frRael(humor, tam) (SVG aprovado) e só acrescenta peças por cima; o corpo ganha a classe .ra-corpo para animar.
 function frRaelCena(cena, tam) {
+  if (typeof FR_EX !== "undefined" && FR_EX[cena]) return frRaelCenaEx(cena, tam);
   const humor = { manha: "normal", tarde: "normal", noite: "dorme", treinando: "foco", forte: "alfa", cansado: "normal", comemora: "feliz", almoco: "feliz", agua: "feliz", shake: "foco", corrida: "foco", sabado: "normal", domingo: "dorme", alfa: "alfa", pintinho: "normal", danca: "feliz", pesando: "normal", pensando: "foco" }[cena] || "normal";
   let svg = frRael(humor, tam).replace(/^<svg /, '<svg class="ra-s" ');
   const i = svg.indexOf('<path d="M82 164'); // começa no corpo todo
@@ -2820,18 +2821,6 @@ function frReage(cena, ms) {
   try { if (!SHEET.stack.length) render(); } catch (_) {}
   setTimeout(() => { if (FR_REACAO && Date.now() >= FR_REACAO.ate) { FR_REACAO = null; try { if (!SHEET.stack.length) render(); } catch (_) {} } }, ms + 120);
 }
-function frCenaApp(c) {
-  if (FR_REACAO && Date.now() < FR_REACAO.ate) return FR_REACAO.cena;
-  if (c.pensando) return "pensando";
-  if (c.ativo) return "treinando";
-  if (c.treinou) return "forte";
-  if (c.correndo) return "corrida"; // só nos 30 min depois do exercício; depois volta para a cena da hora
-  if (c.passou) return "alfa";
-  if (c.nivel === "Pintinho" && c.temComida && c.hr >= 14) return "pintinho";
-  if (c.dow === 0 && c.hr >= 8 && c.hr < 18) return "domingo";
-  if (c.dow === 6 && c.hr >= 11 && c.hr < 18) return "sabado";
-  return frCenaAgora(false, new Date(2000, 0, 1, c.hr));
-}
 const FR_BALAO = {
   treino: [
     "Já são {h}h e nenhum treino registrado. Vai registrar hoje ou o sofá venceu?",
@@ -2869,6 +2858,161 @@ ACT.frBal = ds => {
   else { frBalSet(k, fim.getTime()); toast("Registrado: hoje o sofá venceu. O Rael não conta pra ninguém."); }
   render();
 };
+// ---- Rael animado: cenas extras, rodada 2 (30/10/2026), cheias de personalidade ----
+// Mesma técnica das cenas aprovadas: SVG por cima do Rael aprovado. "dentro" anda junto com o corpo; "sobre" fica fixo.
+(function () {
+  if (typeof document === "undefined" || document.getElementById("fr-cenas-extra-css")) return;
+  const st = document.createElement("style"); st.id = "fr-cenas-extra-css";
+  st.textContent = `
+.ra-treme .ra-corpo{animation:raTreme .12s linear infinite}
+@keyframes raTreme{0%{transform:translate(0,0)}25%{transform:translate(1.6px,-1px)}50%{transform:translate(-1.4px,1px)}75%{transform:translate(1px,1.4px)}100%{transform:translate(0,0)}}
+.ra .ra-zap{animation:raZap 1s steps(1) infinite;transform-box:fill-box;transform-origin:center}
+.ra .ra-zap:nth-of-type(2){animation-delay:.33s}.ra .ra-zap:nth-of-type(3){animation-delay:.66s}
+@keyframes raZap{0%{opacity:1;transform:scale(1) rotate(0)}50%{opacity:.1;transform:scale(.7) rotate(14deg)}}
+.ra .ra-tv{animation:raTv 1.3s steps(1) infinite}
+@keyframes raTv{0%{opacity:.25}20%{opacity:.08}35%{opacity:.3}60%{opacity:.12}80%{opacity:.28}}
+.ra .ra-bolha{animation:raBolha 3s ease-in-out infinite;transform-box:fill-box;transform-origin:left center}
+@keyframes raBolha{0%,100%{transform:scale(.3);opacity:.9}55%{transform:scale(1.15);opacity:1}60%{transform:scale(1.2);opacity:1}62%{transform:scale(.2);opacity:.3}}
+.ra .ra-luz{animation:raLuz 2.2s ease-in-out infinite}
+@keyframes raLuz{0%,100%{opacity:.28}50%{opacity:.5}}
+.ra .ra-chama{animation:raChama .55s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.ra .ra-chama:nth-of-type(2n){animation-delay:.18s}.ra .ra-chama:nth-of-type(3n){animation-delay:.33s}
+@keyframes raChama{0%,100%{transform:scale(1,1) skewX(0)}50%{transform:scale(.9,1.18) skewX(5deg)}}
+.ra .ra-aura{animation:raAura 3.2s ease-out infinite;transform-box:fill-box;transform-origin:center;opacity:0}
+.ra .ra-aura:nth-of-type(2){animation-delay:1.05s}.ra .ra-aura:nth-of-type(3){animation-delay:2.1s}
+@keyframes raAura{0%{transform:scale(.7);opacity:.7}100%{transform:scale(1.35);opacity:0}}
+.ra-alonga .ra-corpo{animation:raAlonga 3.4s ease-in-out infinite;transform-origin:100px 190px}
+@keyframes raAlonga{0%,100%{transform:scale(1,1)}45%,60%{transform:scale(.93,1.14) rotate(-3deg)}}
+.ra-medita .ra-corpo{animation:raMedita 4.4s ease-in-out infinite;transform-origin:100px 190px}
+@keyframes raMedita{0%,100%{transform:translateY(5px) scale(1.02,.96)}50%{transform:translateY(0) scale(1,1)}}
+.ra .ra-subida{animation:raSub 2.4s ease-out infinite;opacity:0;transform-box:fill-box}
+.ra .ra-subida:nth-of-type(2){animation-delay:.8s}.ra .ra-subida:nth-of-type(3){animation-delay:1.6s}
+@keyframes raSub{0%{opacity:0;transform:translateY(14px) scale(.6)}25%{opacity:.9}100%{opacity:0;transform:translateY(-34px) scale(1.1)}}
+.ra .ra-tic{animation:raTic .5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes raTic{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.ra .ra-palma{animation:raPalma .45s ease-in-out infinite;transform-box:fill-box}
+@keyframes raPalma{0%,100%{transform:translateX(-9px)}50%{transform:translateX(9px)}}
+.ra .ra-palma.d{animation-name:raPalmaD}
+@keyframes raPalmaD{0%,100%{transform:translateX(9px)}50%{transform:translateX(-9px)}}
+.ra .ra-boca{animation:raBoca 3.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 0}
+@keyframes raBoca{0%,15%,100%{transform:scaleY(.05)}40%,65%{transform:scaleY(1)}}
+.ra .ra-susto{animation:raSusto .9s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes raSusto{0%{transform:scale(.4) rotate(-10deg);opacity:0}25%{opacity:1}60%{transform:scale(1.25) rotate(8deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.ra-rei .ra-corpo{animation:raRei 2.8s ease-in-out infinite;transform-origin:100px 190px}
+@keyframes raRei{0%,100%{transform:scale(1.04,1.04) translateY(0)}50%{transform:scale(1.06,1.06) translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.ra *{animation:none!important}}
+`;
+  document.head.appendChild(st);
+})();
+
+const FR_OLHO = {
+  arreg: `<circle cx="80" cy="98" r="13" fill="#fff" stroke="#1B1630" stroke-width="4.5"/><circle cx="120" cy="98" r="13" fill="#fff" stroke="#1B1630" stroke-width="4.5"/><circle cx="80" cy="98" r="2.8" fill="#1B1630"/><circle cx="120" cy="98" r="2.8" fill="#1B1630"/>`,
+  lado: `<circle cx="80" cy="98" r="9.5" fill="#fff" stroke="#1B1630" stroke-width="4"/><circle cx="120" cy="98" r="9.5" fill="#fff" stroke="#1B1630" stroke-width="4"/><circle cx="87" cy="99" r="4.2" fill="#1B1630"/><circle cx="127" cy="99" r="4.2" fill="#1B1630"/>`,
+  meia: `<circle cx="80" cy="98" r="9.5" fill="#fff" stroke="#1B1630" stroke-width="4"/><circle cx="120" cy="98" r="9.5" fill="#fff" stroke="#1B1630" stroke-width="4"/><circle cx="81" cy="101" r="3.6" fill="#1B1630"/><circle cx="119" cy="101" r="3.6" fill="#1B1630"/><path d="M69 98h22a11 11 0 0 0-22 0ZM109 98h22a11 11 0 0 0-22 0Z" fill="#F7D77A" stroke="#1B1630" stroke-width="3.5" stroke-linejoin="round"/>`,
+  cima: `<circle cx="80" cy="98" r="9.5" fill="#fff" stroke="#1B1630" stroke-width="4"/><circle cx="120" cy="98" r="9.5" fill="#fff" stroke="#1B1630" stroke-width="4"/><circle cx="82" cy="93" r="4" fill="#1B1630"/><circle cx="118" cy="93" r="4" fill="#1B1630"/>`
+};
+const FR_SOBR = (d) => `<path d="${d}" fill="none" stroke="#1B1630" stroke-width="4.5" stroke-linecap="round"/>`;
+const FR_C = "#1B1630";
+
+const FR_EX = {
+  // manhã de cafeína: olho arregalado, tremedeira, raios
+  cafeina: { humor: "dorme", cls: "ra-treme", sobre: FR_OLHO.arreg + FR_SOBR("M64 70Q78 60 92 70M108 70Q122 60 136 70") +
+    `<g class="ra-xic"><rect x="140" y="126" width="38" height="44" rx="7" fill="#fff" stroke="${FR_C}" stroke-width="4.5"/><path d="M178 136q14 0 14 12t-14 12" fill="none" stroke="${FR_C}" stroke-width="4.5"/><rect x="144" y="130" width="30" height="10" fill="#6B3E1B"/><text x="159" y="160" font-size="11" font-weight="800" text-anchor="middle" fill="#2F4C9E" font-family="Fredoka,system-ui">CAFÉ</text></g>` +
+    `<path class="ra-zap" d="M30 60l-8 14h8l-6 14 14-18h-9l7-10Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5" stroke-linejoin="round"/><path class="ra-zap" d="M168 50l-8 14h8l-6 14 14-18h-9l7-10Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5" stroke-linejoin="round"/><path class="ra-zap" d="M12 110l-6 10h6l-4 10 10-13h-7l5-7Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5" stroke-linejoin="round"/>` },
+  // sofá: olho meia-bomba, pipoca, controle, luz de TV
+  sofa: { humor: "dorme", cls: "ra-resp", sobre: FR_OLHO.meia + FR_SOBR("M66 86L90 86M110 86L134 86") +
+    `<ellipse class="ra-tv" cx="100" cy="108" rx="66" ry="64" fill="#8FC5F0" opacity=".2"/>` +
+    `<path d="M24 142h40l-5 40h-30Z" fill="#fff" stroke="${FR_C}" stroke-width="4.5" stroke-linejoin="round"/><path d="M33 144l3 36M44 144v36M55 144l-3 36" stroke="#D4574A" stroke-width="4.5"/><circle cx="30" cy="140" r="7" fill="#FFF6D6" stroke="${FR_C}" stroke-width="3"/><circle cx="44" cy="136" r="8" fill="#FFF6D6" stroke="${FR_C}" stroke-width="3"/><circle cx="58" cy="140" r="7" fill="#FFF6D6" stroke="${FR_C}" stroke-width="3"/>` +
+    `<g transform="rotate(-18 164 150)"><rect x="150" y="126" width="16" height="44" rx="5" fill="#3B3A4A" stroke="${FR_C}" stroke-width="4"/><circle cx="158" cy="136" r="3.4" fill="#D4574A"/><circle cx="158" cy="148" r="3" fill="#8FC5F0"/><circle cx="158" cy="158" r="3" fill="#F2C14E"/></g>` },
+  // pizza: olhar culpado de lado, uma sobrancelha, suor
+  pizza: { humor: "normal", cls: "ra-bal", sobre: FR_OLHO.lado + FR_SOBR("M64 86L90 92M110 76Q124 68 138 78") +
+    `<g class="ra-xic"><path d="M146 136L190 150L156 182Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="4.5" stroke-linejoin="round"/><path d="M146 136L190 150" stroke="#D08A2E" stroke-width="7" stroke-linecap="round"/><circle cx="166" cy="152" r="5" fill="#D4574A" stroke="${FR_C}" stroke-width="2.5"/><circle cx="160" cy="166" r="4" fill="#D4574A" stroke="${FR_C}" stroke-width="2.5"/><circle cx="176" cy="156" r="3.4" fill="#D4574A" stroke="${FR_C}" stroke-width="2.5"/></g>` +
+    `<path class="ra-gota" d="M150 66q6 9 0 13q-6-4 0-13Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/>` },
+  // soneca da tarde: touca, travesseiro, bolha de baba
+  soneca: { humor: "dorme", cls: "ra-resp",
+    dentro: `<path d="M60 70Q70 18 130 26Q150 30 142 74Q100 58 60 70Z" fill="#8FA6D8" stroke="${FR_C}" stroke-width="4.5" stroke-linejoin="round"/><circle cx="136" cy="26" r="10" fill="#fff" stroke="${FR_C}" stroke-width="4"/><path d="M60 70Q100 58 142 74" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>`,
+    sobre: `<rect x="40" y="170" width="120" height="26" rx="12" fill="#fff" stroke="${FR_C}" stroke-width="4.5"/><path d="M56 183h88" stroke="#C9D6F2" stroke-width="3"/>` +
+      `<circle class="ra-bolha" cx="106" cy="126" r="11" fill="#CFE8FA" fill-opacity=".8" stroke="${FR_C}" stroke-width="3"/>` + `<text class="ra-z" x="150" y="50">z</text><text class="ra-z" x="150" y="50">Z</text><text class="ra-z" x="150" y="50">z</text>` },
+  // madrugada na geladeira: luz, olho arregalado, pé de lado
+  geladeira: { humor: "dorme", cls: "ra-resp", estilo: "transform:translateX(-14px)", sobre: FR_OLHO.arreg + FR_SOBR("M66 76L90 84M110 72Q124 64 136 74") +
+    `<polygon class="ra-luz" points="150,52 70,86 70,168 150,188" fill="#FFF6D6"/><rect x="150" y="30" width="46" height="168" rx="6" fill="#E9EDF5" stroke="${FR_C}" stroke-width="4.5"/><rect x="156" y="70" width="5" height="40" rx="2" fill="#8A86A0"/><rect x="164" y="40" width="26" height="28" rx="3" fill="#CFE8FA" stroke="${FR_C}" stroke-width="2.5"/><circle cx="177" cy="54" r="5" fill="#fff"/>` },
+  // sequência de dias: em chamas
+  fogo: { humor: "alfa", cls: "ra-bal", sobre: FR_OLHO.arreg.replace(/r="13"/g, 'r="10"').replace(/r="2.8"/g, 'r="3.4"') + FR_SOBR("M60 74L90 92M140 74L110 92") +
+    [[18, 150, 1], [40, 170, 0.8], [160, 170, 0.8], [182, 150, 1], [8, 112, 0.7], [192, 112, 0.7]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})"><path class="ra-chama" d="M0 30Q-14 12 -4 -6Q-2 4 4 0Q4 -16 12 -26Q22 -4 18 12Q24 4 28 10Q28 24 14 30Z" fill="#F28A2E" stroke="${FR_C}" stroke-width="3.5" stroke-linejoin="round"/><path class="ra-chama" d="M6 30Q-2 20 6 8Q10 16 14 10Q18 22 12 30Z" fill="#F2C14E"/></g>`).join("") },
+  // Galo Alfa de verdade: coroa, capa, cetro
+  rei: { humor: "alfa", cls: "ra-rei",
+    dentro: `<path d="M50 140Q40 168 34 196L78 176Z" fill="#B7332B" stroke="${FR_C}" stroke-width="4.5" stroke-linejoin="round"/><path d="M150 140Q160 168 166 196L122 176Z" fill="#B7332B" stroke="${FR_C}" stroke-width="4.5" stroke-linejoin="round"/>` +
+      `<path d="M68 46L72 14L88 30L100 8L112 30L128 14L132 46Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="4.5" stroke-linejoin="round"/><circle cx="100" cy="30" r="5" fill="#D4574A" stroke="${FR_C}" stroke-width="2.5"/><circle cx="82" cy="38" r="3.4" fill="#2F4C9E" stroke="${FR_C}" stroke-width="2"/><circle cx="118" cy="38" r="3.4" fill="#2F4C9E" stroke="${FR_C}" stroke-width="2"/>`,
+    sobre: `<rect x="170" y="100" width="6" height="92" rx="3" fill="#C9962A" stroke="${FR_C}" stroke-width="3"/><path d="M173 74l5 12 12 2-9 8 3 12-11-6-11 6 3-12-9-8 12-2Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="3" stroke-linejoin="round"/>` +
+      `<path class="ra-brilho" d="M24 40l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-brilho" d="M176 30l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5"/>` },
+  // domingo zen: aura, olho fechado, "om"
+  meditando: { humor: "dorme", cls: "ra-medita", sobre: FR_SOBR("M66 82Q78 78 90 84M110 84Q122 78 134 82") +
+    [0, 1, 2].map(() => `<circle class="ra-aura" cx="100" cy="112" r="70" fill="none" stroke="#8FC5F0" stroke-width="5"/>`).join("") +
+    `<text class="ra-subida" x="40" y="60" font-size="18" font-weight="800" fill="#2F4C9E" font-family="Fredoka,system-ui">om</text><text class="ra-subida" x="150" y="52" font-size="18" font-weight="800" fill="#2F4C9E" font-family="Fredoka,system-ui">om</text><text class="ra-subida" x="100" y="30" font-size="14" font-weight="800" fill="#8A86A0" font-family="Fredoka,system-ui">…</text>` },
+  // folga: alongando
+  alongando: { humor: "feliz", cls: "ra-alonga", sobre:
+    `<path class="ra-vento" d="M20 70v-30M36 64v-34M164 64v-34M180 70v-30" stroke="#8A86A0" stroke-width="4" stroke-linecap="round" fill="none"/><text class="ra-subida" x="150" y="56" font-size="16" font-weight="800" fill="#D4574A" font-family="Fredoka,system-ui">aaah</text>` },
+  // meta de água: abraçando a garrafa gigante
+  hidratado: { humor: "feliz", cls: "ra-pulo", sobre:
+    `<rect x="18" y="104" width="44" height="84" rx="14" fill="#CFE8FA" fill-opacity=".85" stroke="${FR_C}" stroke-width="4.5"/><rect x="28" y="92" width="24" height="14" rx="4" fill="#2F4C9E" stroke="${FR_C}" stroke-width="4"/><path d="M22 138q9-6 18 0t18 0v46q0 4-4 4H26q-4 0-4-4Z" fill="#5BB5F0"/><text x="40" y="170" font-size="12" font-weight="800" text-anchor="middle" fill="#fff" font-family="Fredoka,system-ui">H₂O</text>` +
+    `<circle class="ra-subida" cx="34" cy="150" r="3.5" fill="#fff" stroke="#5BB5F0" stroke-width="1.5"/><circle class="ra-subida" cx="46" cy="156" r="3" fill="#fff" stroke="#5BB5F0" stroke-width="1.5"/><path class="ra-brilho" d="M168 50l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-brilho" d="M150 24l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/>` },
+  // balança subiu: susto
+  susto: { humor: "normal", cls: "ra-treme", sobre: FR_OLHO.arreg + FR_SOBR("M64 68Q78 58 92 68M108 68Q122 58 136 68") +
+    `<text class="ra-susto" x="100" y="26" font-size="40" font-weight="800" text-anchor="middle" fill="#D4574A" stroke="${FR_C}" stroke-width="1.5" font-family="Fredoka,system-ui">!!</text>` +
+    `<path class="ra-gota" d="M152 70q6 9 0 13q-6-4 0-13Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-gota" d="M48 76q6 9 0 13q-6-4 0-13Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/>` +
+    `<rect x="46" y="188" width="108" height="14" rx="6" fill="#C9CCD6" stroke="${FR_C}" stroke-width="4.5"/><circle cx="100" cy="195" r="5" fill="#fff" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-agulha" d="M100 195L114 188" stroke="#D4574A" stroke-width="2.5" stroke-linecap="round"/>` },
+  // corrida com fone de ouvido
+  fone: { humor: "foco", cls: "ra-corre", dentro: `<path d="M46 100Q46 36 100 36Q154 36 154 100" fill="none" stroke="#3B3A4A" stroke-width="7" stroke-linecap="round"/><rect x="34" y="94" width="20" height="30" rx="9" fill="#D4574A" stroke="${FR_C}" stroke-width="4.5"/><rect x="146" y="94" width="20" height="30" rx="9" fill="#D4574A" stroke="${FR_C}" stroke-width="4.5"/>`,
+    sobre: `<ellipse cx="82" cy="186" rx="15" ry="8" fill="#2F4C9E" stroke="${FR_C}" stroke-width="4"/><ellipse cx="118" cy="186" rx="15" ry="8" fill="#2F4C9E" stroke="${FR_C}" stroke-width="4"/>` +
+      `<g class="ra-vento" stroke="#8A86A0" stroke-width="4" stroke-linecap="round"><path d="M-4 96h26M-10 116h32M0 136h22"/></g>` +
+      `<text class="ra-nota" x="22" y="56" font-size="24" fill="#2F4C9E" font-family="system-ui">♪</text><text class="ra-nota" x="168" y="46" font-size="24" fill="#D4574A" font-family="system-ui">♫</text>` },
+  // relógio: esperando você anotar a comida
+  relogio: { humor: "normal", cls: "ra-bal", sobre: FR_OLHO.lado.replace(/cx="87"/, 'cx="73"').replace(/cx="127"/, 'cx="113"') + FR_SOBR("M66 84L90 88M110 88L134 84") +
+    `<circle cx="164" cy="150" r="17" fill="#fff" stroke="${FR_C}" stroke-width="4.5"/><path d="M164 150V139M164 150l8 5" stroke="${FR_C}" stroke-width="3.5" stroke-linecap="round"/><rect x="154" y="130" width="20" height="6" rx="2" fill="#2F4C9E" stroke="${FR_C}" stroke-width="3"/>` +
+    `<ellipse class="ra-tic" cx="118" cy="186" rx="15" ry="8" fill="#E08A3A" stroke="${FR_C}" stroke-width="4"/><text class="ra-subida" x="30" y="70" font-size="14" font-weight="800" fill="#8A86A0" font-family="Fredoka,system-ui">tic</text><text class="ra-subida" x="46" y="52" font-size="14" font-weight="800" fill="#8A86A0" font-family="Fredoka,system-ui">tac</text>` },
+  // aplausos
+  aplauso: { humor: "feliz", cls: "ra-pulo", sobre:
+    `<ellipse class="ra-palma" cx="86" cy="150" rx="12" ry="22" transform="rotate(-18 86 150)" fill="#E9B23A" stroke="${FR_C}" stroke-width="4.5"/><ellipse class="ra-palma d" cx="114" cy="150" rx="12" ry="22" transform="rotate(18 114 150)" fill="#E9B23A" stroke="${FR_C}" stroke-width="4.5"/>` +
+    `<path class="ra-brilho" d="M26 70l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-brilho" d="M170 62l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-brilho" d="M100 10l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5"/>` },
+  // bocejo largo
+  bocejo: { humor: "dorme", cls: "ra-resp", sobre: FR_SOBR("M66 84Q78 80 90 86M110 86Q122 80 134 84") +
+    `<ellipse class="ra-boca" cx="100" cy="126" rx="15" ry="14" fill="#7A2A2A" stroke="${FR_C}" stroke-width="4"/><ellipse class="ra-boca" cx="100" cy="134" rx="8" ry="6" fill="#D4574A"/>` +
+    `<path class="ra-gota" d="M72 108q4 7 0 10q-4-3 0-10Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2"/><text class="ra-subida" x="146" y="64" font-size="16" font-weight="800" fill="#2F4C9E" font-family="Fredoka,system-ui">aaahh</text>` },
+  // espelho: tab de evolução
+  espelho: { humor: "alfa", cls: "ra-bal", dentro: `<g stroke="${FR_C}" stroke-width="4.5"><circle class="ra-bic" cx="30" cy="112" r="20" fill="#E9B23A"/><circle class="ra-bic" cx="170" cy="112" r="20" fill="#E9B23A"/></g>`,
+    sobre: `<rect x="150" y="26" width="42" height="62" rx="21" fill="#E6F1FA" stroke="${FR_C}" stroke-width="4.5"/><path d="M160 40Q170 34 182 44" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path class="ra-brilho" d="M171 52l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2"/>` }
+};
+function frRaelCenaEx(cena, tam) {
+  const d = FR_EX[cena];
+  let svg = frRael(d.humor || "normal", tam).replace(/^<svg /, '<svg class="ra-s" ');
+  svg = svg.replace('<path d="M82 164', '<g class="ra-corpo"' + (d.estilo ? ' style="' + d.estilo + '"' : "") + '><path d="M82 164').replace(/<\/svg>$/, "__DENTRO__</g>__SOBRE__</svg>");
+  return `<span class="ra ${d.cls || "ra-resp"}" data-cena="${cena}">${svg.replace("__DENTRO__", d.dentro || "").replace("__SOBRE__", d.sobre || "")}</span>`;
+}
+
+// Escolha da cena do momento (substitui a anterior): gatilhos por hora, dia, treino, comida, água, peso, sequência e nota.
+// Variações: em situações parecidas, o dia do mês escolhe entre 2 ou 3 cenas, para não ficar repetitivo.
+function frCenaApp(c) {
+  if (FR_REACAO && Date.now() < FR_REACAO.ate) return FR_REACAO.cena;
+  const dia = new Date().getDate(), v = n => dia % n;
+  if (c.pensando) return "pensando";
+  if (c.ativo) return "treinando";
+  if (c.correndo) return v(2) ? "fone" : "corrida";
+  if (c.treinou) return (c.seq || 0) >= 3 && v(2) === 0 ? "fogo" : "forte";
+  if (c.passou) return v(2) ? "rei" : "alfa";
+  if (c.estourou) return "pizza";
+  if (c.hr < 5) return "geladeira";
+  if (c.nivel === "Pintinho" && c.temComida && c.hr >= 14) return "pintinho";
+  if (c.aguaOk && c.hr >= 15 && v(2) === 0) return "hidratado";
+  if ((c.seq || 0) >= 5 && v(3) === 0) return "fogo";
+  if (c.dow === 0 && c.hr >= 8 && c.hr < 18) return v(2) ? "meditando" : "domingo";
+  if (c.dow === 6 && c.hr >= 11 && c.hr < 18) return "sabado";
+  if (!c.temComida && c.hr >= 13 && c.hr < 22 && v(3) === 0) return "relogio";
+  if (c.hr >= 5 && c.hr < 9) return ["manha", "cafeina", "bocejo"][v(3)];
+  if (c.hr >= 13 && c.hr < 16 && v(2) === 0) return "soneca";
+  if (c.hr >= 19 && c.treinavel && !c.treinou && !c.mexeu) return v(2) ? "sofa" : "noite";
+  if (c.hr >= 12 && c.hr < 18 && c.treinavel === false && c.dow !== 0 && c.dow !== 6 && v(3) === 0) return "alongando";
+  return frCenaAgora(false, new Date(2000, 0, 1, c.hr));
+}
 // ---- Frases do Rael, rodada 5: ironia carinhosa, falando COM o usuário (30/10/2026) ----
 // {nome} vira o nome do perfil de quem está logado (sem nome: "você"; ", {nome}" some). Nunca escrever nome fixo aqui.
 function frNomeUsuario() { return P().nome || ""; }
