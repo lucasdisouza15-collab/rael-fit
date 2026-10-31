@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v23-20261031d"><script>(function(){try{var V="v23-20261031d";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v24-20261031e"><script>(function(){try{var V="v24-20261031e";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2219,7 +2219,7 @@ function viewSemana() {
   const rid = (p.semana || {})[dwT], r = rid && rotinaById(rid, p);
   if (r) h += `<div class="card"><div class="eyebrow">Hoje, ${DOWL[dwT].toLowerCase()}</div><div class="row" style="margin-top:4px"><div class="grow"><h2>${esc(r.nome)}</h2><div class="small muted">${r.itens.length} exercícios · ${r.itens.reduce((s, x) => s + num(x.series), 0)} séries</div></div><button class="btn pri" data-act="startRoutine" data-id="${r.id}">Começar</button></div><div class="small ink2" style="margin-top:8px">${esc(frase("treino"))}</div></div>`;
   else h += `<div class="card"><div class="eyebrow">Hoje, ${DOWL[dwT].toLowerCase()}</div><div class="row" style="margin-top:4px"><div class="grow small ink2">${(p.rotinas || []).length ? "Dia de folga no plano. " + esc(frase("folga")) : "Ainda não tem rotina. Monte a semana abaixo em 10 segundos."}</div><button class="btn" data-act="startEmpty">Treino livre</button></div></div>`;
-  h += `<div class="card"><h2>Montar a semana</h2><div class="small muted" style="margin:2px 0 10px">O app cria as rotinas e distribui nos dias. Dá para editar tudo depois.</div>
+  h += `<div class="card"><h2>Montar a semana${qi("O app cria as rotinas e distribui nos dias. Dá para editar tudo depois.")}</h2><div style="margin:2px 0 10px"></div>
     <div class="grid2"><label class="f">Dias por semana<select id="genDias">${[2, 3, 4, 5, 6].map(n => `<option value="${n}" ${n === 4 ? "selected" : ""}>${n} dias</option>`).join("")}</select></label>
     <label class="f">Onde treina<select id="genLocal"><option value="academia">Academia completa</option><option value="casa">Em casa com halteres</option><option value="corpo">Só peso corporal</option></select></label>
     <label class="f">Nível<select id="genNivel"><option value="ini">Iniciante</option><option value="int" selected>Intermediário</option><option value="ava">Avançado</option></select></label>
@@ -2535,21 +2535,28 @@ function restBar() {
   if (!bar) { bar = document.createElement("div"); bar.className = "restbar "; document.body.appendChild(bar); document.documentElement.classList.add("fx-resting"); REST.built = false; }
   return bar;
 }
+function restPop() {
+  const o = document.getElementById("restpop"); if (o) o.remove();
+  const p = document.createElement("div"); p.id = "restpop"; p.setAttribute("role", "alertdialog"); p.setAttribute("aria-label", "Descanso acabou");
+  p.style.cssText = "position:fixed;inset:0;z-index:90;background:rgba(15,20,40,.6);display:flex;align-items:center;justify-content:center;padding:24px";
+  p.innerHTML = `<div style="background:var(--card,#fff);color:var(--ink,#1a1d2e);border-radius:22px;padding:24px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)"><div style="font-size:48px;line-height:1">🐔</div><div style="font-family:var(--f-display);font-size:22px;margin:10px 0 6px">Descanso acabou!</div><div style="font-size:16px;line-height:1.4;margin-bottom:18px">${esc(REST.frase)}</div><button class="btn" data-act="restSkip" style="width:100%;min-height:56px;font-size:20px;font-weight:800;background:#2F4C9E;color:#fff;border-color:#2F4C9E;border-radius:14px">Bora</button></div>`;
+  document.body.appendChild(p);
+}
 function drawRest() {
   const left = (REST.end - Date.now()) / 1000;
   if (left <= 0) {
-    const bar = restBar();
+    const bar = restBar(); bar.style.display = "none";
     if (!REST.fim) { REST.fim = true; REST.fimAt = Date.now(); REST.rep = 0; REST.built = false; REST.frase = frase("descanso"); alertaDescanso(); try { pushCancela(); } catch (e) {} }
     else if (REST.rep < 3 && Date.now() - REST.fimAt > 12000 * (REST.rep + 1)) { REST.rep++; alertaDescanso(); }
     else if (Date.now() - REST.fimAt > 60000) { stopRest(); return; }
-    if (!REST.built) { bar.style.background = "#2F4C9E"; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.85">Descanso acabou</div><div style="font-weight:700;font-size:14px;line-height:1.3">${esc(REST.frase)}</div></div><button class="btn sm" data-act="restSkip">Bora</button>`; REST.built = true; }
+    if (!REST.built) { bar.innerHTML = ""; restPop(); REST.built = true; }
     return;
   }
-  const bar = restBar();
+  const bar = restBar(); bar.style.display = ""; const rp0 = document.getElementById("restpop"); if (rp0) rp0.remove();
   if (!REST.built) { bar.style.background = ""; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><input type="number" inputmode="numeric" id="restSet" data-on="restSet" placeholder="seg" aria-label="Definir segundos" style="width:56px;min-height:36px;padding:2px 6px;text-align:center;border-radius:8px"><button class="btn sm" data-act="restSom" aria-label="Som do alerta">${somOn() ? "🔔" : "🔕"}</button><button class="btn sm" data-act="restSkip">Pular</button>`; REST.built = true; }
   const t = $("#restT"); if (t) t.textContent = mmss(Math.ceil(left));
 }
-function stopRest() { try { if (!REST.fim) pushCancela(); } catch (e) {} mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); }
+function stopRest() { try { if (!REST.fim) pushCancela(); } catch (e) {} mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); const rp = document.getElementById("restpop"); if (rp) rp.remove(); }
 ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; if (REST.end < Date.now() + 1000) REST.end = Date.now() + 1000; drawRest(); try { pushAgenda((REST.end - Date.now()) / 1000); } catch (e) {} };
 ON.restSet = el => { const v = clamp(num(el.value), 5, 1800); if (!el.value) return; REST.end = Date.now() + v * 1000; REST.fim = false; el.value = ""; drawRest(); try { pushAgenda(v); } catch (e) {} };
 ACT.restSom = (ds, el) => { try { localStorage.setItem("frango:som", somOn() ? "0" : "1"); } catch (e) {} if (somOn()) alertaDescanso(); el.textContent = somOn() ? "🔔" : "🔕"; };
@@ -2816,7 +2823,8 @@ function ajudaBody() {
   return AJ_FAQ.map(([sec, qs]) => `<div class="eyebrow" style="margin-top:6px">${esc(sec)}</div>` + qs.map(([q, a]) => `<details class="card flat" style="padding:10px 12px"><summary style="font-weight:700;cursor:pointer">${esc(q)}</summary><div class="small ink2" style="margin-top:8px;line-height:1.45">${esc(a)}</div></details>`).join("")).join("");
 }
 ACT.ajuda = () => openSheet({ title: "Como funciona", body: ajudaBody });
-function ajudaCard() { return `<div class="card stack"><h2>Ajuda: como funciona cada tela</h2><div class="small ink2">Dicas rápidas sobre treino, comida e o resto do app. Também há um ? na tela do treino.</div><button class="btn soft block" data-act="ajuda">Abrir a ajuda</button></div>`; }
+function qi(t) { return `<details class="fr-info" style="display:inline-block;vertical-align:middle;margin-left:6px"><summary aria-label="Ajuda" style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--edge,#D5D8DF);font-weight:800;font-size:12px;color:var(--muted,#5A5E6B)">?</summary><div class="xs muted" style="margin-top:6px;font-weight:400;font-family:var(--f-body,inherit);white-space:normal;max-width:300px;text-align:left">${t}</div></details>`; }
+function ajudaCard() { return `<div class="card stack"><h2>Ajuda: como funciona cada tela</h2><div class="small ink2">Dicas rápidas sobre cada tela.</div><button class="btn soft block" data-act="ajuda">Abrir a ajuda</button></div>`; }
 // ---------- Medidas corporais, sono e relatório mensal (voz do Rael) ----------
 const MED_PAD = [["Peito", 14], ["Braço esquerdo", 14], ["Braço direito", 14], ["Barriga", 14], ["Coxa", 30]];
 const SONO_OP = [["Menos de 5h", 4.5], ["5 a 6h", 5.5], ["6 a 7h", 6.5], ["7 a 8h", 7.5], ["Mais de 8h", 9]];
@@ -2860,7 +2868,7 @@ function sonoCard() {
   const dias = Array.from({ length: 7 }, (_, i) => addDays(hj, i - 6));
   const bar = dias.map(dt => { const v = s[dt]; return `<div class="grow" style="text-align:center"><div class="num" style="font-weight:700">${v != null ? fmt1(v) : "—"}</div><div class="xs muted">${ddmm(dt).slice(0, 5)}</div></div>`; }).join("");
   const reg = s[hj] != null ? "" : `<div class="xs muted" style="margin-top:8px">Quanto você dormiu esta noite?</div><div class="row wrap-ok" style="gap:6px;margin-top:4px">${SONO_OP.map(([l, h]) => `<button class="btn sm soft" data-act="sonoReg" data-h="${h}">${l}</button>`).join("")}</div>`;
-  return `<div class="card stack"><h2>Sono</h2><div class="xs muted">${m7.n ? "Média dos últimos 7 dias: " + fmt1(m7.media) + " h" + (m30.n > m7.n ? " · 30 dias: " + fmt1(m30.media) + " h" : "") : "O Rael pergunta toda manhã. Você também pode registrar aqui."}</div>
+  return `<div class="card stack"><h2>Sono</h2><div class="xs muted">${m7.n ? "Média dos últimos 7 dias: " + fmt1(m7.media) + " h" + (m30.n > m7.n ? " · 30 dias: " + fmt1(m30.media) + " h" : "") : ""}</div>
     <div class="row" style="gap:2px;margin-top:6px">${bar}</div>${reg}</div>`;
 }
 ACT.sonoReg = ds => { sonoSet(+ds.h); render(); toast("Sono registrado"); };
@@ -3138,7 +3146,7 @@ function frMedidorCard() {
     <div class="fr-kcal"><b>${fmt(t.kcal)}</b> de ${fmt(meta)} kcal <span class="muted">· ${t.kcal > meta ? "passou " + fmt(t.kcal - meta) : "faltam " + fmt(meta - t.kcal)}</span></div>
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
-    <div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></div>`
+    <details class="fr-info" style="margin-top:8px;text-align:center"><summary aria-label="Como a nota do dia é calculada" style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--edge,#D5D8DF);font-weight:800;font-size:14px;color:var(--muted,#5A5E6B)">?</summary><div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></details></div>`
     + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
 }
@@ -4039,8 +4047,8 @@ function viewHoje() {
   else h += `<div class="row" style="margin-top:8px"><div class="grow small ink2">${(p.rotinas || []).length ? (r ? "Treino do plano: " + esc(r.nome) : "Folga no plano. " + esc(frase("folga"))) : "Monte sua semana de treino na aba Treino."}</div>${ui.date === TODAY() ? `<button class="btn" data-act="goTreino">Abrir</button>` : ""}</div>`;
   h += `</div>`;
   // atividades
-  h += `<div class="card"><div class="row between"><h2>Outras atividades</h2><button class="btn sm soft" data-act="addAtv">${ICON.plus.replace("<svg", '<svg width="15" height="15"')} Adicionar</button></div>
-    ${(d.atv || []).length ? `<div class="list" style="margin-top:4px">${d.atv.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.nome)}</div><div class="s">${fmt(x.min)} min · MET ${fmt1(x.met)}</div></div><span class="kcal-r small">${fmt(x.kcal)} kcal</span><button class="iconbtn" data-act="delAtv" data-id="${x.id}" aria-label="Apagar">${ICON.x}</button></div>`).join("")}</div>` : `<div class="xs muted" style="margin-top:4px">Corrida, futebol, bike, beach tennis… entram no gasto do dia.</div>`}</div>`;
+  h += `<div class="card"><div class="row between"><h2>Outras atividades${qi("Corrida, futebol, bike, beach tennis… entram no gasto do dia.")}</h2><button class="btn sm soft" data-act="addAtv">${ICON.plus.replace("<svg", '<svg width="15" height="15"')} Adicionar</button></div>
+    ${(d.atv || []).length ? `<div class="list" style="margin-top:4px">${d.atv.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.nome)}</div><div class="s">${fmt(x.min)} min · MET ${fmt1(x.met)}</div></div><span class="kcal-r small">${fmt(x.kcal)} kcal</span><button class="iconbtn" data-act="delAtv" data-id="${x.id}" aria-label="Apagar">${ICON.x}</button></div>`).join("")}</div>` : ""}</div>`;
   // água e peso
   const copos = Math.max(1, Math.round(m.agua / 250)), cheios = Math.round((d.agua || 0) / 250);
   h += `<div class="grid2" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)"><div class="card"><div class="row between"><h3>Água</h3><span class="small tnum"><b>${fmt((d.agua || 0) / 1000 * 10 / 10 * 1000)}</b><span class="muted"> / ${fmt(m.agua)} ml</span></span></div>
@@ -4050,7 +4058,7 @@ function viewHoje() {
     <div class="card"><h3>Peso</h3><div class="row" style="margin-top:8px;gap:6px"><input type="number" inputmode="decimal" step="0.1" id="pesoIn" value="${d.peso || ""}" placeholder="${fmt1(pesoNa(ui.date, p))}" aria-label="Peso em kg"><span class="muted small">kg</span></div><button class="btn sm block" style="margin-top:8px" data-act="savePeso">Salvar</button>${d.peso ? `<div class="xs muted" style="margin-top:6px">${esc(frase("peso"))}</div>` : ""}</div></div>`;
   // semana
   h += semanaResumo(p);
-  h += `<div class="card ai"><div class="row"><div class="grow"><div class="ai-badge">${ICON.spark} Coach</div><div class="small ink2">Pergunte sobre dieta, treino ou o seu progresso. A IA vê seus números.</div></div><button class="btn soft" data-act="openCoach">Perguntar</button></div></div>`;
+  h += `<div class="card ai"><div class="row"><div class="grow"><div class="ai-badge">${ICON.spark} Coach${qi("Pergunte sobre dieta, treino ou o seu progresso. A IA vê seus números.")}</div></div><button class="btn soft" data-act="openCoach">Perguntar</button></div></div>`;
   return `<div class="stack">${h}</div>`;
 }
 function semanaResumo(p) {
@@ -4061,7 +4069,7 @@ function semanaResumo(p) {
   return `<div class="card"><div class="row between"><h2>Últimos 7 dias</h2><button class="btn sm ghost" data-act="goEvo">Ver evolução</button></div>
     <div class="grid3" style="margin-top:8px"><div class="stat"><span>${def >= 0 ? "Déficit" : "Superávit"} total</span><b style="color:var(${def >= 0 ? "--good" : "--warn"})">${fmt(Math.abs(def))}</b></div><div class="stat"><span>≈ gordura</span><b>${def >= 0 ? "−" : "+"}${fmt1(Math.abs(def) / 7700)} kg</b></div><div class="stat"><span>Treinos</span><b>${tr}</b></div></div>
     ${n ? barChart(pts, { div: true, h: 150, unit: "kcal", label: "Saldo diário de calorias" }) : `<div class="xs muted" style="margin-top:6px">Lance as refeições para ver o saldo da semana.</div>`}
-    <div class="legend" style="margin-top:4px"><span><i class="dot" style="background:var(--deficit)"></i>déficit</span><span><i class="dot" style="background:var(--surplus)"></i>superávit</span><span class="muted">${n} de 7 dias com registro · 7.700 kcal ≈ 1 kg de gordura (aprox.)</span></div></div>`;
+    <div class="legend" style="margin-top:4px"><span><i class="dot" style="background:var(--deficit)"></i>déficit</span><span><i class="dot" style="background:var(--surplus)"></i>superávit</span>${qi(n + " de 7 dias com registro · 7.700 kcal ≈ 1 kg de gordura (aprox.)")}</div></div>`;
 }
 ACT.goComer = () => { ui.tab = "comer"; ui.sub.comer = "diario"; render(); scrollTo(0, 0); };
 ACT.goTreino = () => { ui.tab = "treino"; ui.sub.treino = "plano"; render(); scrollTo(0, 0); };
@@ -4111,7 +4119,7 @@ function viewEvo() {
   const wk = Array.from({ length: 8 }, (_, i) => { const s = addDays(end, -((dowOf(end) + 6) % 7) - 7 * (7 - i)), e = addDays(s, 6); const l = workouts().filter(w => w.data >= s && w.data <= e); return { x: ddmm(s), y: l.length, c: "--gord", tip: "Semana de " + ddmm(s) + ": " + l.length + " treinos, " + fmt(l.reduce((a, w) => a + volume(w), 0)) + " kg" }; });
   h += `<div class="card"><h2>Treinos por semana</h2><div class="xs muted">Últimas 8 semanas</div>${barChart(wk, { h: 150, label: "Treinos por semana" })}</div>`;
   h += medidasCard() + sonoCard();
-  h += `<div class="card ai"><div class="ai-badge">${ICON.spark} Análise do coach</div><div class="small ink2" style="margin:4px 0 8px">A IA lê seus números do período e diz o que está indo bem e o que ajustar.</div><button class="btn soft block" data-act="aiAnalise">Analisar meus ${per} dias</button></div>`;
+  h += `<div class="card ai"><div class="ai-badge">${ICON.spark} Análise do coach${qi("A IA lê seus números do período e diz o que está indo bem e o que ajustar.")}</div><div style="margin:4px 0 8px"></div><button class="btn soft block" data-act="aiAnalise">Analisar meus ${per} dias</button></div>`;
   return `<div class="stack">${h}</div>`;
 }
 ACT.evoPer = ds => { ui.evoPer = +ds.n; render(); };
@@ -4205,7 +4213,7 @@ function viewPerfil() {
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label></div>`;
-  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v12</span></h2><div class="small ink2">No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.</div></div>`;
+  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v12</span></h2><div class="small ink2">Importar do Hevy${qi("No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.")}</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">${qi("Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.")}</div></div>`;
   h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}${bkGet(BKK) ? ` Último backup: ${ddmm(bkGet(BKK))}.` : " Nenhum backup feito ainda."}</div>
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
@@ -4333,7 +4341,7 @@ function perfisCard() {
     <div class="list">${o.list.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.nome || "Sem nome")}</div><div class="s">${x.id === o.cur ? "em uso" : "dados separados"}</div></div>
       ${x.id === o.cur ? '<span class="pill acc">atual</span>' : `<button class="btn sm" data-act="usePerfil" data-id="${esc(x.id)}">Entrar</button>${x.id !== "main" ? `<button class="iconbtn" data-act="delPerfilAsk" data-id="${esc(x.id)}" aria-label="Apagar perfil">${ICON.trash}</button>` : ""}`}</div>`).join("")}</div>
     ${UIc.confirm && UIc.confirm.startsWith("perfil:") ? confirmBox("Apagar este perfil e todos os dados dele neste aparelho?", "delPerfil", { id: UIc.confirm.slice(7) }, "Apagar perfil") : ""}
-    <div class="xs muted">Cada perfil tem refeições, treinos e metas próprios. Bom para testar ou para dividir o celular.</div></div>`;
+    <div class="xs muted">${qi("Cada perfil tem refeições, treinos e metas próprios. Bom para testar ou para dividir o celular.")}</div></div>`;
 }
 ACT.perfilMenu = () => {
   const o = perfis();
