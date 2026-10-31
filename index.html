@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v19-20261030d"><script>(function(){try{var V="v19-20261030d";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v20-20261031a"><script>(function(){try{var V="v20-20261031a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1752,10 +1752,14 @@ ACT.clearDayAsk = () => { UIc.confirm = "clearDay"; render(); };
 ACT.clearDay = () => { UIc.confirm = null; updDay(ui.date, d => { MEALS.forEach(([k]) => { d.ref[k] = []; }); }); render(); toast("Refeições apagadas"); };
 
 // ---------- folha Adicionar comida ----------
-const ADD = { tab: "buscar", q: "", texto: "", parsed: null, foto: null, fotoUrl: "", fotoTxt: "", aiItens: null, aiBusy: false, aiErr: "", rapido: {} };
+// rascunho do "Digitar": guarda no aparelho enquanto digita (o app pode recarregar e perder o texto)
+const DRAFT_K = "frango:rascunho-texto";
+const draftGet = () => { try { return localStorage.getItem(DRAFT_K) || ""; } catch (e) { return ""; } };
+const draftSet = v => { try { v ? localStorage.setItem(DRAFT_K, v) : localStorage.removeItem(DRAFT_K); } catch (e) {} };
+const ADD = { tab: "buscar", q: "", texto: draftGet(), parsed: null, foto: null, fotoUrl: "", fotoTxt: "", aiItens: null, aiBusy: false, aiErr: "", rapido: {} };
 ACT.addFood = ds => openAdd({ title: "Adicionar em " + MEAL_NAME[ds.m], onAdd: list => { addEntries(ui.date, ds.m, list); toast(list.length > 1 ? list.length + " itens adicionados" : "Adicionado"); } });
 function openAdd(o) {
-  Object.assign(ADD, { tab: "buscar", q: "", parsed: null, aiItens: null, aiErr: "", aiBusy: false, onAdd: o.onAdd, noSaved: !!o.noSaved });
+  Object.assign(ADD, { tab: ADD.texto.trim() ? "texto" : "buscar", q: "", parsed: null, aiItens: null, aiErr: "", aiBusy: false, onAdd: o.onAdd, noSaved: !!o.noSaved });
   if (ADD.tab === "salvas" && o.noSaved) ADD.tab = "buscar";
   openSheet({ title: o.title, full: true, body: addBody, mount: addMount });
 }
@@ -1925,7 +1929,7 @@ function addTexto() {
   if (ADD.parsed) h += parsedList(ADD.parsed);
   return h;
 }
-ON.refTxt = el => { ADD.texto = el.value; };
+ON.refTxt = el => { ADD.texto = el.value; draftSet(ADD.texto); };
 ACT.parseTxt = () => { ADD.texto = $("#refTxt").value; if (!ADD.texto.trim()) { toast("Escreva o que comeu."); return; } ADD.parsed = parseRefeicao(ADD.texto); ADD.aiErr = ""; redrawSheet(); };
 function parsedList(list) {
   const ok = list.filter(x => x.ok), tt = sumT(ok.map(x => entryT(x.e)));
@@ -1943,7 +1947,7 @@ ACT.swapParsed = ds => {
 };
 ACT.addParsed = () => {
   const list = (ADD.parsed || []).filter(x => x.ok).map(x => x.e); if (!list.length) return;
-  ADD.onAdd(list); ADD.parsed = null; ADD.texto = ""; closeSheet();
+  ADD.onAdd(list); ADD.parsed = null; ADD.texto = ""; draftSet(""); closeSheet();
 };
 
 // ---------- Foto e texto com IA (só aparece com conta Claude) ----------
