@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v30-20261031k"><script>(function(){try{var V="v30-20261031k";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v31-20261031l"><script>(function(){try{var V="v31-20261031l";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3046,17 +3046,36 @@ function fotoDB() {
     try { const r = indexedDB.open("frango-fotos", 1); r.onupgradeneeded = () => { r.result.createObjectStore("f", { keyPath: "id" }); }; r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); }
   });
 }
+function fotoBanco() { try { return typeof S !== "undefined" && S && S.db && S.canWrite !== false ? S.db : null; } catch (e) { return null; } }
+const FOTO_CH = 150000;
 async function fotoLista(wid) {
+  const bd = fotoBanco();
+  if (bd) {
+    const q = await bd.collection("fotostreino").get(), metas = [];
+    q.docs.forEach(x => { const m = x.data(); if (m && m.n && (!wid || m.w === wid)) metas.push(Object.assign({ id: x.id }, m)); });
+    const out = [];
+    for (const m of metas) { const ps = []; for (let i = 0; i < m.n; i++) ps.push(bd.doc("fotochunks/" + m.id + "-" + i).get()); const rs = await Promise.all(ps); out.push({ id: m.id, w: m.w, t: m.t, d: rs.map(r => r.exists ? r.data().d : "").join("") }); }
+    return out.sort((a, b) => a.t - b.t);
+  }
   const db = await fotoDB();
-  return new Promise((ok, no) => { const q = db.transaction("f").objectStore("f").getAll(); q.onsuccess = () => ok(q.result.filter(x => !wid || x.w === wid).sort((a, b) => a.t - b.t)); q.onerror = () => no(q.error); });
+  return new Promise((ok, no) => { const q = db.transaction("f").objectStore("f").getAll(); q.onsuccess = () => ok(q.result.filter(x => x.d && (!wid || x.w === wid)).sort((a, b) => a.t - b.t)); q.onerror = () => no(q.error); });
 }
-async function fotoPut(rec) { const db = await fotoDB(); return new Promise((ok, no) => { const t = db.transaction("f", "readwrite"); t.objectStore("f").put(rec); t.oncomplete = ok; t.onerror = () => no(t.error); }); }
-async function fotoDelDB(id) { const db = await fotoDB(); return new Promise((ok, no) => { const t = db.transaction("f", "readwrite"); t.objectStore("f").delete(id); t.oncomplete = ok; t.onerror = () => no(t.error); }); }
+async function fotoPut(rec) {
+  const bd = fotoBanco();
+  if (bd) { const n = Math.ceil(rec.d.length / FOTO_CH); for (let i = 0; i < n; i++) await bd.doc("fotochunks/" + rec.id + "-" + i).set({ d: rec.d.slice(i * FOTO_CH, (i + 1) * FOTO_CH) }); await bd.doc("fotostreino/" + rec.id).set({ w: rec.w, t: rec.t, n }); return; }
+  const db = await fotoDB(); return new Promise((ok, no) => { const t = db.transaction("f", "readwrite"); t.objectStore("f").put(rec); t.oncomplete = ok; t.onerror = () => no(t.error); });
+}
+async function fotoDelDB(id) {
+  const bd = fotoBanco();
+  if (bd) { const m = await bd.doc("fotostreino/" + id).get(), n = m.exists ? m.data().n : 0; for (let i = 0; i < n; i++) await bd.doc("fotochunks/" + id + "-" + i).delete(); await bd.doc("fotostreino/" + id).delete(); return; }
+  const db = await fotoDB(); return new Promise((ok, no) => { const t = db.transaction("f", "readwrite"); t.objectStore("f").delete(id); t.oncomplete = ok; t.onerror = () => no(t.error); });
+}
 function fotoDataUrl(bl) { return new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => ok(""); r.readAsDataURL(bl); }); }
+function fotoDeDataUrl(d) { const p = String(d).split(","), mime = (p[0].match(/:(.*?);/) || [, "image/jpeg"])[1], bin = atob(p[1] || ""), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: mime }); }
 async function fotoLoad(wid) {
   try {
     const l = await fotoLista(wid), o = [];
-    for (const x of l) o.push({ id: x.id, url: await fotoDataUrl(x.blob) });
+    for (const x of l) o.push({ id: x.id, url: x.d });
     FOTO.cache[wid] = o;
     drawSheet();
   } catch (e) { FOTO.cache[wid] = []; }
@@ -3207,14 +3226,14 @@ async function fotoSaida(blob, nome) {
 }
 ACT.fotoCompartilhar = async () => { try { const b = await fotoBlob(); await fotoSaida(b, "treino-rael-" + FOTO.w.data + ".jpg"); } catch (e) { toast("Não consegui gerar a imagem"); } };
 ACT.fotoGuardar = async () => {
-  try { const b = await fotoBlob(); await fotoPut({ id: "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), w: FOTO.w.id, t: Date.now(), blob: b }); toast("Foto salva no histórico do treino"); const wid = FOTO.w.id; SHEET.stack.pop(); await fotoLoad(wid); drawSheet(); }
+  try { const b = await fotoBlob(), d = await fotoDataUrl(b); if (!d) throw new Error("vazia"); await fotoPut({ id: "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), w: FOTO.w.id, t: Date.now(), d }); toast("Foto salva no histórico do treino"); const wid = FOTO.w.id; SHEET.stack.pop(); await fotoLoad(wid); drawSheet(); }
   catch (e) { toast("Não consegui salvar a foto neste aparelho"); }
 };
 ACT.fotoVer = ds => {
   const x = (FOTO.cache[ds.w] || []).find(z => z.id === ds.id); if (!x) return;
   openSheet({ title: "Foto do treino", body: () => `<img src="${x.url}" alt="Foto do treino" style="width:100%;border-radius:16px;display:block">`, foot: () => `<button class="btn danger" data-act="fotoApagar" data-id="${x.id}" data-w="${ds.w}">Apagar</button><button class="btn pri block" data-act="fotoEnviar" data-id="${x.id}">Compartilhar / baixar</button>` });
 };
-ACT.fotoEnviar = async ds => { try { const l = await fotoLista(); const r = l.find(z => z.id === ds.id); if (r) await fotoSaida(r.blob, "treino-rael.jpg"); } catch (e) { toast("Não consegui abrir a foto"); } };
+ACT.fotoEnviar = async ds => { try { const l = await fotoLista(); const r = l.find(z => z.id === ds.id); if (r) await fotoSaida(fotoDeDataUrl(r.d), "treino-rael.jpg"); } catch (e) { toast("Não consegui abrir a foto"); } };
 ACT.fotoApagar = async ds => { try { await fotoDelDB(ds.id); SHEET.stack.pop(); await fotoLoad(ds.w); toast("Foto apagada"); } catch (e) { toast("Não consegui apagar"); } };
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
