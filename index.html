@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v33-20261031n"><script>(function(){try{var V="v33-20261031n";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v34-20261031o"><script>(function(){try{var V="v34-20261031o";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2449,7 +2449,7 @@ function recCheck(xi, si) {
   const a = getDoc("ativo"); if (!a) return; const x = a.ex[xi]; if (!x || !x.series[si] || !x.series[si].ok) return;
   const md = medalSets(x, recAt(x.eid))[si]; if (!md) return;
   const key = a.id + ":" + xi + ":" + md + ":" + x.series[si].kg + "x" + x.series[si].reps; if (REC_SEEN.has(key)) return; REC_SEEN.add(key);
-  toast(md + (md.includes("🏅") ? " Recorde de carga! " : " Recorde de volume! ") + REC_FR[Math.floor(Math.random() * REC_FR.length)]);
+  recFesta(md, REC_FR[Math.floor(Math.random() * REC_FR.length)]);
 }
 function sessBody() {
   const a = getDoc("ativo"); if (!a) return "";
@@ -2891,8 +2891,8 @@ function medidasCard() {
   }).join("");
   const ym = hj.slice(0, 7), prev = addDays(ym + "-01", -1).slice(0, 7);
   return `<div class="card stack"><div class="row between"><h2>Medidas</h2><button class="btn sm" data-act="medCampos">Campos</button></div>
-    <div class="list">${linhas}</div>
-    <div class="row wrap-ok" style="gap:8px"><button class="btn pri grow" data-act="medReg">Registrar medidas</button></div>
+    <div class="list">${linhas}</div>${medGraficos()}
+    <div class="row wrap-ok" style="gap:8px"><button class="btn pri grow" data-act="medReg">Registrar medidas</button><button class="btn soft grow" data-act="progAbrir">📷 Fotos de progresso</button></div>
     <div class="row wrap-ok" style="gap:8px"><button class="btn soft grow" data-act="relMes" data-m="${prev}">Relatório de ${mesNome(prev)}</button><button class="btn soft grow" data-act="relMes" data-m="${ym}">Relatório de ${mesNome(ym)} (até agora)</button></div></div>`;
 }
 function sonoCard() {
@@ -3397,6 +3397,66 @@ ACT.syncAplica = async () => {
   if (!SYNC.p) return; if (syncPainel() && !podeSalvar()) { toast("Sem permissão para salvar agora."); return; }
   try { const fs = SYNC.p.fotos || []; for (const f of fs) await fotoPut({ id: f.id, w: f.w, t: f.t, d: f.d }); const n = syncAplica(SYNC.p.ops.filter(o => o.t !== "fotos")) + fs.length; SYNC.p.ops = []; SHEET.stack = []; drawSheet(); toast("Mesclado: " + n + " itens atualizados"); } catch (e) { toast("Deu erro na mescla: " + (e && e.message || e)); }
 };
+// ---------- comemoração de recorde (Rael) e fotos de progresso com medidas ----------
+function recFesta(md, frase) {
+  const o = document.getElementById("recfesta"); if (o) o.remove();
+  const p = document.createElement("div"); p.id = "recfesta"; p.setAttribute("role", "alertdialog"); p.setAttribute("aria-label", "Recorde");
+  if (typeof S !== "undefined") p.className = "fx";
+  p.style.cssText = "position:fixed;inset:0;z-index:95;background:rgba(15,20,40,.62);display:flex;align-items:center;justify-content:center;padding:24px";
+  let rael = ""; try { rael = frRaelCena("comemora", 150); } catch (e) { rael = '<div style="font-size:64px">🐔</div>'; }
+  const carga = md.includes("🏅");
+  p.innerHTML = `<div style="background:var(--card,#fff);color:var(--ink,#1a1d2e);border-radius:22px;padding:20px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)"><div style="display:flex;justify-content:center">${rael}</div><div style="font-size:44px;line-height:1;margin-top:4px">${md}</div><div style="font-family:var(--f-display);font-size:22px;margin:8px 0 6px">${carga ? "Recorde de carga!" : "Recorde de volume!"}</div><div style="font-size:15px;line-height:1.4;margin-bottom:16px">${esc(frase)}</div><button class="btn" data-act="festaFecha" style="width:100%;min-height:52px;font-size:18px;font-weight:800;background:#2F4C9E;color:#fff;border-color:#2F4C9E;border-radius:14px">Bora!</button></div>`;
+  document.body.appendChild(p);
+  setTimeout(() => { const q = document.getElementById("recfesta"); if (q === p) p.remove(); }, 5500);
+}
+ACT.festaFecha = () => { const o = document.getElementById("recfesta"); if (o) o.remove(); };
+
+// fotos de progresso: guardadas como fotos com w = "prog:AAAA-MM-DD" (mesmo armazenamento das fotos de treino)
+const PROG = { lista: [], carregando: false };
+async function progLoad() {
+  PROG.carregando = true; try { drawSheet(); } catch (e) {}
+  try { const l = await fotoLista(null); PROG.lista = l.filter(x => String(x.w || "").startsWith("prog:")).sort((a, b) => b.t - a.t); } catch (e) { PROG.lista = []; }
+  PROG.carregando = false; try { drawSheet(); } catch (e) {}
+}
+function progMedDe(data) {
+  try { const m = medGet(), h = m.hist.find(x => x.data === data); if (!h) return ""; return m.campos.filter(c => h.v && h.v[c.id] != null).map(c => `${esc(c.nome)} ${fmt1(h.v[c.id])}`).join(" · "); } catch (e) { return ""; }
+}
+function progPesoDe(data) { try { const x = pesosLista().filter(p => p.data <= data).pop(); return x ? fmt1(x.kg) + " kg" : ""; } catch (e) { return ""; } }
+function progBody() {
+  const l = PROG.lista;
+  return `<div class="stack"><div class="small ink2">Tire uma foto de tempos em tempos. Cada foto guarda a data, o peso e as medidas mais próximas. Ficam salvas só no seu Painel/aparelho.</div>
+    <div class="row" style="gap:8px"><label class="btn pri grow" style="text-align:center;cursor:pointer;margin:0">📷 Tirar foto<input type="file" accept="image/*" capture="environment" data-on="progArq" style="display:none"></label><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">🖼️ Da galeria<input type="file" accept="image/*" data-on="progArq" style="display:none"></label></div>
+    ${PROG.carregando ? '<div class="xs muted">Carregando…</div>' : ""}
+    ${l.length ? `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">${l.map(x => { const dt = String(x.w).slice(5); const med = progMedDe(dt), pe = progPesoDe(dt); return `<div class="card flat" style="padding:6px"><img src="${x.d}" alt="Foto de progresso" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block"><div class="small" style="margin-top:4px"><b>${ddmm(dt)}</b>${pe ? " · " + pe : ""}</div>${med ? `<div class="xs muted">${med}</div>` : ""}<button class="btn sm ghost" data-act="progApaga" data-id="${x.id}">Apagar</button></div>`; }).join("")}</div>` : (PROG.carregando ? "" : '<div class="xs muted">Nenhuma foto de progresso ainda.</div>')}</div>`;
+}
+ACT.progAbrir = () => { openSheet({ title: "Fotos de progresso", body: () => progBody(), foot: () => `<button class="btn pri block" data-act="sheetClose">Fechar</button>` }); progLoad(); };
+ON.progArq = el => {
+  const f = el.files && el.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = async () => {
+      try {
+        const k = Math.min(1, 1000 / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+        const d = c.toDataURL("image/jpeg", 0.72), hj = TODAY();
+        await fotoPut({ id: "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), w: "prog:" + hj, t: Date.now(), d });
+        toast("Foto de progresso salva"); progLoad();
+      } catch (e) { toast("Não consegui salvar a foto"); }
+    };
+    im.onerror = () => toast("Não consegui abrir essa imagem"); im.src = String(r.result);
+  };
+  r.readAsDataURL(f); try { el.value = ""; } catch (e) {}
+};
+ACT.progApaga = async ds => { try { await fotoDelDB(ds.id); toast("Foto apagada"); progLoad(); } catch (e) { toast("Não consegui apagar"); } };
+function medGraficos() {
+  const m = medGet(), blocos = m.campos.map(c => {
+    const pts = m.hist.filter(h => h.v && h.v[c.id] != null).map(h => ({ x: h.data, y: +h.v[c.id] }));
+    if (pts.length < 2) return ""; const d = pts[pts.length - 1].y - pts[0].y;
+    return `<div style="margin-top:8px"><div class="row between"><b class="small">${esc(c.nome)}</b><span class="xs muted">${fmt1(pts[0].y)} → ${fmt1(pts[pts.length - 1].y)} cm (${d > 0 ? "+" : ""}${fmt1(d)})</span></div>${lineChart(pts.slice(-40), { unit: "cm", color: "--accent", h: 130, label: "Evolução de " + c.nome })}</div>`;
+  }).join("");
+  return blocos ? `<details class="acc"><summary class="small ink2">Ver gráficos das medidas</summary>${blocos}</details>` : "";
+}
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
