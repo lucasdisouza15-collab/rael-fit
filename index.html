@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v21-20261031b"><script>(function(){try{var V="v21-20261031b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v22-20261031c"><script>(function(){try{var V="v22-20261031c";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2493,13 +2493,39 @@ const REST = { end: 0, t: null, fim: false, fimAt: 0, rep: 0, built: false };
 let AUDIO = null;
 const somOn = () => { try { return localStorage.getItem("frango:som") !== "0"; } catch (e) { return true; } };
 function audioCtx() { try { if (!AUDIO) { const C = window.AudioContext || window.webkitAudioContext; if (C) AUDIO = new C(); } if (AUDIO && AUDIO.state === "suspended") AUDIO.resume(); } catch (e) {} return AUDIO; }
-function alertaDescanso() {
-  try { navigator.vibrate && navigator.vibrate([300, 120, 300, 120, 300]); } catch (e) {}
-  if (!somOn()) return; const c = audioCtx(); if (!c) return;
+let AUD = { sil: null, bip: null };
+function wavUrl(fn, seg, rate) {
+  const n = Math.floor(seg * rate), buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf), w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, fn(i / rate))) * 32767, true);
+  return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+}
+/* áudio mudo em loop mantém o app vivo em segundo plano enquanto o descanso corre (pode não funcionar em todo aparelho) */
+function mudoStart() {
+  try {
+    if (!AUD.sil) { AUD.sil = new Audio(wavUrl(() => 0, 1, 8000)); AUD.sil.loop = true; AUD.sil.setAttribute("playsinline", ""); }
+    const pr = AUD.sil.play(); if (pr && pr.catch) pr.catch(() => {});
+    if (navigator.mediaSession && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: "Descanso em andamento", artist: "Frangômetro" });
+  } catch (e) {}
+}
+function mudoStop() { try { if (AUD.sil) AUD.sil.pause(); } catch (e) {} }
+function bipAudio() {
+  try {
+    if (!AUD.bip) { const fr = [880, 1175, 880, 1175]; AUD.bip = new Audio(wavUrl(t => { const k = Math.floor(t / 0.26); if (k > 3 || (t % 0.26) > 0.22) return 0; const f = fr[k], x = Math.sin(2 * Math.PI * f * t); return 0.6 * (x > 0 ? 1 : -1) * Math.min(1, (t % 0.26) / 0.01) * Math.min(1, (0.22 - (t % 0.26)) / 0.02); }, 1.1, 22050)); }
+    AUD.bip.currentTime = 0; const pr = AUD.bip.play(); if (pr && pr.catch) pr.catch(() => beepWebAudio()); return true;
+  } catch (e) { return false; }
+}
+function beepWebAudio() {
+  const c = audioCtx(); if (!c) return;
   try { [880, 1175, 880, 1175].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), t0 = c.currentTime + i * 0.26; o.type = "square"; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.28, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22); o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + 0.24); }); } catch (e) {}
 }
+function alertaDescanso() {
+  try { navigator.vibrate && navigator.vibrate([300, 120, 300, 120, 300]); } catch (e) {}
+  if (!somOn()) return;
+  if (!bipAudio()) beepWebAudio();
+}
 function startRest(sec) {
-  audioCtx(); /* o toque do usuário libera o som do alerta */
+  audioCtx(); mudoStart(); /* o toque do usuário libera o som do alerta */
   const old = $(".restbar"); if (old) old.remove(); REST.built = false; REST.fim = false; REST.rep = 0;
   REST.end = Date.now() + sec * 1000; clearInterval(REST.t); drawRest();
   REST.t = setInterval(drawRest, 500);
@@ -2523,11 +2549,12 @@ function drawRest() {
   if (!REST.built) { bar.style.background = ""; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><input type="number" inputmode="numeric" id="restSet" data-on="restSet" placeholder="seg" aria-label="Definir segundos" style="width:56px;min-height:36px;padding:2px 6px;text-align:center;border-radius:8px"><button class="btn sm" data-act="restSom" aria-label="Som do alerta">${somOn() ? "🔔" : "🔕"}</button><button class="btn sm" data-act="restSkip">Pular</button>`; REST.built = true; }
   const t = $("#restT"); if (t) t.textContent = mmss(Math.ceil(left));
 }
-function stopRest() { document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); }
+function stopRest() { mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); }
 ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; if (REST.end < Date.now() + 1000) REST.end = Date.now() + 1000; drawRest(); };
 ON.restSet = el => { const v = clamp(num(el.value), 5, 1800); if (!el.value) return; REST.end = Date.now() + v * 1000; REST.fim = false; el.value = ""; drawRest(); };
 ACT.restSom = (ds, el) => { try { localStorage.setItem("frango:som", somOn() ? "0" : "1"); } catch (e) {} if (somOn()) alertaDescanso(); el.textContent = somOn() ? "🔔" : "🔕"; };
 ACT.restSkip = () => stopRest();
+document.addEventListener("visibilitychange", () => { if (!document.hidden && REST.t) drawRest(); }); /* ao desbloquear, o tempo real já é mostrado e o alerta dispara na hora */
 ON.exDesc = el => { const x = +el.dataset.x; updA(a => { if (a.ex[x]) a.ex[x].item.desc = el.value === "" ? 0 : clamp(num(el.value), 0, 900); }, false); };
 
 // ---------- histórico ----------
@@ -2790,6 +2817,139 @@ function ajudaBody() {
 }
 ACT.ajuda = () => openSheet({ title: "Como funciona", body: ajudaBody });
 function ajudaCard() { return `<div class="card stack"><h2>Ajuda: como funciona cada tela</h2><div class="small ink2">Dicas rápidas sobre treino, comida e o resto do app. Também há um ? na tela do treino.</div><button class="btn soft block" data-act="ajuda">Abrir a ajuda</button></div>`; }
+// ---------- Medidas corporais, sono e relatório mensal (voz do Rael) ----------
+const MED_PAD = [["Peito", 14], ["Braço esquerdo", 14], ["Braço direito", 14], ["Barriga", 14], ["Coxa", 30]];
+const SONO_OP = [["Menos de 5h", 4.5], ["5 a 6h", 5.5], ["6 a 7h", 6.5], ["7 a 8h", 7.5], ["Mais de 8h", 9]];
+const MEDUI = { dt: "" };
+const mesNome = ym => ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"][+ym.slice(5, 7) - 1] || ym;
+function medGet(p = P()) {
+  const m = p.med || {};
+  const campos = (m.campos && m.campos.length) ? m.campos : MED_PAD.map(([nome, freq], i) => ({ id: "m" + i, nome, freq }));
+  return { campos, hist: m.hist || [] };
+}
+function medUltimo(id, hist, ate) { for (let i = hist.length - 1; i >= 0; i--) { if (ate && hist[i].data > ate) continue; if (hist[i].v && hist[i].v[id] != null) return { data: hist[i].data, v: hist[i].v[id] }; } return null; }
+function medDias(a, b) { return Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 864e5); }
+function medVencidos() {
+  const m = medGet(), hj = TODAY(); if (!m.hist.length) return [];
+  return m.campos.filter(c => { const u = medUltimo(c.id, m.hist); return !u || medDias(u.data, hj) >= (+c.freq || 14); });
+}
+function pesosLista() {
+  try { if (typeof pesos === "function") return pesos().map(x => ({ data: x.data, kg: x.kg })); } catch (e) {}
+  try { return allDays().map(dt => ({ data: dt, kg: (getDoc("dia-" + dt) || {}).peso })).filter(x => x.kg); } catch (e) { return []; }
+}
+function sonoGet(p = P()) { return p.sono || {}; }
+function sonoSet(horas, data) { updP(p => { p.sono = p.sono || {}; p.sono[data || TODAY()] = horas; const ks = Object.keys(p.sono).sort(); while (ks.length > 400) delete p.sono[ks.shift()]; }); }
+function sonoMedia(dias, ate = TODAY()) { const s = sonoGet(), v = []; for (let i = 0; i < dias; i++) { const x = s[addDays(ate, -i)]; if (x != null) v.push(+x); } return { n: v.length, media: v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0 }; }
+
+// ---- cartão de medidas (Evolução) ----
+function medidasCard() {
+  const m = medGet(), hj = TODAY();
+  const linhas = m.campos.map(c => {
+    const u = medUltimo(c.id, m.hist), ant = u ? medUltimo(c.id, m.hist, addDays(u.data, -1)) : null;
+    const d = u && ant ? u.v - ant.v : null, dias = u ? medDias(u.data, hj) : null, venc = !u || dias >= (+c.freq || 14);
+    return `<div class="li"><div class="grow"><div class="t">${esc(c.nome)}</div><div class="s">${u ? "medido em " + ddmm(u.data) + " · a cada " + (+c.freq || 14) + " dias" : "ainda sem registro · a cada " + (+c.freq || 14) + " dias"}</div></div>${u ? `<b>${fmt1(u.v)} cm</b>` : ""}${d != null ? `<span class="pill ${d <= 0 ? "good" : ""}">${d > 0 ? "+" : ""}${fmt1(d)}</span>` : ""}${venc ? '<span class="pill acc">medir</span>' : ""}</div>`;
+  }).join("");
+  const ym = hj.slice(0, 7), prev = addDays(ym + "-01", -1).slice(0, 7);
+  return `<div class="card stack"><div class="row between"><h2>Medidas</h2><button class="btn sm" data-act="medCampos">Campos</button></div>
+    <div class="list">${linhas}</div>
+    <div class="row wrap-ok" style="gap:8px"><button class="btn pri grow" data-act="medReg">Registrar medidas</button></div>
+    <div class="row wrap-ok" style="gap:8px"><button class="btn soft grow" data-act="relMes" data-m="${prev}">Relatório de ${mesNome(prev)}</button><button class="btn soft grow" data-act="relMes" data-m="${ym}">Relatório de ${mesNome(ym)} (até agora)</button></div></div>`;
+}
+function sonoCard() {
+  const s = sonoGet(), hj = TODAY(), m7 = sonoMedia(7), m30 = sonoMedia(30);
+  const dias = Array.from({ length: 7 }, (_, i) => addDays(hj, i - 6));
+  const bar = dias.map(dt => { const v = s[dt]; return `<div class="grow" style="text-align:center"><div class="num" style="font-weight:700">${v != null ? fmt1(v) : "—"}</div><div class="xs muted">${ddmm(dt).slice(0, 5)}</div></div>`; }).join("");
+  const reg = s[hj] != null ? "" : `<div class="xs muted" style="margin-top:8px">Quanto você dormiu esta noite?</div><div class="row wrap-ok" style="gap:6px;margin-top:4px">${SONO_OP.map(([l, h]) => `<button class="btn sm soft" data-act="sonoReg" data-h="${h}">${l}</button>`).join("")}</div>`;
+  return `<div class="card stack"><h2>Sono</h2><div class="xs muted">${m7.n ? "Média dos últimos 7 dias: " + fmt1(m7.media) + " h" + (m30.n > m7.n ? " · 30 dias: " + fmt1(m30.media) + " h" : "") : "O Rael pergunta toda manhã. Você também pode registrar aqui."}</div>
+    <div class="row" style="gap:2px;margin-top:6px">${bar}</div>${reg}</div>`;
+}
+ACT.sonoReg = ds => { sonoSet(+ds.h); render(); toast("Sono registrado"); };
+
+// ---- registrar medidas ----
+ACT.medReg = () => {
+  MEDUI.dt = TODAY();
+  openSheet({ title: "Registrar medidas", body: () => { const m = medGet(); return `<label class="f">Data<input type="date" id="medDt" value="${MEDUI.dt}" max="${TODAY()}" data-on="medDt"></label>
+    <div class="small ink2">Em centímetros. Deixe em branco o que não mediu hoje.</div>
+    ${m.campos.map(c => { const u = medUltimo(c.id, m.hist); return `<label class="f">${esc(c.nome)}${u ? ` <span class="xs muted">(última: ${fmt1(u.v)} cm em ${ddmm(u.data)})</span>` : ""}<input type="number" inputmode="decimal" step="0.1" class="medIn" data-id="${esc(c.id)}" placeholder="cm"></label>`; }).join("")}`; },
+    foot: () => `<button class="btn" data-act="sheetClose">Cancelar</button><button class="btn pri block" data-act="medSalva">Salvar</button>` });
+};
+ON.medDt = el => { MEDUI.dt = el.value || TODAY(); };
+ACT.medSalva = () => {
+  const v = {}; document.querySelectorAll(".medIn").forEach(el => { const n = num(el.value); if (el.value !== "" && n > 0) v[el.dataset.id] = n; });
+  if (!Object.keys(v).length) { toast("Escreva pelo menos uma medida."); return; }
+  const dt = MEDUI.dt || TODAY();
+  updP(p => { const m = medGet(p); const hist = (m.hist || []).filter(x => x.data !== dt); const ex = (p.med && p.med.hist || []).find(x => x.data === dt); hist.push({ data: dt, v: Object.assign({}, ex ? ex.v : {}, v) }); hist.sort((a, b) => a.data < b.data ? -1 : 1); p.med = { campos: m.campos, hist: hist.slice(-400) }; });
+  closeSheet(); render(); toast("Medidas salvas");
+};
+
+// ---- editar campos ----
+ACT.medCampos = () => openSheet({ title: "Campos de medida", body: () => { const m = medGet(); return `<div class="small ink2">Crie as medidas que quiser e diga de quantos em quantos dias o Rael deve lembrar.</div>
+  ${m.campos.map((c, i) => `<div class="card flat stack"><label class="f">Nome<input type="text" maxlength="30" value="${esc(c.nome)}" data-on="medNome" data-i="${i}"></label>
+    <label class="f">Medir a cada<select data-on="medFreq" data-i="${i}">${[7, 14, 15, 21, 30, 60].map(n => `<option value="${n}" ${(+c.freq || 14) === n ? "selected" : ""}>${n} dias</option>`).join("")}</select></label>
+    <button class="btn sm danger" data-act="medDel" data-i="${i}">Remover este campo</button></div>`).join("")}
+  <button class="btn soft block" data-act="medAdd">+ Novo campo</button>`; } });
+function medMut(fn) { updP(p => { const m = medGet(p); const campos = m.campos.map(c => Object.assign({}, c)); fn(campos); p.med = { campos, hist: m.hist }; }); }
+ON.medNome = el => medMut(cs => { const c = cs[+el.dataset.i]; if (c && el.value.trim()) c.nome = el.value.trim().slice(0, 30); });
+ON.medFreq = el => medMut(cs => { const c = cs[+el.dataset.i]; if (c) c.freq = +el.value; });
+ACT.medDel = ds => { medMut(cs => { cs.splice(+ds.i, 1); }); redrawSheet(false); };
+ACT.medAdd = () => { medMut(cs => { cs.push({ id: "m" + uid(), nome: "Nova medida", freq: 14 }); }); redrawSheet(false); };
+
+// ---- relatório mensal na voz do Rael ----
+function relDados(ym) {
+  const p = P(), m = metas(p), ini = ym + "-01", fimMes = addDays(addDays(ini, 32).slice(0, 7) + "-01", -1), hj = TODAY(), fim = fimMes > hj ? hj : fimMes;
+  const dias = []; for (let d = ini; d <= fim; d = addDays(d, 1)) dias.push(d);
+  const reg = dias.map(dt => ({ dt, t: dayT(day(dt)) })).filter(r => r.t.kcal > 0);
+  const media = reg.length ? reg.reduce((s, r) => s + r.t.kcal, 0) / reg.length : 0, prot = reg.length ? reg.reduce((s, r) => s + r.t.p, 0) / reg.length : 0;
+  const naMeta = reg.filter(r => r.t.kcal >= m.kcal * 0.9 && r.t.kcal <= m.kcal * 1.1).length;
+  const ps = pesosLista().filter(x => x.data >= ini && x.data <= fim), pAnt = pesosLista().filter(x => x.data < ini).slice(-1)[0];
+  const ws = workouts().filter(w => w.data >= ini && w.data <= fim);
+  const vol = ws.reduce((s, w) => s + volume(w), 0), prs = ws.reduce((s, w) => s + ((w.prs || []).length), 0);
+  const sono = sonoGet(), sv = dias.filter(d => sono[d] != null).map(d => ({ d, h: +sono[d] }));
+  const curto = sv.filter(x => x.h < 6), ok = sv.filter(x => x.h >= 6);
+  const kc = arr => { const r = arr.map(x => dayT(day(x.d)).kcal).filter(k => k > 0); return r.length ? r.reduce((a, b) => a + b, 0) / r.length : 0; };
+  const treinoNoDia = arr => arr.length ? arr.filter(x => ws.some(w => w.data === x.d)).length / arr.length : 0;
+  const mm = medGet(), meds = mm.campos.map(c => { const a = mm.hist.filter(x => x.data >= ini && x.data <= fim && x.v && x.v[c.id] != null); const pr = medUltimo(c.id, mm.hist, addDays(ini, -1)); if (!a.length) return null; const ult = a[a.length - 1].v[c.id], base = a.length > 1 ? a[0].v[c.id] : (pr ? pr.v : null); return { nome: c.nome, ult, d: base != null ? ult - base : null }; }).filter(Boolean);
+  return { ym, ini, fim, dias: dias.length, m, reg, media, prot, naMeta, ps, pAnt, ws, vol, prs, sv, curto, ok, kcCurto: kc(curto), kcOk: kc(ok), trCurto: treinoNoDia(curto), trOk: treinoNoDia(ok), meds, mediaSono: sv.length ? sv.reduce((s, x) => s + x.h, 0) / sv.length : 0 };
+}
+function relSecoes(r) {
+  const nome = nomeU(), S = [];
+  const parc = r.fim < addDays(r.ini, 27) || r.fim === TODAY();
+  S.push(["Geral", `${nome}, aqui é o Rael com o relatório de ${mesNome(r.ym)}${parc ? " (até agora)" : ""}. Foram ${r.reg.length} ${r.reg.length === 1 ? "dia" : "dias"} com comida anotada, ${r.ws.length} ${r.ws.length === 1 ? "treino" : "treinos"} e ${r.sv.length} ${r.sv.length === 1 ? "noite" : "noites"} de sono contadas. ${r.reg.length + r.ws.length + r.sv.length < 8 ? "Ainda tem pouca coisa anotada. Relatório bom nasce de registro honesto, e eu não invento número." : "Dá para tirar conclusão sem inventar moda."}`]);
+  S.push(["Calorias", r.reg.length ? `Média de ${fmt(r.media)} kcal por dia, para uma meta de ${fmt(r.m.kcal)}. ${r.naMeta} dos ${r.reg.length} dias ficaram perto da meta (10% para cima ou para baixo). Proteína média de ${fmt(r.prot)} g, meta de ${fmt(r.m.p)} g. ${r.media > r.m.kcal * 1.1 ? "Passou da meta na média. Não é crime, mas a balança lê planilha." : r.media < r.m.kcal * 0.8 ? "Comeu bem menos que a meta. Fome crônica atrapalha músculo e humor." : "Média na faixa. O Rael finge que não está orgulhoso."}` : "Sem refeições registradas no período. Sem dado eu só consigo fazer piada."]);
+  if (r.ps.length) { const a = r.ps[0].kg, b = r.ps[r.ps.length - 1].kg, base = r.pAnt ? r.pAnt.kg : a, d = b - base; S.push(["Peso", `Terminou em ${fmt1(b)} kg${r.ps.length > 1 || r.pAnt ? `, ${d <= 0 ? "menos" : "mais"} ${fmt1(Math.abs(d))} kg que ${r.pAnt ? "antes do mês" : "na primeira pesagem do mês"}` : ""}. ${d < -0.3 ? "Ponteiro descendo. O Rael aplaude baixinho para não assustar a balança." : d > 0.5 ? "Subiu um pouco. Pode ser água, treino ou pizza; olha a tendência, não o dia." : "Praticamente estável. Constância também é resultado."}`]); }
+  else S.push(["Peso", "Nenhuma pesagem no mês. A balança sentiu sua falta, e eu também."]);
+  if (r.meds.length) S.push(["Medidas", r.meds.map(x => `${x.nome}: ${fmt1(x.ult)} cm${x.d != null ? " (" + (x.d > 0 ? "+" : "") + fmt1(x.d) + ")" : ""}`).join("; ") + ". Medida conta o que a balança não conta, principalmente quando se treina."]);
+  else S.push(["Medidas", "Nenhuma medida registrada no mês. Peito, braço e barriga contam a história que a balança esconde."]);
+  S.push(["Treino", r.ws.length ? `${r.ws.length} treinos no mês, ${fmt(r.vol)} kg de volume total${r.prs ? " e " + r.prs + " recorde" + (r.prs > 1 ? "s" : "") + " novo" + (r.prs > 1 ? "s" : "") : ""}. Média de ${fmt1(r.ws.length / Math.max(1, r.dias / 7))} treinos por semana. ${r.ws.length / Math.max(1, r.dias / 7) >= 4 ? "Frequência de gente séria." : "Tem espaço para encaixar mais um dia na semana."}` : "Nenhum treino registrado no mês. A academia mandou lembranças e um boleto."]);
+  if (r.sv.length) {
+    let tx = `Dormiu em média ${fmt1(r.mediaSono)} h por noite (${r.sv.length} noites registradas). ${r.curto.length} noites com menos de 6 h.`;
+    if (r.curto.length >= 3 && r.ok.length >= 3) { tx += ` Nos dias de sono curto você comeu em média ${fmt(r.kcCurto)} kcal, contra ${fmt(r.kcOk)} kcal nos dias de sono normal, e treinou em ${Math.round(r.trCurto * 100)}% desses dias, contra ${Math.round(r.trOk * 100)}% nos outros.`; }
+    tx += r.mediaSono < 6.5 ? " Sono curto segura o resultado: aumenta a fome e atrapalha a recuperação. Esse é o ajuste mais barato do mês." : " Sono em dia ajuda tudo o que está acima.";
+    S.push(["Sono", tx]);
+  } else S.push(["Sono", "Sem noites registradas. O Rael pergunta toda manhã: responder leva dois segundos e muda o relatório."]);
+  return S;
+}
+ACT.relMes = ds => {
+  const ym = ds.m || TODAY().slice(0, 7); const r = relDados(ym), sec = relSecoes(r);
+  try { localStorage.setItem("frango:rel-visto", ym); } catch (e) {}
+  const txt = "Relatório do Rael, " + mesNome(ym) + "\n\n" + sec.map(([t, x]) => t + ": " + x).join("\n\n");
+  openSheet({ title: "Relatório de " + mesNome(ym), body: () => `<div class="row" style="justify-content:center">${(() => { try { return frRaelCena("pensando", 90); } catch (e) { return ""; } })()}</div>${sec.map(([t, x]) => `<div class="card flat"><div class="eyebrow">${esc(t)}</div><div class="small ink2" style="margin-top:4px;line-height:1.45">${esc(x)}</div></div>`).join("")}<div class="disc">Gerado com os seus próprios registros, sem IA. Estimativas, não é orientação médica.</div>`,
+    foot: () => `<button class="btn" data-act="sheetClose">Fechar</button><button class="btn pri block" data-act="relCopia">Copiar texto</button>` });
+  window.__relTxt = txt;
+};
+ACT.relCopia = () => { const t = window.__relTxt || ""; try { navigator.clipboard.writeText(t).then(() => toast("Relatório copiado"), () => toast("Não deu para copiar.")); } catch (e) { toast("Não deu para copiar."); } };
+
+// ---- aviso na tela inicial: medir hoje / relatório pronto ----
+function medBanner() {
+  try {
+    const hj = TODAY(), ym = hj.slice(0, 7), prev = addDays(ym + "-01", -1).slice(0, 7); let h = "";
+    let visto = ""; try { visto = localStorage.getItem("frango:rel-visto") || ""; } catch (e) {}
+    if (+hj.slice(8, 10) <= 7 && visto < prev) h += `<div class="card flat"><div class="row" style="gap:8px"><div class="grow"><div class="t" style="font-weight:700">Relatório de ${mesNome(prev)} pronto</div><div class="xs muted">O Rael juntou calorias, peso, medidas, treino e sono.</div></div><button class="btn sm pri" data-act="relMes" data-m="${prev}">Ver</button></div></div>`;
+    const v = medVencidos();
+    if (v.length) h += `<div class="card flat"><div class="row" style="gap:8px"><div class="grow"><div class="t" style="font-weight:700">Dia de medir</div><div class="xs muted">${esc(v.slice(0, 4).map(c => c.nome).join(", "))}${v.length > 4 ? " e mais " + (v.length - 4) : ""}</div></div><button class="btn sm pri" data-act="medReg">Registrar</button></div></div>`;
+    return h;
+  } catch (e) { return ""; }
+}
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
@@ -2933,7 +3093,7 @@ function frMedidorCard() {
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
     <div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></div>`
-    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "")
+    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
 }
 // o app inteiro fala com a voz do Rael (categorias sem frase ficam vazias, sem inventar)
@@ -3403,8 +3563,8 @@ try {
 const FR_PERG = [
   { id: "acordou", q: "Como você acordou hoje?", on: c => c.hr >= 5 && c.hr < 12,
     o: [["Pronto pra guerra", "Gostei da energia. Usa ela hoje, que o treino agradece.", "forte"], ["Normal", "Normal também conta. Dia comum, bom dia comum.", "manha"], ["Destruído", "Respeita o corpo hoje. Descanso e comida boa também são plano.", "bocejo"]] },
-  { id: "sono", q: "Quantas horas você dormiu?", on: c => c.hr >= 5 && c.hr < 13,
-    o: [["Menos de 6h", "Pouco sono segura o músculo e aumenta a fome. Hoje pega leve e dorme mais cedo.", "bocejo"], ["6 a 8h", "Na faixa. O corpo agradece e o Rael também.", "meditando"], ["Mais de 8h", "Dormiu como se fosse profissional. Isso é recuperação, não preguiça.", "soneca"]] },
+  { id: "sono", q: "Quantas horas você dormiu?", on: c => c.hr >= 5 && c.hr < 12,
+    o: [["Menos de 5h", "Menos de 5 horas é pouco. Hoje o corpo vai pedir açúcar; a água e a proteína seguram.", "bocejo"], ["5 a 6h", "Sono curto segura o músculo e aumenta a fome. Hoje pega leve e dorme mais cedo.", "bocejo"], ["6 a 7h", "Dá para o gasto. Se der, uma noite de 7 ou 8 horas deixa tudo melhor.", "manha"], ["7 a 8h", "Na faixa. O corpo agradece e o Rael também.", "meditando"], ["Mais de 8h", "Dormiu como se fosse profissional. Isso é recuperação, não preguiça.", "soneca"]] },
   { id: "cafe", q: "Já tomou café da manhã?", on: c => c.hr >= 6 && c.hr < 11 && !c.temComida,
     o: [["Já", "Então lança aqui para o Rael acreditar.", "cafeina"], ["Ainda não", "Come algo com proteína antes de sair voando.", "cafeina"], ["Pulei", "Entendo, mas ovo ou iogurte não leva nem dois minutos.", "relogio"]] },
   { id: "agua", q: "Como está a água hoje?", on: c => c.hr >= 10 && c.hr < 21 && !c.aguaOk,
@@ -3435,7 +3595,8 @@ function frPergRespond(id, a) {
   const q = FR_PERG.find(x => x.id === id); if (!q || !q.o[a]) return;
   const op = q.o[a], fim = new Date(); fim.setHours(23, 59, 59, 999);
   frBalSet("q:" + id, fim.getTime());
-  frBalSet("qpausa", fim.getTime()); // no máximo uma pergunta respondida por dia
+  if (id === "sono") { try { sonoSet(SONO_OP[a][1]); } catch (_) {} frBalSet("qpausa", Date.now() + 3 * 3600e3); } /* a do sono é fixa; as outras só depois de 3 h */
+  else frBalSet("qpausa", fim.getTime()); // no máximo uma pergunta respondida por dia
   try { const k = "frango:resp", o = JSON.parse(localStorage.getItem(k) || "{}"), d = TODAY(); (o[d] = o[d] || {})[id] = op[0]; const ks = Object.keys(o).sort(); while (ks.length > 30) delete o[ks.shift()]; localStorage.setItem(k, JSON.stringify(o)); } catch (_) {}
   FR_RESP = { txt: op[1], ate: Date.now() + 9000 };
   setTimeout(() => { if (FR_RESP && Date.now() >= FR_RESP.ate) { FR_RESP = null; try { if (!SHEET.stack.length) render(); } catch (_) {} } }, 9200);
@@ -3443,10 +3604,12 @@ function frPergRespond(id, a) {
 }
 // perguntas que combinam com o momento e ainda não foram respondidas hoje
 function frPergEscolhe(c, ok) {
+  // sono: pergunta FIXA toda manhã, até ser respondida; as outras se intercalam depois
+  try { const sq = FR_PERG.find(x => x.id === "sono"); if (sq && c.hr >= 5 && c.hr < 12 && ok("q:sono") && sonoGet()[TODAY()] == null) return { k: "q:sono", txt: frNome(sq.q), resp: sq.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) }; } catch (_) {}
   if (!ok("qpausa")) return null;
   // esporádico: a cada dia só 1 de cada 3 perguntas fica elegível
   const dia = Math.floor(Date.now() / 864e5);
-  const el = FR_PERG.filter((q, i) => (dia + i) % 3 === 0 && ok("q:" + q.id) && q.on(c));
+  const el = FR_PERG.filter((q, i) => q.id !== "sono" && (dia + i) % 3 === 0 && ok("q:" + q.id) && q.on(c));
   if (!el.length) return null;
   const q = el[(new Date().getDate() * 7 + c.hr) % el.length];
   return { k: "q:" + q.id, txt: frNome(q.q), resp: q.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) };
@@ -3454,7 +3617,7 @@ function frPergEscolhe(c, ok) {
 
 // ---- Respostas do balão viram frases do Rael (com moderação: 1 em cada 3 horas) e contagem de treinos ----
 const FR_REAGE = {
-  sono: { "Menos de 6h": ["Dormiu pouco, você disse. Hoje o Rael pega leve nas cobranças; só não some.", "Pouco sono segura o músculo e aumenta a fome. Água, proteína e cama cedo hoje."], "Mais de 8h": ["Dormiu bem, hein. Recuperação em dia é meio treino feito."] },
+  sono: { "Menos de 5h": ["Dormiu pouco, você disse. Hoje o Rael pega leve nas cobranças; só não some.", "Pouco sono segura o músculo e aumenta a fome. Água, proteína e cama cedo hoje."], "5 a 6h": ["Sono curto de novo? Ele aparece no relatório do mês, e o Rael está de olho."], "Mais de 8h": ["Dormiu bem, hein. Recuperação em dia é meio treino feito."] },
   acordou: { "Destruído": ["Você falou que acordou destruído. Se o corpo pedir, treino leve também vale."], "Pronto pra guerra": ["Acordou pronto pra guerra? Aproveita a energia antes que o sofá negocie."] },
   dor: { "Dor de verdade": ["Você falou de uma dor de verdade no treino. Se continuar, procura um profissional; o Rael não aposta com articulação."] },
   treinoOnte: { "Dor forte": ["Dor forte de ontem? Alonga, bebe água e pega leve hoje."] },
@@ -3901,6 +4064,7 @@ function viewEvo() {
   if (reg.length) { const avg = sumT(reg.map(r => r.t)); for (const k in avg) avg[k] /= reg.length; h += `<div class="card"><h2>Macros médios por dia</h2><div style="margin-top:10px">${macroBars(avg, m)}</div></div>`; }
   const wk = Array.from({ length: 8 }, (_, i) => { const s = addDays(end, -((dowOf(end) + 6) % 7) - 7 * (7 - i)), e = addDays(s, 6); const l = workouts().filter(w => w.data >= s && w.data <= e); return { x: ddmm(s), y: l.length, c: "--gord", tip: "Semana de " + ddmm(s) + ": " + l.length + " treinos, " + fmt(l.reduce((a, w) => a + volume(w), 0)) + " kg" }; });
   h += `<div class="card"><h2>Treinos por semana</h2><div class="xs muted">Últimas 8 semanas</div>${barChart(wk, { h: 150, label: "Treinos por semana" })}</div>`;
+  h += medidasCard() + sonoCard();
   h += `<div class="card ai"><div class="ai-badge">${ICON.spark} Análise do coach</div><div class="small ink2" style="margin:4px 0 8px">A IA lê seus números do período e diz o que está indo bem e o que ajustar.</div><button class="btn soft block" data-act="aiAnalise">Analisar meus ${per} dias</button></div>`;
   return `<div class="stack">${h}</div>`;
 }
