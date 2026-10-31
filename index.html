@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v26-20261031g"><script>(function(){try{var V="v26-20261031g";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v27-20261031h"><script>(function(){try{var V="v27-20261031h";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3008,7 +3008,8 @@ function pushCard() {
 }
 pushInit();
 // ---------- foto do treino: monta a imagem com métricas, frase e Rael; fica no histórico do treino (só neste aparelho) ----------
-const FOTO = { w: null, img: null, cena: "comemora", frase: "", livre: "", met: { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 }, raels: {}, cache: {}, prs: 0 };
+const FOTO = { fmt: "4:5", zoom: 1, ox: 0, oy: 0, w: null, img: null, cena: "comemora", frase: "", livre: "", met: { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 }, raels: {}, cache: {}, prs: 0 };
+const FOTO_FMT = { "4:5": [1080, 1350, "Feed 4:5"], "1:1": [1080, 1080, "Feed 1:1"], "9:16": [1080, 1920, "Story 9:16"] };
 const FOTO_CENAS = [["comemora", "Comemorando"], ["forte", "Forte"], ["alfa", "Alfa"], ["treinando", "Treinando"], ["cansado", "Cansado"], ["danca", "Dançando"], ["", "Sem Rael"]];
 function fotoDB() {
   return new Promise((ok, no) => {
@@ -3055,24 +3056,27 @@ function fotoLinhas(g, txt, maxW) {
 }
 function fotoDraw() {
   const c = document.getElementById("fotoCv"), w = FOTO.w; if (!c || !w) return;
-  const W = 1080, H = 1350, g = c.getContext("2d"), fam = (getComputedStyle(document.body).fontFamily || "system-ui, sans-serif");
+  const [W, H] = FOTO_FMT[FOTO.fmt] || FOTO_FMT["4:5"]; if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
+  const story = H > 1500, padT = story ? 210 : 0, padB = story ? 240 : 0, g = c.getContext("2d"), fam = (getComputedStyle(document.body).fontFamily || "system-ui, sans-serif");
   if (FOTO.img) {
-    const im = FOTO.img, s = Math.max(W / im.width, H / im.height), dw = im.width * s, dh = im.height * s;
-    g.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    const im = FOTO.img, s = Math.max(W / im.width, H / im.height) * FOTO.zoom, dw = im.width * s, dh = im.height * s;
+    const mx = (dw - W) / 2, my = (dh - H) / 2; FOTO.ox = Math.max(-mx, Math.min(mx, FOTO.ox)); FOTO.oy = Math.max(-my, Math.min(my, FOTO.oy));
+    g.drawImage(im, (W - dw) / 2 + FOTO.ox, (H - dh) / 2 + FOTO.oy, dw, dh);
   } else { const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, "#3A5BBF"); bg.addColorStop(1, "#16204F"); g.fillStyle = bg; g.fillRect(0, 0, W, H); }
   const sh = g.createLinearGradient(0, H * 0.3, 0, H); sh.addColorStop(0, "rgba(8,12,36,0)"); sh.addColorStop(1, "rgba(8,12,36,.92)"); g.fillStyle = sh; g.fillRect(0, H * 0.3, W, H * 0.7);
-  const th = g.createLinearGradient(0, 0, 0, 220); th.addColorStop(0, "rgba(8,12,36,.55)"); th.addColorStop(1, "rgba(8,12,36,0)"); g.fillStyle = th; g.fillRect(0, 0, W, 220);
+  const th = g.createLinearGradient(0, 0, 0, 220); th.addColorStop(0, "rgba(8,12,36,.55)"); th.addColorStop(1, "rgba(8,12,36,0)"); g.fillStyle = th; g.fillRect(0, 0, W, 220 + padT);
   g.textBaseline = "alphabetic"; g.fillStyle = "#fff";
-  g.font = "800 54px " + fam; g.textAlign = "left"; g.fillText("Frangômetro", 56, 92);
-  g.font = "600 36px " + fam; g.textAlign = "right"; g.fillText(ddmm(w.data), W - 56, 90);
+  g.font = "800 54px " + fam; g.textAlign = "left"; g.fillText("Frangômetro", 56, 92 + padT);
+  g.font = "600 36px " + fam; g.textAlign = "right"; g.fillText(ddmm(w.data), W - 56, 90 + padT);
   // rael
-  const rimg = fotoRael(FOTO.cena), rs = 380;
-  if (rimg) g.drawImage(rimg, W - rs - 30, H - rs - 70, rs, rs);
+  const rimg = fotoRael(FOTO.cena), rs = H < 1200 ? 250 : story ? 400 : 380;
+  if (rimg) g.drawImage(rimg, W - rs - 30, H - rs - 70 - padB, rs, rs);
   // frase
   const tx = FOTO.livre.trim() || FOTO.frase; g.textAlign = "left";
   const maxW = rimg ? W - 56 - rs - 60 : W - 112;
-  let yb = H - 70;
-  if (tx) { g.font = "700 44px " + fam; const ls = fotoLinhas(g, "“" + tx + "”", maxW).slice(0, 6); g.fillStyle = "#fff"; ls.reverse().forEach((l, i) => g.fillText(l, 56, yb - i * 56)); yb -= ls.length * 56 + 26; }
+  let yb = H - 70 - padB;
+  if (tx) { g.font = "700 44px " + fam; const ls = fotoLinhas(g, "“" + tx + "”", maxW).slice(0, H < 1200 ? 3 : 6); g.fillStyle = "#fff"; ls.reverse().forEach((l, i) => g.fillText(l, 56, yb - i * 56)); yb -= ls.length * 56 + 26; }
+  if (rimg) yb = Math.min(yb, H - rs - 70 - padB - 24);
   // metricas
   const m = [];
   if (FOTO.met.dur) m.push(["DURAÇÃO", hhmm((w.fim - w.inicio) / 1000)]);
@@ -3081,7 +3085,7 @@ function fotoDraw() {
   if (FOTO.met.kcal) m.push(["GASTO", "~" + fmt(kcalTreino(w)) + " kcal"]);
   if (FOTO.met.rec && FOTO.prs) m.push(["RECORDES", String(FOTO.prs)]);
   if (m.length) {
-    const cols = Math.min(m.length, 3), cw = (W - 112 - (cols - 1) * 16) / cols, rows = Math.ceil(m.length / cols), chh = 120;
+    const cols = Math.min(m.length, 3), cw = (W - 112 - (cols - 1) * 16) / cols, rows = Math.ceil(m.length / cols), chh = H < 1200 ? 104 : 120;
     const y0 = yb - rows * chh - (rows - 1) * 16;
     m.forEach((it, i) => {
       const x = 56 + (i % cols) * (cw + 16), y = y0 + Math.floor(i / cols) * (chh + 16);
@@ -3096,7 +3100,9 @@ function fotoDraw() {
 function fotoBody() {
   const chip = (act, on, txt, extra) => `<button class="btn sm ${on ? "pri" : "soft"}" data-act="${act}" ${extra || ""}>${txt}</button>`;
   const mets = [["dur", "Duração"], ["vol", "Volume"], ["ser", "Séries"], ["kcal", "Gasto"]].concat(FOTO.prs ? [["rec", "Recordes"]] : []);
-  return `<div class="stack"><canvas id="fotoCv" width="1080" height="1350" style="width:100%;height:auto;border-radius:16px;background:#16204F;display:block"></canvas>
+  return `<div class="stack"><div class="row" style="flex-wrap:wrap;gap:6px">${Object.keys(FOTO_FMT).map(k => chip("fotoFmt", FOTO.fmt === k, FOTO_FMT[k][2], `data-k="${k}"`)).join("")}</div>
+    <canvas id="fotoCv" width="${FOTO_FMT[FOTO.fmt][0]}" height="${FOTO_FMT[FOTO.fmt][1]}" style="display:block;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:60vh;aspect-ratio:${FOTO_FMT[FOTO.fmt][0]}/${FOTO_FMT[FOTO.fmt][1]};border-radius:16px;background:#16204F;touch-action:none;cursor:grab"></canvas>
+    ${FOTO.img ? `<div class="row" style="gap:10px"><span class="xs muted">Arraste a foto para ajustar. Zoom</span><input type="range" min="100" max="400" value="${Math.round(FOTO.zoom * 100)}" data-in="fotoZoom" class="grow" aria-label="Zoom da foto"><button class="btn sm soft" data-act="fotoCentra">Centralizar</button></div>` : ""}
     <label class="btn soft block" style="text-align:center;cursor:pointer">📷 ${FOTO.img ? "Trocar a foto" : "Tirar ou escolher foto"}<input type="file" accept="image/*" data-on="fotoArq" style="display:none"></label>
     <div class="xs muted">Pose do Rael</div><div class="row" style="flex-wrap:wrap;gap:6px">${FOTO_CENAS.map(([k, n]) => chip("fotoCena", FOTO.cena === k, n, `data-k="${k}"`)).join("")}</div>
     <div class="xs muted">Métricas na foto</div><div class="row" style="flex-wrap:wrap;gap:6px">${mets.map(([k, n]) => chip("fotoMet", FOTO.met[k], n, `data-k="${k}"`)).join("")}</div>
@@ -3106,16 +3112,34 @@ function fotoBody() {
 (function () { const o = drawSheet; drawSheet = function () { o.apply(this, arguments); try { if (document.getElementById("fotoCv")) fotoDraw(); } catch (e) {} }; })();
 ACT.fotoAbrir = ds => {
   const w = getDoc("treino-" + ds.id) || (typeof workouts === "function" ? workouts().find(x => x.id === ds.id) : null); if (!w) { toast("Treino não encontrado"); return; }
-  FOTO.w = w; FOTO.img = null; FOTO.livre = ""; FOTO.frase = frase("fim"); FOTO.cena = "comemora"; FOTO.met = { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 };
+  FOTO.w = w; FOTO.img = null; FOTO.livre = ""; FOTO.frase = frase("fim"); FOTO.cena = "comemora"; FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; FOTO.met = { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 };
   if (FOTO.prsW !== w.id) FOTO.prs = 0;
   openSheet({ title: "Foto do treino", body: () => fotoBody(), foot: () => `<button class="btn" data-act="fotoGuardar">Salvar no treino</button><button class="btn pri block" data-act="fotoCompartilhar">Compartilhar / baixar</button>` });
 };
 ON.fotoArq = el => {
   const f = el.files && el.files[0]; if (!f) return;
   const im = new Image(), rd = new FileReader();
-  im.onload = () => { FOTO.img = im; drawSheet(); }; im.onerror = () => toast("Não consegui abrir essa foto");
+  im.onload = () => { FOTO.img = im; FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; drawSheet(); }; im.onerror = () => toast("Não consegui abrir essa foto");
   rd.onload = () => { im.src = rd.result; }; rd.onerror = () => toast("Não consegui abrir essa foto"); rd.readAsDataURL(f);
 };
+ACT.fotoFmt = ds => { FOTO.fmt = ds.k; FOTO.ox = 0; FOTO.oy = 0; drawSheet(); };
+ACT.fotoCentra = () => { FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; drawSheet(); };
+ON.fotoZoom = el => { FOTO.zoom = Math.max(1, Math.min(4, num(el.value) / 100)); fotoDraw(); };
+(function () {
+  const P = new Map(); let d0 = 0, z0 = 1;
+  const dist = () => { const a = [...P.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); };
+  document.addEventListener("pointerdown", e => { if (!e.target || e.target.id !== "fotoCv" || !FOTO.img) return; P.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { e.target.setPointerCapture(e.pointerId); } catch (x) {} if (P.size === 2) { d0 = dist() || 1; z0 = FOTO.zoom; } });
+  document.addEventListener("pointermove", e => {
+    const c = document.getElementById("fotoCv"); if (!c || !P.has(e.pointerId)) return;
+    const p = P.get(e.pointerId), k = c.width / c.getBoundingClientRect().width;
+    if (P.size === 1) { FOTO.ox += (e.clientX - p.x) * k; FOTO.oy += (e.clientY - p.y) * k; }
+    P.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (P.size === 2) { FOTO.zoom = Math.max(1, Math.min(4, z0 * dist() / d0)); const r = document.querySelector("input[data-in=fotoZoom]"); if (r) r.value = Math.round(FOTO.zoom * 100); }
+    fotoDraw();
+  });
+  const up = e => { P.delete(e.pointerId); };
+  document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+})();
 ACT.fotoCena = ds => { FOTO.cena = ds.k; drawSheet(); };
 ACT.fotoMet = ds => { FOTO.met[ds.k] = FOTO.met[ds.k] ? 0 : 1; drawSheet(); };
 ACT.fotoFrase = () => { FOTO.livre = ""; FOTO.frase = frase("fim"); drawSheet(); };
