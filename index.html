@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v31-20261031l"><script>(function(){try{var V="v31-20261031l";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v32-20261031m"><script>(function(){try{var V="v32-20261031m";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1382,7 +1382,7 @@ const MEALS = [["cafe","Café da manhã"],["almoco","Almoço"],["lanche","Lanche
 const MEAL_NAME = Object.fromEntries(MEALS);
 function newDay() { return { ref: { cafe: [], almoco: [], lanche: [], jantar: [], ceia: [] }, agua: 0, peso: null, atv: [], nota: "" }; }
 function day(date) { const d = getDoc("dia-" + date); if (!d) return newDay(); const n = newDay(); n.ref = Object.assign(n.ref, d.ref || {}); return Object.assign(n, d, { ref: n.ref }); }
-function saveDay(date, d) { putDoc("dia-" + date, d); }
+function saveDay(date, d) { const prev = getDoc("dia-" + date); if (prev && typeof syncIds === "function") { const now = syncIds(d), rem = syncIds(prev).filter(i => !now.includes(i)); if (rem.length) d.del = syncUn(d.del, rem).slice(-300); } putDoc("dia-" + date, d); }
 function updDay(date, fn) { const d = day(date); fn(d); saveDay(date, d); }
 function allDays() {
   return Object.keys(ST.docs).filter(k => k.startsWith("dia-") && !ST.docs[k]._del).map(k => k.slice(4)).sort();
@@ -3235,6 +3235,155 @@ ACT.fotoVer = ds => {
 };
 ACT.fotoEnviar = async ds => { try { const l = await fotoLista(); const r = l.find(z => z.id === ds.id); if (r) await fotoSaida(fotoDeDataUrl(r.d), "treino-rael.jpg"); } catch (e) { toast("Não consegui abrir a foto"); } };
 ACT.fotoApagar = async ds => { try { await fotoDelDB(ds.id); SHEET.stack.pop(); await fotoLoad(ds.w); toast("Foto apagada"); } catch (e) { toast("Não consegui apagar"); } };
+// ---------- sincronizar Painel <-> site por copiar e colar: MESCLA por id e por data, com exclusões ----------
+const SYNC = { p: null, o: null };
+const SYNC_REFS = ["cafe", "almoco", "lanche", "jantar", "ceia"];
+const syncPainel = () => typeof ST === "undefined";
+const syncT = x => (x && x._t) || 0;
+const syncUn = (a, b) => Array.from(new Set([].concat(a || [], b || [])));
+const syncClone = o => JSON.parse(JSON.stringify(o));
+const syncIds = d => { const s = []; SYNC_REFS.forEach(k => ((d && d.ref && d.ref[k]) || []).forEach(e => e && e.id && s.push(e.id))); return s; };
+const SYNC_LISTAS = ["exCustom", "rotinas", "salvas", "receitas", "alimentos"];
+const syncKeyOf = (lista, x) => lista === "alimentos" ? (x.key || x.id || x.nome) : x.id;
+
+// --- leitura do que existe deste lado (formato único, igual ao backup do site) ---
+function syncSnap() {
+  const lim = addDays(TODAY(), -60), limT = addDays(TODAY(), -180), docs = {};
+  if (syncPainel()) {
+    Object.keys(S.nuDias || {}).forEach(date => {
+      if (date < lim) return; const raw = S.nuDias[date] || {}, d = day(date);
+      const ref = {}; SYNC_REFS.forEach(k => { ref[k] = (d.ref[k] || []).map(e => { const c = Object.assign({}, e); delete c._o; return syncClone(c); }); });
+      if (!syncIds({ ref }).length && !num(d.agua) && !(raw.del || []).length) return;
+      docs["dia-" + date] = { ref, agua: num(d.agua), peso: pesoDoDia(date), del: raw.del || [], _t: raw._t || 0 };
+    });
+    Object.keys(S.fitTreinos || {}).forEach(id => { const w = S.fitTreinos[id]; if (w && (w._del ? syncT(w) >= Date.parse(limT) : (w.data || "") >= limT)) docs["treino-" + id] = syncClone(Object.assign({ id }, w)); });
+    const p = P(); docs.perfil = { _t: syncT(S.fitP), favs: p.favs || [] }; SYNC_LISTAS.forEach(l => { docs.perfil[l] = syncClone(p[l] || []); });
+  } else {
+    Object.keys(ST.docs).forEach(k => {
+      const d = ST.docs[k]; if (!d) return;
+      if (k.startsWith("dia-") && !d._del && k.slice(4) >= lim) docs[k] = syncClone(d);
+      else if (k.startsWith("treino-") && (d._del ? syncT(d) >= Date.parse(limT) : (d.data || "") >= limT)) docs[k] = syncClone(d);
+    });
+    const p = getDoc("perfil") || {}; docs.perfil = { _t: syncT(p), favs: p.favs || [] }; SYNC_LISTAS.forEach(l => { docs.perfil[l] = syncClone(p[l] || []); });
+  }
+  return docs;
+}
+
+// --- regras de mescla ---
+function syncMergeDia(l, r) {
+  l = l || { ref: {}, del: [] };
+  const del = syncUn(l.del, r.del), nova = syncT(r) > syncT(l), out = syncClone(l); out.ref = {};
+  SYNC_REFS.forEach(k => {
+    const m = new Map(); ((l.ref || {})[k] || []).forEach(e => m.set(e.id, e));
+    ((r.ref || {})[k] || []).forEach(e => { if (e && e.id && (!m.has(e.id) || nova)) m.set(e.id, e); });
+    out.ref[k] = Array.from(m.values()).filter(e => !del.includes(e.id));
+  });
+  const vistos = new Set(); SYNC_REFS.forEach(k => { out.ref[k] = out.ref[k].filter(e => !vistos.has(e.id) && vistos.add(e.id)); });
+  if (nova) { out.agua = r.agua; if (r.peso != null) out.peso = r.peso; }
+  else { if (out.peso == null && r.peso != null) out.peso = r.peso; if (!num(out.agua) && num(r.agua)) out.agua = r.agua; }
+  if (r.atv && r.atv.length) { const m = new Map((out.atv || []).map(a => [a.id, a])); r.atv.forEach(a => { if (a && a.id && !m.has(a.id)) m.set(a.id, a); }); out.atv = Array.from(m.values()); }
+  out.del = del.slice(-300); out._t = Math.max(syncT(l), syncT(r));
+  return out;
+}
+function syncMergePerfil(l, r) {
+  const out = { _t: Math.max(syncT(l), syncT(r)), favs: syncUn(l.favs, r.favs) }, rNova = syncT(r) > syncT(l), cont = { novos: 0, trocados: 0 };
+  SYNC_LISTAS.forEach(lista => {
+    const loc = l[lista] || [], rem = r[lista] || [], m = new Map(loc.map(x => [syncKeyOf(lista, x), x]));
+    rem.forEach(x => {
+      if (!x) return; const k = syncKeyOf(lista, x);
+      if (!m.has(k)) { if (lista === "rotinas" && loc.some(y => norm(y.nome) === norm(x.nome))) return; m.set(k, x); cont.novos++; }
+      else if (rNova && JSON.stringify(m.get(k)) !== JSON.stringify(x)) { m.set(k, x); cont.trocados++; }
+    });
+    out[lista] = Array.from(m.values());
+  });
+  out.favs = out.favs.slice(0, 60);
+  return { out, cont };
+}
+function syncPlano(remoto) {
+  const L = syncSnap(), R = remoto, ops = [], c = { diasNovos: 0, diasAlt: 0, entradas: 0, apagadas: 0, treinosNovos: 0, treinosAlt: 0, treinosApagados: 0, perfil: 0 };
+  Object.keys(R).forEach(k => {
+    const r = R[k]; if (!r || typeof r !== "object") return;
+    if (k.startsWith("dia-")) {
+      if (r._del) return; const l = L[k], out = syncMergeDia(l, r), antes = l ? syncIds(l) : [], dep = syncIds(out);
+      const add = dep.filter(i => !antes.includes(i)).length, rem = antes.filter(i => !dep.includes(i)).length;
+      const mud = l ? (add || rem || num(out.agua) !== num(l.agua) || (out.peso != null && out.peso !== l.peso) || JSON.stringify(out.ref) !== JSON.stringify(l.ref)) : (dep.length || num(out.agua));
+      if (mud || (l && JSON.stringify(out.del) !== JSON.stringify(l.del || []))) { ops.push({ t: "dia", k, v: out }); if (!l) c.diasNovos++; else c.diasAlt++; c.entradas += add; c.apagadas += rem; }
+    } else if (k.startsWith("treino-")) {
+      const l = L[k];
+      if (!l) { ops.push({ t: "treino", k, v: r }); if (r._del) c.treinosApagados++; else c.treinosNovos++; }
+      else if (syncT(r) > syncT(l)) { ops.push({ t: "treino", k, v: r }); if (r._del) c.treinosApagados++; else c.treinosAlt++; }
+    } else if (k === "perfil") {
+      const m = syncMergePerfil(L.perfil || {}, r); if (m.cont.novos || m.cont.trocados || JSON.stringify(m.out.favs) !== JSON.stringify((L.perfil || {}).favs || [])) { ops.push({ t: "perfil", k, v: m.out }); c.perfil = m.cont.novos + m.cont.trocados; }
+    }
+  });
+  return { ops, c };
+}
+
+// --- escrita deste lado (mantém o _t da mescla, para os dois lados convergirem) ---
+function syncAplica(ops) {
+  let n = 0;
+  ops.forEach(op => {
+    if (op.t === "dia") {
+      const date = op.k.slice(4), v = op.v;
+      if (syncPainel()) {
+        const d = day(date), porId = {}; SYNC_REFS.forEach(k => (d.ref[k] || []).forEach(e => { porId[e.id] = e; }));
+        SYNC_REFS.forEach(k => { d.ref[k] = (v.ref[k] || []).map(e => { const lo = porId[e.id]; return lo && JSON.stringify(lo.base) === JSON.stringify(e.base) && lo.qtd === e.qtd ? lo : e; }); });
+        d.agua = num(v.agua); d.del = v.del || []; d._t = v._t; saveDay(date, d, true);
+        if (v.peso != null && pesoDoDia(date) !== v.peso) { const itens = ((S.peso && S.peso.itens) || []).filter(x => x.data !== date).concat([{ data: date, kg: v.peso }]); S.peso = Object.assign({}, S.peso || {}, { itens }); sv("peso/historico", S.peso); }
+      } else { ST.docs[op.k] = syncClone(v); lsWrite(); queueRemote(op.k); }
+    } else if (op.t === "treino") {
+      const id = op.k.slice(7);
+      if (syncPainel()) { const w = syncClone(op.v); if (!w._del) w.id = id; S.fitTreinos = Object.assign({}, S.fitTreinos || {}, { [id]: w }); sv("fittreinos/" + id, w); }
+      else { ST.docs[op.k] = syncClone(op.v); lsWrite(); queueRemote(op.k); }
+    } else if (op.t === "perfil") {
+      if (syncPainel()) updP(p => { Object.keys(op.v).forEach(k => { if (k !== "_t") p[k] = syncClone(op.v[k]); }); });
+      else { const p = Object.assign({}, getDoc("perfil") || {}); Object.keys(op.v).forEach(k => { p[k] = syncClone(op.v[k]); }); ST.docs.perfil = p; lsWrite(); queueRemote("perfil"); }
+    }
+    n++;
+  });
+  if (syncPainel()) { try { LQ.fitTreinosChanged(); LQ.nuChanged(); } catch (e) {} }
+  try { render(); } catch (e) {}
+  return n;
+}
+
+// --- interface ---
+function syncLe(txt) {
+  const t = String(txt || "").trim(), a = t.indexOf("{"), b = t.lastIndexOf("}"); if (a < 0 || b <= a) return null;
+  try { const o = JSON.parse(t.slice(a, b + 1)); return o && o.app === "rael-fit" && o.docs ? o : null; } catch (e) { return null; }
+}
+function syncCard() {
+  return `<div class="card stack"><h2>Sincronizar ${syncPainel() ? "com o site" : "com o Painel"}</h2><div class="small ink2">Para usar os mesmos dados nos dois lugares: toque em Copiar tudo aqui e, no outro lado, em Colar e mesclar. Só acrescenta e atualiza, nunca apaga sem querer.</div>
+    <div class="row" style="gap:8px"><button class="btn soft grow" data-act="syncCopia">Copiar tudo</button><button class="btn soft grow" data-act="syncCola">Colar e mesclar</button></div></div>`;
+}
+ACT.syncCopia = async () => {
+  const txt = JSON.stringify({ app: "rael-fit", v: 2, origem: syncPainel() ? "painel" : "site", exportado: new Date().toISOString(), docs: syncSnap() });
+  try { await navigator.clipboard.writeText(txt); toast("Copiado. Agora cole no outro lado em Colar e mesclar."); return; } catch (e) {}
+  openSheet({ title: "Copiar tudo", body: () => `<div class="stack"><div class="small ink2">O celular não deixou copiar sozinho. Toque no texto, selecione tudo e copie. Depois cole no outro lado em Colar e mesclar.</div><textarea id="syncOut" readonly style="min-height:200px;font-size:11px">${esc(txt)}</textarea></div>`, foot: () => `<button class="btn pri block" data-act="syncSel">Selecionar tudo</button>` });
+};
+ACT.syncSel = () => { const t = $("#syncOut"); if (t) { t.focus(); t.select(); try { t.setSelectionRange(0, t.value.length); } catch (e) {} } };
+ACT.syncCola = () => {
+  SYNC.p = null;
+  openSheet({ title: "Colar e mesclar", body: () => `<div class="stack"><div class="small ink2">No outro lado, toque em Copiar tudo. Aqui, cole o texto abaixo.</div><textarea id="syncIn" placeholder="Cole aqui" style="min-height:160px;font-size:12px"></textarea><button class="btn soft block" data-act="syncLeArea">Colar da área de transferência</button></div>`, foot: () => `<button class="btn pri block" data-act="syncResumo">Ver o resumo</button>` });
+};
+ACT.syncLeArea = async () => { try { const t = await navigator.clipboard.readText(), a = $("#syncIn"); if (a) { a.value = t; toast("Colado. Toque em Ver o resumo."); } } catch (e) { toast("Cole com o dedo no campo: toque e segure."); } };
+function syncResumoHtml() {
+  const c = SYNC.p.c, li = t => `<li>${t}</li>`, tot = SYNC.p.ops.length;
+  return `<div class="stack"><div class="small ink2">${tot ? "Veja o que vai mudar aqui. Nada é apagado, a não ser o que você mesmo apagou no outro lado." : "Os dois lados já estão iguais. Nada a mesclar."}</div>
+    ${tot ? `<ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+    ${li(`Dias de comida novos: <b>${c.diasNovos}</b>; dias atualizados: <b>${c.diasAlt}</b> (${c.entradas} itens entram, ${c.apagadas} saem por terem sido apagados lá)`)}
+    ${li(`Treinos novos: <b>${c.treinosNovos}</b>; atualizados: <b>${c.treinosAlt}</b>; apagados lá: <b>${c.treinosApagados}</b>`)}
+    ${li(`Rotinas, exercícios, alimentos e favoritos que entram ou mudam: <b>${c.perfil}</b>`)}</ul>` : ""}
+    <div class="xs muted">Vale o registro mais recente de cada item. Rotinas apagadas de um lado podem voltar do outro.</div></div>`;
+}
+ACT.syncResumo = () => {
+  const o = syncLe(($("#syncIn") || {}).value); if (!o) { toast("Isso não parece um pacote do Frangômetro."); return; }
+  SYNC.p = syncPlano(o.docs);
+  replaceSheet({ title: "O que vai mudar", body: () => syncResumoHtml(), foot: () => SYNC.p.ops.length ? `<button class="btn" data-act="sheetClose">Cancelar</button><button class="btn pri block" data-act="syncAplica">Mesclar agora</button>` : `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
+};
+ACT.syncAplica = () => {
+  if (!SYNC.p) return; if (syncPainel() && !podeSalvar()) { toast("Sem permissão para salvar agora."); return; }
+  try { const n = syncAplica(SYNC.p.ops); SHEET.stack = []; drawSheet(); toast("Mesclado: " + n + " itens atualizados"); } catch (e) { toast("Deu erro na mescla: " + (e && e.message || e)); }
+};
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
@@ -4451,6 +4600,7 @@ function viewPerfil() {
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
   h += ajudaCard();
+  h += syncCard();
   h += typeof pushCard === "function" ? pushCard() : "";
   h += `<div class="card stack"><h2>Enviar feedback</h2><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
   h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
