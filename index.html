@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v28-20261031i"><script>(function(){try{var V="v28-20261031i";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v29-20261031j"><script>(function(){try{var V="v29-20261031j";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2423,11 +2423,36 @@ function openSession() {
 }
 ACT.sessMin = () => { closeSheet(); toast("Treino continua rodando. Volte por Treino ou Hoje."); };
 function setHead(tipo) { return tipo === "tempo" ? ["", "seg"] : tipo === "cardio" ? ["km", "min"] : tipo === "corpo" ? ["+kg", "reps"] : ["kg", "reps"]; }
+// ---------- medalhas de recorde: 🏅 maior carga e 💪 maior volume (carga x reps) do exercício no histórico ----------
+function recAt(eid, beforeTs) {
+  let kg = 0, vol = 0;
+  workouts().forEach(w => {
+    if (beforeTs && !((w.inicio || 0) < beforeTs)) return;
+    (w.ex || []).forEach(x => { if (x.eid !== eid || x.tipo !== "carga") return; x.series.forEach(s => { if (!s.ok || s.tipo === "aq") return; const k = num(s.kg), r = num(s.reps); if (k > kg) kg = k; if (k * r > vol) vol = k * r; }); });
+  });
+  return { kg, vol };
+}
+function medalSets(x, rec) {
+  const out = x.series.map(() => "");
+  if (x.tipo !== "carga" || !rec || !(rec.kg > 0)) return out;
+  let bk = -1, bv = -1, mk = 0, mv = 0;
+  x.series.forEach((s, i) => { if (!s.ok || s.tipo === "aq") return; const k = num(s.kg), r = num(s.reps); if (k > mk) { mk = k; bk = i; } if (k * r > mv) { mv = k * r; bv = i; } });
+  if (bk >= 0 && mk > rec.kg) out[bk] += "🏅";
+  if (bv >= 0 && mv > rec.vol) out[bv] += "💪";
+  return out;
+}
+const REC_SEEN = new Set(), REC_FR = ["Recorde! O Rael está chorando de orgulho.", "Isso é recorde. Eu vou contar para a vizinhança.", "Nunca ninguém levantou tanto neste exercício. Nem você, até agora.", "Recorde pessoal! A crista do Rael levantou junto.", "Quebrou o seu próprio recorde. O Rael exige foto."];
+function recCheck(xi, si) {
+  const a = getDoc("ativo"); if (!a) return; const x = a.ex[xi]; if (!x || !x.series[si] || !x.series[si].ok) return;
+  const md = medalSets(x, recAt(x.eid))[si]; if (!md) return;
+  const key = a.id + ":" + xi + ":" + md + ":" + x.series[si].kg + "x" + x.series[si].reps; if (REC_SEEN.has(key)) return; REC_SEEN.add(key);
+  toast(md + (md.includes("🏅") ? " Recorde de carga! " : " Recorde de volume! ") + REC_FR[Math.floor(Math.random() * REC_FR.length)]);
+}
 function sessBody() {
   const a = getDoc("ativo"); if (!a) return "";
   let h = a.ex.length ? "" : `<div class="empty">Adicione o primeiro exercício. ${esc(frase("curta"))}</div>`;
   a.ex.forEach((x, xi) => {
-    const sg = suggest(x.eid, x.item), [hk, hr] = setHead(x.tipo);
+    const sg = suggest(x.eid, x.item), [hk, hr] = setHead(x.tipo), md = medalSets(x, recAt(x.eid));
     const last = sg ? sg.last.ex.series.filter(s => s.ok).map(s => (s.kg !== "" && num(s.kg) ? fmt1(s.kg) + "×" : "") + (s.reps || "")).join(", ") : "";
     h += `<div class="ex-card"><div class="row"><div class="grow"><div style="font-weight:700">${esc(x.nome)}</div><div class="xs muted">${x.item.min && x.item.max ? `Meta ${x.item.min}–${x.item.max} ${hr}` : ""}</div><label class="xs muted" style="display:inline-flex;align-items:center;gap:6px;margin-top:2px">Descanso <input type="number" inputmode="numeric" min="0" max="900" data-in="exDesc" data-x="${xi}" value="${esc(x.item.desc != null ? x.item.desc : "")}" style="width:64px;min-height:30px;padding:2px 6px;text-align:center"> s</label></div><button class="iconbtn" data-act="exInfo" data-id="${esc(x.eid)}" aria-label="Como fazer" style="font-weight:800">?</button><button class="iconbtn" data-act="exMenu" data-x="${xi}" aria-label="Opções">${ICON.more}</button></div>
       ${last ? `<div class="xs ink2" style="margin-top:4px">Última vez (${ddmm(sg.last.w.data)}): ${esc(last)}</div>` : ""}
@@ -2436,12 +2461,12 @@ function sessBody() {
       ${x.series.map((s, si) => `<tr class="${s.ok ? "done" : ""}"><td><button class="stt ${ST_CLS[s.tipo] || ""}" data-act="setType" data-x="${xi}" data-s="${si}" title="Tocar muda o tipo: normal, aquecimento (W), drop set (D), falha (F)">${stLbl(x.series, si)}</button></td>
         ${hk ? `<td><input type="number" inputmode="decimal" step="0.5" data-in="setIn" data-x="${xi}" data-s="${si}" data-f="kg" value="${esc(s.kg)}" aria-label="${hk}"></td>` : ""}
         <td><input type="number" inputmode="numeric" data-in="setIn" data-x="${xi}" data-s="${si}" data-f="reps" value="${esc(s.reps)}" placeholder="${esc(s.ph || "")}" aria-label="${hr}"></td>
-        <td><button class="check ${s.ok ? "on" : ""}" data-act="setOk" data-x="${xi}" data-s="${si}" aria-label="Marcar série">${ICON.check}</button></td></tr>`).join("")}
+        <td><div style="display:flex;align-items:center;gap:4px"><button class="check ${s.ok ? "on" : ""}" data-act="setOk" data-x="${xi}" data-s="${si}" aria-label="Marcar série">${ICON.check}</button>${md[si] ? `<span title="Recorde" aria-label="Recorde" style="font-size:16px;line-height:1;white-space:nowrap">${md[si]}</span>` : ""}</div></td></tr>`).join("")}
       </tbody></table>
       <div class="row" style="margin-top:8px;gap:8px"><button class="btn soft grow sbtn" data-act="setAdd" data-x="${xi}">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar série</button>${x.series.length > 1 ? `<button class="btn ghost sbtn" data-act="setDel" data-x="${xi}">Tirar última</button>` : ""}</div></div>`;
   });
   h += `<button class="btn soft block" data-act="sessAddEx">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar exercício</button>
-    <div class="disc">Toque no número da série para trocar o tipo: normal, W (aquecimento, não conta para volume nem progressão), D (drop set) ou F (falha).</div>
+    <div class="disc">🏅 maior carga e 💪 maior volume já feitos neste exercício. Toque no número da série para trocar o tipo: normal, W (aquecimento, não conta para volume nem progressão), D (drop set) ou F (falha).</div>
     ${UIc.confirm === "discard" ? confirmBox("Descartar este treino? Nada será salvo.", "sessDiscard", {}, "Descartar") : ""}`;
   return h;
 }
@@ -2456,6 +2481,7 @@ ACT.setOk = ds => {
   let start = 0;
   updA(a => { const x = a.ex[+ds.x], s = x.series[+ds.s]; s.ok = !s.ok; if (s.ok) { if (s.reps === "" && s.ph !== "") s.reps = num(s.ph); if (s.kg === "" && +ds.s > 0) s.kg = x.series[+ds.s - 1].kg; if (+ds.s + 1 < x.series.length && x.series[+ds.s + 1].kg === "") x.series[+ds.s + 1].kg = s.kg; start = s.tipo === "aq" ? 45 : num(x.item.desc) || 0; } });
   if (start) startRest(start);
+  try { recCheck(+ds.x, +ds.s); } catch (e) {}
 };
 ACT.setType = ds => updA(a => { const s = a.ex[+ds.x].series[+ds.s], i = ST_CICLO.indexOf(s.tipo || ""); s.tipo = ST_CICLO[(i + 1) % ST_CICLO.length]; });
 ACT.setAdd = ds => updA(a => { const x = a.ex[+ds.x], l = x.series[x.series.length - 1] || {}; x.series.push({ kg: l.kg ?? "", reps: "", ph: l.reps || l.ph || "", ok: false, tipo: "" }); });
@@ -2579,7 +2605,7 @@ ACT.viewWorkout = ds => {
   const w = getDoc("treino-" + ds.id); if (!w) return;
   UIc.confirm = null;
   openSheet({ title: w.nome, body: () => `<div class="small muted">${DOWL[dowOf(w.data)]}, ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${fmt(volume(w))} kg de volume · ~${fmt(kcalTreino(w))} kcal</div>
-    ${w.ex.map(x => { const [hk, hr] = setHead(x.tipo); return `<div class="ex-card"><div style="font-weight:700">${esc(x.nome)}</div><div class="small ink2 tnum" style="margin-top:4px">${x.series.map((s, i) => `${stLbl(x.series, i)}: ${hk ? fmt1(s.kg) + " " + hk + " × " : ""}${s.reps} ${hr}`).join("<br>")}</div></div>`; }).join("")}
+    ${w.ex.map(x => { const [hk, hr] = setHead(x.tipo), md = medalSets(x, recAt(x.eid, w.inicio)); return `<div class="ex-card"><div style="font-weight:700">${esc(x.nome)}</div><div class="small ink2 tnum" style="margin-top:4px">${x.series.map((s, i) => `${stLbl(x.series, i)}: ${hk ? fmt1(s.kg) + " " + hk + " × " : ""}${s.reps} ${hr}${md[i] ? " " + md[i] : ""}`).join("<br>")}</div></div>`; }).join("")}
     ${fotosHtml(w.id)}`,
     foot: () => UIc.confirm === "delW" ? `<button class="btn" data-act="cancelConfirm">Cancelar</button><button class="btn danger block" data-act="delWorkout" data-id="${w.id}">Apagar este treino</button>` : `<button class="btn danger" data-act="delWorkoutAsk">Apagar</button>${w.rotinaId && (P().rotinas || []).some(x => x.id === w.rotinaId) ? `<button class="btn" data-act="rotAtualizaAsk" data-id="${w.id}">Atualizar rotina</button>` : ""}<button class="btn" data-act="rotinaDoTreino" data-id="${w.id}">Criar rotina</button><button class="btn block" data-act="repeatWorkout" data-id="${w.id}">Repetir este treino</button>` });
   fotoLoad(w.id);
