@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v20-20261031a"><script>(function(){try{var V="v20-20261031a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v21-20261031b"><script>(function(){try{var V="v21-20261031b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2429,7 +2429,7 @@ function sessBody() {
   a.ex.forEach((x, xi) => {
     const sg = suggest(x.eid, x.item), [hk, hr] = setHead(x.tipo);
     const last = sg ? sg.last.ex.series.filter(s => s.ok).map(s => (s.kg !== "" && num(s.kg) ? fmt1(s.kg) + "×" : "") + (s.reps || "")).join(", ") : "";
-    h += `<div class="ex-card"><div class="row"><div class="grow"><div style="font-weight:700">${esc(x.nome)}</div><div class="xs muted">${x.item.min && x.item.max ? `Meta ${x.item.min}–${x.item.max} ${hr}` : ""}${x.item.desc ? ` · descanso ${x.item.desc}s` : ""}</div></div><button class="iconbtn" data-act="exInfo" data-id="${esc(x.eid)}" aria-label="Como fazer" style="font-weight:800">?</button><button class="iconbtn" data-act="exMenu" data-x="${xi}" aria-label="Opções">${ICON.more}</button></div>
+    h += `<div class="ex-card"><div class="row"><div class="grow"><div style="font-weight:700">${esc(x.nome)}</div><div class="xs muted">${x.item.min && x.item.max ? `Meta ${x.item.min}–${x.item.max} ${hr}` : ""}</div><label class="xs muted" style="display:inline-flex;align-items:center;gap:6px;margin-top:2px">Descanso <input type="number" inputmode="numeric" min="0" max="900" data-in="exDesc" data-x="${xi}" value="${esc(x.item.desc != null ? x.item.desc : "")}" style="width:64px;min-height:30px;padding:2px 6px;text-align:center"> s</label></div><button class="iconbtn" data-act="exInfo" data-id="${esc(x.eid)}" aria-label="Como fazer" style="font-weight:800">?</button><button class="iconbtn" data-act="exMenu" data-x="${xi}" aria-label="Opções">${ICON.more}</button></div>
       ${last ? `<div class="xs ink2" style="margin-top:4px">Última vez (${ddmm(sg.last.w.data)}): ${esc(last)}</div>` : ""}
       ${sg && sg.up && x.tipo === "carga" ? `<div style="margin-top:6px"><span class="pill good">Subiu de nível: ${fmt1(sg.kg)} kg hoje</span></div>` : ""}
       <table class="sets" style="margin-top:6px"><thead><tr><th>Série</th>${hk ? `<th>${hk}</th>` : ""}<th>${hr}</th><th aria-label="Feita"></th></tr></thead><tbody>
@@ -2489,21 +2489,46 @@ ACT.sessFinish = () => {
 };
 
 // ---------- descanso ----------
-const REST = { end: 0, t: null };
+const REST = { end: 0, t: null, fim: false, fimAt: 0, rep: 0, built: false };
+let AUDIO = null;
+const somOn = () => { try { return localStorage.getItem("frango:som") !== "0"; } catch (e) { return true; } };
+function audioCtx() { try { if (!AUDIO) { const C = window.AudioContext || window.webkitAudioContext; if (C) AUDIO = new C(); } if (AUDIO && AUDIO.state === "suspended") AUDIO.resume(); } catch (e) {} return AUDIO; }
+function alertaDescanso() {
+  try { navigator.vibrate && navigator.vibrate([300, 120, 300, 120, 300]); } catch (e) {}
+  if (!somOn()) return; const c = audioCtx(); if (!c) return;
+  try { [880, 1175, 880, 1175].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), t0 = c.currentTime + i * 0.26; o.type = "square"; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.28, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22); o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + 0.24); }); } catch (e) {}
+}
 function startRest(sec) {
+  audioCtx(); /* o toque do usuário libera o som do alerta */
+  const old = $(".restbar"); if (old) old.remove(); REST.built = false; REST.fim = false; REST.rep = 0;
   REST.end = Date.now() + sec * 1000; clearInterval(REST.t); drawRest();
   REST.t = setInterval(drawRest, 500);
 }
-function drawRest() {
+function restBar() {
   let bar = $(".restbar");
-  const left = (REST.end - Date.now()) / 1000;
-  if (left <= 0) { stopRest(); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch (e) {} toast(frase("descanso")); return; }
-  if (!bar) { bar = document.createElement("div"); bar.className = "restbar"; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><button class="btn sm" data-act="restSkip">Pular</button>`; document.body.appendChild(bar); }
-  $("#restT").textContent = mmss(Math.ceil(left));
+  if (!bar) { bar = document.createElement("div"); bar.className = "restbar "; document.body.appendChild(bar); document.documentElement.classList.add("fx-resting"); REST.built = false; }
+  return bar;
 }
-function stopRest() { clearInterval(REST.t); const b = $(".restbar"); if (b) b.remove(); }
-ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; drawRest(); };
+function drawRest() {
+  const left = (REST.end - Date.now()) / 1000;
+  if (left <= 0) {
+    const bar = restBar();
+    if (!REST.fim) { REST.fim = true; REST.fimAt = Date.now(); REST.rep = 0; REST.built = false; REST.frase = frase("descanso"); alertaDescanso(); }
+    else if (REST.rep < 3 && Date.now() - REST.fimAt > 12000 * (REST.rep + 1)) { REST.rep++; alertaDescanso(); }
+    else if (Date.now() - REST.fimAt > 60000) { stopRest(); return; }
+    if (!REST.built) { bar.style.background = "#2F4C9E"; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.85">Descanso acabou</div><div style="font-weight:700;font-size:14px;line-height:1.3">${esc(REST.frase)}</div></div><button class="btn sm" data-act="restSkip">Bora</button>`; REST.built = true; }
+    return;
+  }
+  const bar = restBar();
+  if (!REST.built) { bar.style.background = ""; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><input type="number" inputmode="numeric" id="restSet" data-on="restSet" placeholder="seg" aria-label="Definir segundos" style="width:56px;min-height:36px;padding:2px 6px;text-align:center;border-radius:8px"><button class="btn sm" data-act="restSom" aria-label="Som do alerta">${somOn() ? "🔔" : "🔕"}</button><button class="btn sm" data-act="restSkip">Pular</button>`; REST.built = true; }
+  const t = $("#restT"); if (t) t.textContent = mmss(Math.ceil(left));
+}
+function stopRest() { document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); }
+ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; if (REST.end < Date.now() + 1000) REST.end = Date.now() + 1000; drawRest(); };
+ON.restSet = el => { const v = clamp(num(el.value), 5, 1800); if (!el.value) return; REST.end = Date.now() + v * 1000; REST.fim = false; el.value = ""; drawRest(); };
+ACT.restSom = (ds, el) => { try { localStorage.setItem("frango:som", somOn() ? "0" : "1"); } catch (e) {} if (somOn()) alertaDescanso(); el.textContent = somOn() ? "🔔" : "🔕"; };
 ACT.restSkip = () => stopRest();
+ON.exDesc = el => { const x = +el.dataset.x; updA(a => { if (a.ex[x]) a.ex[x].item.desc = el.value === "" ? 0 : clamp(num(el.value), 0, 900); }, false); };
 
 // ---------- histórico ----------
 function viewHist() {
