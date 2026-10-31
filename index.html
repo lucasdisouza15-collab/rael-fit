@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v29-20261031j"><script>(function(){try{var V="v29-20261031j";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v30-20261031k"><script>(function(){try{var V="v30-20261031k";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1805,7 +1805,9 @@ function foodResults(res) {
   }
   const rec = (p.recentes || []).map(r => ({ r, f: foodByKey(r.key, p) })).filter(x => x.f).slice(0, 12);
   let h = "";
-  if (rec.length) h += `<div class="eyebrow" style="margin-top:4px">Recentes</div><div class="list">${rec.map(({ r, f }) => foodRow(f, ` data-q="${r.qtd}" data-modo="${r.modo}"`)).join("")}</div>`;
+  const favs = (p.favs || []).map(k => foodByKey(k, p)).filter(Boolean).slice(0, 24);
+  if (favs.length) h += `<div class="eyebrow" style="margin-top:4px">★ Favoritos</div><div class="list">${favs.map(f => { const r = (p.recentes || []).find(x => x.key === f.key); return foodRow(f, r ? ` data-q="${r.qtd}" data-modo="${r.modo}"` : ""); }).join("")}</div>`;
+  if (rec.length) h += `<div class="eyebrow" style="margin-top:8px">Recentes</div><div class="list">${rec.map(({ r, f }) => foodRow(f, ` data-q="${r.qtd}" data-modo="${r.modo}"`)).join("")}</div>`;
   const cats = [...new Set(allFoods(p).map(f => f.cat))];
   h += `<div class="eyebrow" style="margin-top:8px">Categorias</div><div class="chips" style="flex-wrap:wrap">${cats.map(c => `<button class="chip" data-act="catQ" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
   return h;
@@ -1828,7 +1830,7 @@ function qtyBody() {
   const t = entryT(e), modes = [];
   if (f.tipo === "porcao") modes.push(["porcao", "porção"]); else { modes.push(["g", f.cat === "Bebidas" ? "ml / g" : "gramas"]); if (f.un) modes.push(["un", f.unNome || "unidade"]); }
   const quick = QTY.modo === "g" ? [50, 100, 150, 200, 300] : [0.5, 1, 1.5, 2, 3];
-  return `<div class="card flat"><div class="row between"><div class="num" style="font-size:30px;font-weight:600">${fmt(t.kcal)} <span class="small muted">kcal</span></div><span class="pill">${esc(SRC_LABEL[f.src] || "")}</span></div>
+  return `<div class="card flat"><div class="row between"><div class="num" style="font-size:30px;font-weight:600">${fmt(t.kcal)} <span class="small muted">kcal</span></div><span class="row" style="gap:6px"><span class="pill">${esc(SRC_LABEL[f.src] || "")}</span><button class="btn sm soft" data-act="favTog" data-key="${esc(f.key)}" aria-label="Favoritar">${(P().favs || []).includes(f.key) ? "★ Favorito" : "☆ Favoritar"}</button></span></div>
     <div class="grid4" style="margin-top:10px">${[["Proteína", t.p, "--prot"], ["Carbo", t.c, "--carb"], ["Gordura", t.g, "--gord"], ["Fibra", t.f, "--fib"]].map(([n, v, c]) => `<div class="stat"><span class="row" style="gap:5px"><i class="dot" style="background:var(${c})"></i>${n}</span><b>${fmt1(v)} g</b></div>`).join("")}</div></div>
     ${modes.length > 1 ? `<div class="seg">${modes.map(([k, n]) => `<button aria-pressed="${QTY.modo === k}" data-act="qtyModo" data-k="${k}">${esc(n)}</button>`).join("")}</div>` : ""}
     <label class="f">Quantidade (${QTY.modo === "g" ? "g" : QTY.modo === "un" ? esc(f.unNome) + " de " + f.un + " g" : "porções"})<input type="number" inputmode="decimal" id="qtyIn" data-in="qtyIn" value="${QTY.qtd}" min="0" step="${QTY.modo === "g" ? 5 : 0.5}"></label>
@@ -1841,6 +1843,7 @@ function qtyFoot() {
   return `<button class="btn pri block" data-act="qtyAdd">Adicionar</button>`;
 }
 ON.qtyIn = el => { QTY.qtd = num(el.value); const pos = el.selectionStart; redrawSheet(); const n = $("#qtyIn"); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} };
+ACT.favTog = ds => { updP(p => { const l = p.favs || []; p.favs = l.includes(ds.key) ? l.filter(k => k !== ds.key) : [ds.key].concat(l); }); redrawSheet(); toast((P().favs || []).includes(ds.key) ? "Adicionado aos favoritos" : "Tirado dos favoritos"); };
 ACT.qtySet = ds => { QTY.qtd = num(ds.v); redrawSheet(); };
 ACT.qtyModo = ds => {
   const f = QTY.f, g = QTY.modo === "g" ? QTY.qtd : QTY.modo === "un" ? QTY.qtd * f.un : QTY.qtd;
