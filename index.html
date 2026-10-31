@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v27-20261031h"><script>(function(){try{var V="v27-20261031h";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v28-20261031i"><script>(function(){try{var V="v28-20261031i";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3008,8 +3008,9 @@ function pushCard() {
 }
 pushInit();
 // ---------- foto do treino: monta a imagem com métricas, frase e Rael; fica no histórico do treino (só neste aparelho) ----------
-const FOTO = { fmt: "4:5", zoom: 1, ox: 0, oy: 0, w: null, img: null, cena: "comemora", frase: "", livre: "", met: { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 }, raels: {}, cache: {}, prs: 0 };
+const FOTO = { off: {}, esc: {}, sel: null, hit: {}, fmt: "4:5", zoom: 1, ox: 0, oy: 0, w: null, img: null, cena: "comemora", frase: "", livre: "", met: { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 }, raels: {}, cache: {}, prs: 0 };
 const FOTO_FMT = { "4:5": [1080, 1350, "Feed 4:5"], "1:1": [1080, 1080, "Feed 1:1"], "9:16": [1080, 1920, "Story 9:16"] };
+const FOTO_NOMES = { titulo: "título", metr: "métricas", frase: "frase", rael: "Rael" };
 const FOTO_CENAS = [["comemora", "Comemorando"], ["forte", "Forte"], ["alfa", "Alfa"], ["treinando", "Treinando"], ["cansado", "Cansado"], ["danca", "Dançando"], ["", "Sem Rael"]];
 function fotoDB() {
   return new Promise((ok, no) => {
@@ -3054,10 +3055,11 @@ function fotoLinhas(g, txt, maxW) {
   String(txt).split(/\s+/).forEach(p => { const t = cur ? cur + " " + p : p; if (g.measureText(t).width > maxW && cur) { out.push(cur); cur = p; } else cur = t; });
   if (cur) out.push(cur); return out;
 }
-function fotoDraw() {
+function fotoDraw(exp) {
   const c = document.getElementById("fotoCv"), w = FOTO.w; if (!c || !w) return;
   const [W, H] = FOTO_FMT[FOTO.fmt] || FOTO_FMT["4:5"]; if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
   const story = H > 1500, padT = story ? 210 : 0, padB = story ? 240 : 0, g = c.getContext("2d"), fam = (getComputedStyle(document.body).fontFamily || "system-ui, sans-serif");
+  g.fillStyle = "#0F1536"; g.fillRect(0, 0, W, H);
   if (FOTO.img) {
     const im = FOTO.img, s = Math.max(W / im.width, H / im.height) * FOTO.zoom, dw = im.width * s, dh = im.height * s;
     const mx = (dw - W) / 2, my = (dh - H) / 2; FOTO.ox = Math.max(-mx, Math.min(mx, FOTO.ox)); FOTO.oy = Math.max(-my, Math.min(my, FOTO.oy));
@@ -3068,16 +3070,15 @@ function fotoDraw() {
   g.textBaseline = "alphabetic"; g.fillStyle = "#fff";
   g.font = "800 54px " + fam; g.textAlign = "left"; g.fillText("Frangômetro", 56, 92 + padT);
   g.font = "600 36px " + fam; g.textAlign = "right"; g.fillText(ddmm(w.data), W - 56, 90 + padT);
-  // rael
   const rimg = fotoRael(FOTO.cena), rs = H < 1200 ? 250 : story ? 400 : 380;
-  if (rimg) g.drawImage(rimg, W - rs - 30, H - rs - 70 - padB, rs, rs);
-  // frase
-  const tx = FOTO.livre.trim() || FOTO.frase; g.textAlign = "left";
-  const maxW = rimg ? W - 56 - rs - 60 : W - 112;
-  let yb = H - 70 - padB;
-  if (tx) { g.font = "700 44px " + fam; const ls = fotoLinhas(g, "“" + tx + "”", maxW).slice(0, H < 1200 ? 3 : 6); g.fillStyle = "#fff"; ls.reverse().forEach((l, i) => g.fillText(l, 56, yb - i * 56)); yb -= ls.length * 56 + 26; }
+  const els = [], tx = FOTO.livre.trim() || FOTO.frase, maxW = rimg ? W - 56 - rs - 60 : W - 112;
+  let yb = H - 70 - padB; g.textAlign = "left";
+  if (tx) {
+    g.font = "700 44px " + fam; const ls = fotoLinhas(g, "“" + tx + "”", maxW).slice(0, H < 1200 ? 3 : 6), n = ls.length, y0 = yb, wm = Math.max(...ls.map(l => g.measureText(l).width));
+    els.push({ k: "frase", x: 56, y: y0 - (n - 1) * 56 - 44, w: wm, h: (n - 1) * 56 + 62, draw: () => { g.font = "700 44px " + fam; g.fillStyle = "#fff"; g.textAlign = "left"; ls.forEach((l, j) => g.fillText(l, 56, y0 - (n - 1 - j) * 56)); } });
+    yb -= n * 56 + 26;
+  }
   if (rimg) yb = Math.min(yb, H - rs - 70 - padB - 24);
-  // metricas
   const m = [];
   if (FOTO.met.dur) m.push(["DURAÇÃO", hhmm((w.fim - w.inicio) / 1000)]);
   if (FOTO.met.vol) m.push(["VOLUME", fmt(volume(w)) + " kg"]);
@@ -3087,23 +3088,36 @@ function fotoDraw() {
   if (m.length) {
     const cols = Math.min(m.length, 3), cw = (W - 112 - (cols - 1) * 16) / cols, rows = Math.ceil(m.length / cols), chh = H < 1200 ? 104 : 120;
     const y0 = yb - rows * chh - (rows - 1) * 16;
-    m.forEach((it, i) => {
-      const x = 56 + (i % cols) * (cw + 16), y = y0 + Math.floor(i / cols) * (chh + 16);
-      g.fillStyle = "rgba(255,255,255,.16)"; fotoRRect(g, x, y, cw, chh, 24); g.fill();
-      g.fillStyle = "rgba(255,255,255,.75)"; g.font = "700 26px " + fam; g.fillText(it[0], x + 22, y + 40);
-      g.fillStyle = "#fff"; g.font = "800 46px " + fam; g.fillText(it[1], x + 22, y + 94);
-    });
+    els.push({ k: "metr", x: 56, y: y0, w: cols * cw + (cols - 1) * 16, h: rows * chh + (rows - 1) * 16, draw: () => {
+      g.textAlign = "left";
+      m.forEach((it, i) => {
+        const x = 56 + (i % cols) * (cw + 16), y = y0 + Math.floor(i / cols) * (chh + 16);
+        g.fillStyle = "rgba(255,255,255,.16)"; fotoRRect(g, x, y, cw, chh, 24); g.fill();
+        g.fillStyle = "rgba(255,255,255,.75)"; g.font = "700 26px " + fam; g.fillText(it[0], x + 22, y + 40);
+        g.fillStyle = "#fff"; g.font = "800 46px " + fam; g.fillText(it[1], x + 22, y + 94);
+      });
+    } });
     yb = y0 - 30;
   }
-  g.fillStyle = "#fff"; g.font = "800 72px " + fam; const nl = fotoLinhas(g, w.nome, W - 112).slice(0, 2); nl.reverse().forEach((l, i) => g.fillText(l, 56, yb - i * 80));
+  g.font = "800 72px " + fam; const nl = fotoLinhas(g, w.nome, W - 112).slice(0, 2), nn = nl.length, yt = yb, wt = Math.max(...nl.map(l => g.measureText(l).width));
+  els.unshift({ k: "titulo", x: 56, y: yt - (nn - 1) * 80 - 64, w: wt, h: (nn - 1) * 80 + 84, draw: () => { g.font = "800 72px " + fam; g.fillStyle = "#fff"; g.textAlign = "left"; nl.forEach((l, j) => g.fillText(l, 56, yt - (nn - 1 - j) * 80)); } });
+  if (rimg) els.push({ k: "rael", x: W - rs - 30, y: H - rs - 70 - padB, w: rs, h: rs, draw: () => g.drawImage(rimg, W - rs - 30, H - rs - 70 - padB, rs, rs) });
+  FOTO.hit = {};
+  els.forEach(e => {
+    const o = FOTO.off[e.k] || [0, 0], sc = FOTO.esc[e.k] || 1, cx = e.x + e.w / 2, cy = e.y + e.h / 2;
+    g.save(); g.translate(cx + o[0], cy + o[1]); g.scale(sc, sc); g.translate(-cx, -cy); e.draw(); g.restore();
+    FOTO.hit[e.k] = { x: cx + o[0] - e.w * sc / 2, y: cy + o[1] - e.h * sc / 2, w: e.w * sc, h: e.h * sc };
+  });
+  if (!exp && FOTO.sel && FOTO.hit[FOTO.sel]) { const h = FOTO.hit[FOTO.sel]; g.save(); g.strokeStyle = "#F2C14E"; g.lineWidth = 5; g.setLineDash([18, 12]); g.strokeRect(h.x - 10, h.y - 10, h.w + 20, h.h + 20); g.restore(); }
 }
 function fotoBody() {
   const chip = (act, on, txt, extra) => `<button class="btn sm ${on ? "pri" : "soft"}" data-act="${act}" ${extra || ""}>${txt}</button>`;
   const mets = [["dur", "Duração"], ["vol", "Volume"], ["ser", "Séries"], ["kcal", "Gasto"]].concat(FOTO.prs ? [["rec", "Recordes"]] : []);
-  return `<div class="stack"><div class="row" style="flex-wrap:wrap;gap:6px">${Object.keys(FOTO_FMT).map(k => chip("fotoFmt", FOTO.fmt === k, FOTO_FMT[k][2], `data-k="${k}"`)).join("")}</div>
+  return `<div class="stack"><div class="row" style="gap:8px"><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">📷 Tirar foto<input type="file" accept="image/*" capture="environment" data-on="fotoArq" style="display:none"></label><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">🖼️ Da galeria<input type="file" accept="image/*" data-on="fotoArq" style="display:none"></label></div>
+    <div class="row" style="flex-wrap:wrap;gap:6px">${Object.keys(FOTO_FMT).map(k => chip("fotoFmt", FOTO.fmt === k, FOTO_FMT[k][2], `data-k="${k}"`)).join("")}</div>
     <canvas id="fotoCv" width="${FOTO_FMT[FOTO.fmt][0]}" height="${FOTO_FMT[FOTO.fmt][1]}" style="display:block;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:60vh;aspect-ratio:${FOTO_FMT[FOTO.fmt][0]}/${FOTO_FMT[FOTO.fmt][1]};border-radius:16px;background:#16204F;touch-action:none;cursor:grab"></canvas>
     ${FOTO.img ? `<div class="row" style="gap:10px"><span class="xs muted">Arraste a foto para ajustar. Zoom</span><input type="range" min="100" max="400" value="${Math.round(FOTO.zoom * 100)}" data-in="fotoZoom" class="grow" aria-label="Zoom da foto"><button class="btn sm soft" data-act="fotoCentra">Centralizar</button></div>` : ""}
-    <label class="btn soft block" style="text-align:center;cursor:pointer">📷 ${FOTO.img ? "Trocar a foto" : "Tirar ou escolher foto"}<input type="file" accept="image/*" data-on="fotoArq" style="display:none"></label>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><span class="xs muted grow" id="fotoSelLbl">${FOTO.sel ? "Selecionado: " + FOTO_NOMES[FOTO.sel] : "Toque num item do cartão para mover"}</span><button class="btn sm soft" data-act="fotoEsc" data-d="-0.15">Menor</button><button class="btn sm soft" data-act="fotoEsc" data-d="0.15">Maior</button><button class="btn sm soft" data-act="fotoReset">Reiniciar</button></div>
     <div class="xs muted">Pose do Rael</div><div class="row" style="flex-wrap:wrap;gap:6px">${FOTO_CENAS.map(([k, n]) => chip("fotoCena", FOTO.cena === k, n, `data-k="${k}"`)).join("")}</div>
     <div class="xs muted">Métricas na foto</div><div class="row" style="flex-wrap:wrap;gap:6px">${mets.map(([k, n]) => chip("fotoMet", FOTO.met[k], n, `data-k="${k}"`)).join("")}</div>
     <div class="row" style="gap:8px"><input type="text" class="grow" maxlength="90" placeholder="Escreva sua frase (ou use a do Rael)" value="${esc(FOTO.livre)}" data-in="fotoFrase" style="min-width:0"><button class="btn sm soft" data-act="fotoFrase">Outra frase</button></div>
@@ -3112,7 +3126,7 @@ function fotoBody() {
 (function () { const o = drawSheet; drawSheet = function () { o.apply(this, arguments); try { if (document.getElementById("fotoCv")) fotoDraw(); } catch (e) {} }; })();
 ACT.fotoAbrir = ds => {
   const w = getDoc("treino-" + ds.id) || (typeof workouts === "function" ? workouts().find(x => x.id === ds.id) : null); if (!w) { toast("Treino não encontrado"); return; }
-  FOTO.w = w; FOTO.img = null; FOTO.livre = ""; FOTO.frase = frase("fim"); FOTO.cena = "comemora"; FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; FOTO.met = { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 };
+  FOTO.w = w; FOTO.img = null; FOTO.livre = ""; FOTO.frase = frase("fim"); FOTO.cena = "comemora"; FOTO.off = {}; FOTO.esc = {}; FOTO.sel = null; FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; FOTO.met = { dur: 1, vol: 1, ser: 1, kcal: 1, rec: 1 };
   if (FOTO.prsW !== w.id) FOTO.prs = 0;
   openSheet({ title: "Foto do treino", body: () => fotoBody(), foot: () => `<button class="btn" data-act="fotoGuardar">Salvar no treino</button><button class="btn pri block" data-act="fotoCompartilhar">Compartilhar / baixar</button>` });
 };
@@ -3120,21 +3134,31 @@ ON.fotoArq = el => {
   const f = el.files && el.files[0]; if (!f) return;
   const im = new Image(), rd = new FileReader();
   im.onload = () => { FOTO.img = im; FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; drawSheet(); }; im.onerror = () => toast("Não consegui abrir essa foto");
-  rd.onload = () => { im.src = rd.result; }; rd.onerror = () => toast("Não consegui abrir essa foto"); rd.readAsDataURL(f);
+  rd.onload = () => { im.src = rd.result; }; rd.onerror = () => toast("Não consegui abrir essa foto"); rd.readAsDataURL(f); try { el.value = ""; } catch (e) {}
 };
-ACT.fotoFmt = ds => { FOTO.fmt = ds.k; FOTO.ox = 0; FOTO.oy = 0; drawSheet(); };
+ACT.fotoFmt = ds => { FOTO.fmt = ds.k; FOTO.ox = 0; FOTO.oy = 0; FOTO.off = {}; FOTO.sel = null; drawSheet(); };
+ACT.fotoEsc = ds => { if (!FOTO.sel) { toast("Toque num item do cartão primeiro"); return; } FOTO.esc[FOTO.sel] = Math.max(0.4, Math.min(3, (FOTO.esc[FOTO.sel] || 1) + num(ds.d))); fotoDraw(); };
+ACT.fotoReset = () => { FOTO.off = {}; FOTO.esc = {}; FOTO.sel = null; FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; drawSheet(); };
 ACT.fotoCentra = () => { FOTO.zoom = 1; FOTO.ox = 0; FOTO.oy = 0; drawSheet(); };
 ON.fotoZoom = el => { FOTO.zoom = Math.max(1, Math.min(4, num(el.value) / 100)); fotoDraw(); };
 (function () {
-  const P = new Map(); let d0 = 0, z0 = 1;
+  const P = new Map(); let d0 = 0, z0 = 1, e0 = 1;
   const dist = () => { const a = [...P.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); };
-  document.addEventListener("pointerdown", e => { if (!e.target || e.target.id !== "fotoCv" || !FOTO.img) return; P.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { e.target.setPointerCapture(e.pointerId); } catch (x) {} if (P.size === 2) { d0 = dist() || 1; z0 = FOTO.zoom; } });
+  const lbl = () => { const l = document.getElementById("fotoSelLbl"); if (l) l.textContent = FOTO.sel ? "Selecionado: " + FOTO_NOMES[FOTO.sel] : "Toque num item do cartão para mover"; };
+  document.addEventListener("pointerdown", e => {
+    if (!e.target || e.target.id !== "fotoCv") return;
+    const c = e.target, r = c.getBoundingClientRect(), k = c.width / r.width, px = (e.clientX - r.left) * k, py = (e.clientY - r.top) * k;
+    let hit = null; ["rael", "frase", "metr", "titulo"].forEach(n => { const h = FOTO.hit[n]; if (!hit && h && px >= h.x - 12 && px <= h.x + h.w + 12 && py >= h.y - 12 && py <= h.y + h.h + 12) hit = n; });
+    if (P.size === 0) { FOTO.sel = hit; lbl(); fotoDraw(); }
+    P.set(e.pointerId, { x: e.clientX, y: e.clientY, el: P.size === 0 ? hit : null }); try { c.setPointerCapture(e.pointerId); } catch (x) {}
+    if (P.size === 2) { d0 = dist() || 1; z0 = FOTO.zoom; e0 = FOTO.sel ? (FOTO.esc[FOTO.sel] || 1) : 1; }
+  });
   document.addEventListener("pointermove", e => {
     const c = document.getElementById("fotoCv"); if (!c || !P.has(e.pointerId)) return;
     const p = P.get(e.pointerId), k = c.width / c.getBoundingClientRect().width;
-    if (P.size === 1) { FOTO.ox += (e.clientX - p.x) * k; FOTO.oy += (e.clientY - p.y) * k; }
-    P.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (P.size === 2) { FOTO.zoom = Math.max(1, Math.min(4, z0 * dist() / d0)); const r = document.querySelector("input[data-in=fotoZoom]"); if (r) r.value = Math.round(FOTO.zoom * 100); }
+    if (P.size === 1) { const dx = (e.clientX - p.x) * k, dy = (e.clientY - p.y) * k; if (p.el) { const o = FOTO.off[p.el] || [0, 0]; FOTO.off[p.el] = [o[0] + dx, o[1] + dy]; } else if (FOTO.img) { FOTO.ox += dx; FOTO.oy += dy; } }
+    P.set(e.pointerId, Object.assign(p, { x: e.clientX, y: e.clientY }));
+    if (P.size === 2) { const rt = dist() / d0; if (FOTO.sel) FOTO.esc[FOTO.sel] = Math.max(0.4, Math.min(3, e0 * rt)); else if (FOTO.img) { FOTO.zoom = Math.max(1, Math.min(4, z0 * rt)); const r = document.querySelector("input[data-in=fotoZoom]"); if (r) r.value = Math.round(FOTO.zoom * 100); } }
     fotoDraw();
   });
   const up = e => { P.delete(e.pointerId); };
@@ -3144,8 +3168,9 @@ ACT.fotoCena = ds => { FOTO.cena = ds.k; drawSheet(); };
 ACT.fotoMet = ds => { FOTO.met[ds.k] = FOTO.met[ds.k] ? 0 : 1; drawSheet(); };
 ACT.fotoFrase = () => { FOTO.livre = ""; FOTO.frase = frase("fim"); drawSheet(); };
 ON.fotoFrase = el => { FOTO.livre = el.value; fotoDraw(); };
-function fotoBlob() { return new Promise(ok => document.getElementById("fotoCv").toBlob(ok, "image/jpeg", 0.92)); }
+function fotoBlob() { fotoDraw(true); return new Promise(ok => document.getElementById("fotoCv").toBlob(b => { fotoDraw(); ok(b); }, "image/jpeg", 0.92)); }
 async function fotoSaida(blob, nome) {
+  try { const dl = window.claude && claude.use ? await claude.use("downloads") : null; if (dl) { await dl.save({ filename: nome, data: blob }); return; } } catch (e) { if (e && (e.code === "declined" || e.code === "rate_limited")) return; }
   const f = new File([blob], nome, { type: "image/jpeg" });
   try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f] }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
   const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
