@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v22-20261031c"><script>(function(){try{var V="v22-20261031c";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v23-20261031d"><script>(function(){try{var V="v23-20261031d";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2527,7 +2527,7 @@ function alertaDescanso() {
 function startRest(sec) {
   audioCtx(); mudoStart(); /* o toque do usuário libera o som do alerta */
   const old = $(".restbar"); if (old) old.remove(); REST.built = false; REST.fim = false; REST.rep = 0;
-  REST.end = Date.now() + sec * 1000; clearInterval(REST.t); drawRest();
+  REST.end = Date.now() + sec * 1000; clearInterval(REST.t); drawRest(); try { pushAgenda(sec); } catch (e) {}
   REST.t = setInterval(drawRest, 500);
 }
 function restBar() {
@@ -2539,7 +2539,7 @@ function drawRest() {
   const left = (REST.end - Date.now()) / 1000;
   if (left <= 0) {
     const bar = restBar();
-    if (!REST.fim) { REST.fim = true; REST.fimAt = Date.now(); REST.rep = 0; REST.built = false; REST.frase = frase("descanso"); alertaDescanso(); }
+    if (!REST.fim) { REST.fim = true; REST.fimAt = Date.now(); REST.rep = 0; REST.built = false; REST.frase = frase("descanso"); alertaDescanso(); try { pushCancela(); } catch (e) {} }
     else if (REST.rep < 3 && Date.now() - REST.fimAt > 12000 * (REST.rep + 1)) { REST.rep++; alertaDescanso(); }
     else if (Date.now() - REST.fimAt > 60000) { stopRest(); return; }
     if (!REST.built) { bar.style.background = "#2F4C9E"; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.85">Descanso acabou</div><div style="font-weight:700;font-size:14px;line-height:1.3">${esc(REST.frase)}</div></div><button class="btn sm" data-act="restSkip">Bora</button>`; REST.built = true; }
@@ -2549,9 +2549,9 @@ function drawRest() {
   if (!REST.built) { bar.style.background = ""; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><input type="number" inputmode="numeric" id="restSet" data-on="restSet" placeholder="seg" aria-label="Definir segundos" style="width:56px;min-height:36px;padding:2px 6px;text-align:center;border-radius:8px"><button class="btn sm" data-act="restSom" aria-label="Som do alerta">${somOn() ? "🔔" : "🔕"}</button><button class="btn sm" data-act="restSkip">Pular</button>`; REST.built = true; }
   const t = $("#restT"); if (t) t.textContent = mmss(Math.ceil(left));
 }
-function stopRest() { mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); }
-ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; if (REST.end < Date.now() + 1000) REST.end = Date.now() + 1000; drawRest(); };
-ON.restSet = el => { const v = clamp(num(el.value), 5, 1800); if (!el.value) return; REST.end = Date.now() + v * 1000; REST.fim = false; el.value = ""; drawRest(); };
+function stopRest() { try { if (!REST.fim) pushCancela(); } catch (e) {} mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); }
+ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; if (REST.end < Date.now() + 1000) REST.end = Date.now() + 1000; drawRest(); try { pushAgenda((REST.end - Date.now()) / 1000); } catch (e) {} };
+ON.restSet = el => { const v = clamp(num(el.value), 5, 1800); if (!el.value) return; REST.end = Date.now() + v * 1000; REST.fim = false; el.value = ""; drawRest(); try { pushAgenda(v); } catch (e) {} };
 ACT.restSom = (ds, el) => { try { localStorage.setItem("frango:som", somOn() ? "0" : "1"); } catch (e) {} if (somOn()) alertaDescanso(); el.textContent = somOn() ? "🔔" : "🔕"; };
 ACT.restSkip = () => stopRest();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && REST.t) drawRest(); }); /* ao desbloquear, o tempo real já é mostrado e o alerta dispara na hora */
@@ -2950,6 +2950,52 @@ function medBanner() {
     return h;
   } catch (e) { return ""; }
 }
+// ---------- Avisos de fim de descanso com a tela bloqueada (Web Push) ----------
+// Só funciona no site (https) com service worker. Depende de um Worker próprio configurado em push-config.json.
+const PUSH_VAPID = "BJaFRYvPv7GX37tIkqe2STVZw7X6WRshqKbPJgkup86YPdNrDsVBlZof6IQosdmWXb7nSmYHPs_NYZuz3BMt3HM";
+const PUSH = { url: "", sub: null, pronto: false };
+function pushSuportado() { return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && /^https:/.test(location.protocol); }
+function pushStandalone() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
+const pushIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+const pushQuer = () => { try { return localStorage.getItem("frango:push") === "1"; } catch (e) { return false; } };
+function b64uToBytes(s) { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+async function pushInit() {
+  try {
+    if (!pushSuportado()) return;
+    const cfg = await fetch("push-config.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({}));
+    PUSH.url = (cfg && cfg.url || "").replace(/\/$/, "");
+    const reg = await navigator.serviceWorker.register("sw.js"); await navigator.serviceWorker.ready;
+    PUSH.reg = reg; PUSH.sub = await reg.pushManager.getSubscription(); PUSH.pronto = !!PUSH.url;
+  } catch (e) {}
+}
+function pushPost(rota, seg) {
+  if (!PUSH.pronto || !PUSH.sub || !pushQuer()) return;
+  try { fetch(PUSH.url + rota, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sub: PUSH.sub.toJSON(), seg }), keepalive: true }).catch(() => {}); } catch (e) {}
+}
+/* +2 s: se o app estiver aberto ele avisa sozinho e cancela o aviso do servidor antes */
+const pushAgenda = seg => pushPost("/agenda", Math.max(5, Math.round(seg) + 2));
+const pushCancela = () => pushPost("/cancela", 0);
+ACT.pushLiga = async () => {
+  try {
+    if (!pushSuportado()) { toast("Este navegador não suporta avisos."); return; }
+    if (pushIOS() && !pushStandalone()) { toast("No iPhone: Compartilhar, Adicionar à Tela de Início, e abra por lá."); return; }
+    const perm = await Notification.requestPermission(); if (perm !== "granted") { toast("Sem permissão de notificação."); return; }
+    const reg = PUSH.reg || await navigator.serviceWorker.ready;
+    PUSH.sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(PUSH_VAPID) });
+    try { localStorage.setItem("frango:push", "1"); } catch (e) {}
+    pushPost("/agenda", 8); toast("Avisos ligados. Em alguns segundos chega um aviso de teste."); render();
+  } catch (e) { toast("Não deu para ligar os avisos: " + (e && e.message || e)); }
+};
+ACT.pushDesliga = async () => { try { localStorage.setItem("frango:push", "0"); pushCancela(); } catch (e) {} render(); toast("Avisos desligados."); };
+function pushCard() {
+  if (!pushSuportado()) return "";
+  const on = pushQuer() && !!PUSH.sub;
+  const dica = pushIOS() && !pushStandalone() ? `<div class="small ink2">No iPhone, primeiro toque em Compartilhar e em "Adicionar à Tela de Início", e abra o app por esse ícone. Só assim o iOS permite avisos.</div>` : "";
+  if (!PUSH.pronto) return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Em breve: o aviso de fim do descanso chega mesmo com o celular bloqueado.</div></div>`;
+  return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Quando o descanso acaba, chega uma notificação com uma frase do Rael, mesmo com o app fechado ou o celular bloqueado.</div>${dica}
+    ${on ? `<button class="btn" data-act="pushDesliga">Desligar avisos</button>` : `<button class="btn pri" data-act="pushLiga">Ligar avisos</button>`}</div>`;
+}
+pushInit();
 // =================== FRANGÔMETRO: voz do Rael, medidor e mascote ===================
 // =================== Frases do Rael, rodada 4 (Inner AI, 30/10/2026), por situação ===================
 // Cortadas na triagem: ajustes "Backup ativado" (não é automático) e comida vazia "café da manhã" (depende de horário).
@@ -4165,6 +4211,7 @@ function viewPerfil() {
     <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
   h += ajudaCard();
+  h += typeof pushCard === "function" ? pushCard() : "";
   h += `<div class="card stack"><h2>Enviar feedback</h2><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
   h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
   h += `<div class="xs muted" style="text-align:center;padding:8px 0">Frangômetro, versão teste. ${/^(rael|israel)$/i.test((p.nome || "").trim()) ? "Presente do Lucas pro Rael. " : ""}Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
