@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v35-20261103a"><script>(function(){try{var V="v35-20261103a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v36-20261103b"><script>(function(){try{var V="v36-20261103b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -4864,6 +4864,24 @@ ACT.delKey = () => { try { localStorage.removeItem(KEY_LS); localStorage.removeI
 // nome do usuário logado nas frases ({nome}); sem nome, "você"
 (function () { const o1 = frPick, o2 = fr2, o3 = frase; frPick = c => frNome(o1(c)); fr2 = c => frNome(o2(c)); frase = (c, r) => frNome(o3(c, r)); })();
 try { frSplash(); } catch (_) {}
+</script>
+<script>
+/* importação única (03/11/2026): medição de 19/10 e pesos que estavam só no Painel. Mescla, não apaga nada, roda uma vez por aparelho. */
+(function () {
+  var K = "frango:imp-painel-1103", DADOS = {"app":"rael-fit","v":2,"origem":"painel","exportado":"2026-11-03T20:40:00Z","docs":{"dia-2026-02-20":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":161,"del":[],"_t":0},"dia-2026-10-12":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":113.6,"del":[],"_t":0},"dia-2026-10-13":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":113.4,"del":[],"_t":0},"dia-2026-10-14":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":112.4,"del":[],"_t":0},"dia-2026-10-15":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":111.6,"del":[],"_t":0},"dia-2026-10-16":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":112.4,"del":[],"_t":0},"dia-2026-10-17":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":113.6,"del":[],"_t":0},"dia-2026-10-19":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":113.6,"del":[],"_t":0},"dia-2026-10-23":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":111.6,"del":[],"_t":0},"dia-2026-10-24":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":112.6,"del":[],"_t":0},"dia-2026-10-27":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":112.8,"del":[],"_t":0},"dia-2026-10-28":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":112.4,"del":[],"_t":0},"dia-2026-10-29":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":112,"del":[],"_t":0},"dia-2026-10-30":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":111.6,"del":[],"_t":0},"dia-2026-10-31":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":111.6,"del":[],"_t":0},"dia-2026-11-03":{"ref":{"cafe":[],"almoco":[],"lanche":[],"jantar":[],"ceia":[]},"agua":0,"peso":114.4,"del":[],"_t":0},"perfil":{"_t":1,"favs":[],"med":{"campos":[{"id":"m0","nome":"Peito","freq":14},{"id":"m1","nome":"Braço esquerdo","freq":14},{"id":"m2","nome":"Braço direito","freq":14},{"id":"m3","nome":"Barriga","freq":14},{"id":"m4","nome":"Coxa","freq":30},{"id":"m5","nome":"Cintura","freq":14}],"hist":[{"data":"2026-10-19","v":{"m0":116,"m1":42,"m2":44.5,"m5":120}}]}}},"fotos":[]}, t = 0;
+  try { if (localStorage.getItem(K)) return; } catch (e) { return; }
+  var iv = setInterval(function () {
+    t++; if (t > 60) { clearInterval(iv); return; }
+    try {
+      if (typeof syncPlano !== "function" || typeof syncAplica !== "function" || typeof ST === "undefined" || !ST.docs) return;
+      var p = getDoc("perfil"); if (!p || !p.onb) return;
+      clearInterval(iv);
+      var plano = syncPlano(DADOS.docs), n = plano.ops.length ? syncAplica(plano.ops) : 0;
+      localStorage.setItem(K, "1"); render();
+      if (n) toast("Medidas e pesos do Painel importados");
+    } catch (e) { clearInterval(iv); }
+  }, 500);
+})();
 </script>
 <!-- frangometro teste 2026-10-30f -->
 
