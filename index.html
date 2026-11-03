@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v34-20261031o"><script>(function(){try{var V="v34-20261031o";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v35-20261103a"><script>(function(){try{var V="v35-20261103a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#2F4C9E"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2574,6 +2574,7 @@ function restPop() {
   document.body.appendChild(p);
 }
 function drawRest() {
+  if (!REST.end) return; /* descanso já encerrado (Bora/Pular): não reabrir o aviso ao voltar para o app */
   const left = (REST.end - Date.now()) / 1000;
   if (left <= 0) {
     const bar = restBar(); bar.style.display = "none";
@@ -2587,7 +2588,7 @@ function drawRest() {
   if (!REST.built) { bar.style.background = ""; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><input type="number" inputmode="numeric" id="restSet" data-on="restSet" placeholder="seg" aria-label="Definir segundos" style="width:56px;min-height:36px;padding:2px 6px;text-align:center;border-radius:8px"><button class="btn sm" data-act="restSom" aria-label="Som do alerta">${somOn() ? "🔔" : "🔕"}</button><button class="btn sm" data-act="restSkip">Pular</button>`; REST.built = true; }
   const t = $("#restT"); if (t) t.textContent = mmss(Math.ceil(left));
 }
-function stopRest() { try { if (!REST.fim) pushCancela(); } catch (e) {} mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); const rp = document.getElementById("restpop"); if (rp) rp.remove(); }
+function stopRest() { try { if (!REST.fim) pushCancela(); } catch (e) {} mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.t = null; REST.end = 0; REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); const rp = document.getElementById("restpop"); if (rp) rp.remove(); }
 ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; if (REST.end < Date.now() + 1000) REST.end = Date.now() + 1000; drawRest(); try { pushAgenda((REST.end - Date.now()) / 1000); } catch (e) {} };
 ON.restSet = el => { const v = clamp(num(el.value), 5, 1800); if (!el.value) return; REST.end = Date.now() + v * 1000; REST.fim = false; el.value = ""; drawRest(); try { pushAgenda(v); } catch (e) {} };
 ACT.restSom = (ds, el) => { try { localStorage.setItem("frango:som", somOn() ? "0" : "1"); } catch (e) {} if (somOn()) alertaDescanso(); el.textContent = somOn() ? "🔔" : "🔕"; };
@@ -2847,7 +2848,7 @@ const AJ_FAQ = [
   ]],
   ["Frango e o app", [
     ["O que é o balão do Frango?", "Às vezes ele faz uma pergunta. Toque numa resposta e ele reage. As perguntas são esporádicas e mudam a cada hora."],
-    ["Como faço backup?", "Em Ajustes, Fazer backup. Guarde o arquivo. Em Restaurar backup você recupera tudo. O app avisa quando faz tempo que não há backup."],
+    ["Como faço backup?", "Em Ajustes, Fazer backup. Guarde o arquivo. Em Restaurar backup (ou Colar backup) você recupera tudo: o app mescla com o que já existe, sem apagar nada. Para levar os dados ao Painel, use Copiar tudo e, no outro lado, Colar backup. O app avisa quando faz tempo que não há backup."],
     ["O app não atualizou. E agora?", "Ele confere sozinho por novas versões ao abrir. Se precisar, use \"Atualizar o app agora\" em Ajustes."]
   ]]
 ];
@@ -3367,13 +3368,13 @@ function syncCard() {
 ACT.syncCopia = async () => {
   let fotos = []; try { fotos = (await fotoLista(null)).map(x => ({ id: x.id, w: x.w, t: x.t, d: x.d })).filter(x => x.d); } catch (e) {}
   const txt = JSON.stringify({ app: "rael-fit", v: 2, origem: syncPainel() ? "painel" : "site", exportado: new Date().toISOString(), docs: syncSnap(), fotos });
-  try { await navigator.clipboard.writeText(txt); toast("Copiado. Agora cole no outro lado em Colar e mesclar."); return; } catch (e) {}
-  openSheet({ title: "Copiar tudo", body: () => `<div class="stack"><div class="small ink2">O celular não deixou copiar sozinho. Toque no texto, selecione tudo e copie. Depois cole no outro lado em Colar e mesclar.</div><textarea id="syncOut" readonly style="min-height:200px;font-size:11px">${esc(txt)}</textarea></div>`, foot: () => `<button class="btn pri block" data-act="syncSel">Selecionar tudo</button>` });
+  try { await navigator.clipboard.writeText(txt); toast("Copiado. Agora cole no outro lado em Colar backup."); return; } catch (e) {}
+  openSheet({ title: "Copiar tudo", body: () => `<div class="stack"><div class="small ink2">O celular não deixou copiar sozinho. Toque no texto, selecione tudo e copie. Depois cole no outro lado em Colar backup.</div><textarea id="syncOut" readonly style="min-height:200px;font-size:11px">${esc(txt)}</textarea></div>`, foot: () => `<button class="btn pri block" data-act="syncSel">Selecionar tudo</button>` });
 };
 ACT.syncSel = () => { const t = $("#syncOut"); if (t) { t.focus(); t.select(); try { t.setSelectionRange(0, t.value.length); } catch (e) {} } };
 ACT.syncCola = () => {
   SYNC.p = null;
-  openSheet({ title: "Colar e mesclar", body: () => `<div class="stack"><div class="small ink2">No outro lado, toque em Copiar tudo. Aqui, cole o texto abaixo.</div><textarea id="syncIn" placeholder="Cole aqui" style="min-height:160px;font-size:12px"></textarea><button class="btn soft block" data-act="syncLeArea">Colar da área de transferência</button></div>`, foot: () => `<button class="btn pri block" data-act="syncResumo">Ver o resumo</button>` });
+  openSheet({ title: "Colar backup", body: () => `<div class="stack"><div class="small ink2">Cole o texto do backup (ou o de Copiar tudo do outro lado).</div><textarea id="syncIn" placeholder="Cole aqui" style="min-height:160px;font-size:12px"></textarea><button class="btn soft block" data-act="syncLeArea">Colar da área de transferência</button></div>`, foot: () => `<button class="btn pri block" data-act="syncResumo">Ver o resumo</button>` });
 };
 ACT.syncLeArea = async () => { try { const t = await navigator.clipboard.readText(), a = $("#syncIn"); if (a) { a.value = t; toast("Colado. Toque em Ver o resumo."); } } catch (e) { toast("Cole com o dedo no campo: toque e segure."); } };
 function syncResumoHtml() {
@@ -3386,8 +3387,9 @@ function syncResumoHtml() {
     ${SYNC.p.fotos.length ? li(`Fotos de treino que entram: <b>${SYNC.p.fotos.length}</b>`) : ""}</ul>` : ""}
     <div class="xs muted">Vale o registro mais recente de cada item. Rotinas apagadas de um lado podem voltar do outro.</div></div>`;
 }
-ACT.syncResumo = async () => {
-  const o = syncLe(($("#syncIn") || {}).value); if (!o) { toast("Isso não parece um pacote do Frangômetro."); return; }
+ACT.syncResumo = () => syncPrepara(($("#syncIn") || {}).value);
+async function syncPrepara(txt) {
+  const o = syncLe(txt); if (!o) { toast("Isso não parece um backup do Frangômetro."); return; }
   SYNC.p = syncPlano(o.docs); SYNC.p.fotos = [];
   try { if ((o.fotos || []).length) { const tem = new Set((await fotoLista(null)).map(x => x.id)); SYNC.p.fotos = o.fotos.filter(x => x && x.id && x.d && !tem.has(x.id)); } } catch (e) {}
   if (SYNC.p.fotos.length) SYNC.p.ops.push({ t: "fotos" });
@@ -4667,13 +4669,14 @@ function viewPerfil() {
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label></div>`;
-  h += `<div class="card stack"><h2>Importar treinos do Hevy <span class="pill">importador v12</span></h2><div class="small ink2">Importar do Hevy${qi("No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.")}</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">${qi("Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.")}</div></div>`;
+  h += `<div class="card stack"><h2>Importar treinos do Hevy</h2><div class="small ink2">Importar do Hevy${qi("No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.")}</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><div class="xs muted">${qi("Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.")}</div></div>`;
   h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}${bkGet(BKK) ? ` Último backup: ${ddmm(bkGet(BKK))}.` : " Nenhum backup feito ainda."}</div>
-    <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="colarBackup">Colar backup</button></div>
-    <button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
+    <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="syncCola">Colar backup</button></div>
+    <div class="small ink2">Para levar os dados ${syncPainel() ? "ao site" : "ao Painel"} (ou o contrário): toque em Copiar tudo aqui e, no outro lado, em Colar backup. Restaurar e Colar mesclam: só acrescentam e atualizam, nunca apagam o que você já tem.</div>
+    <button class="btn soft" data-act="syncCopia">Copiar tudo</button></div>`;
+  h += `<div class="card stack"><h2>Manutenção</h2><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Só recarrega a versão do app; seus dados não mudam.</div><button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
   h += ajudaCard();
-  h += syncCard();
   h += typeof pushCard === "function" ? pushCard() : "";
   h += `<div class="card stack"><h2>Enviar feedback</h2><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
   h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
@@ -4719,7 +4722,7 @@ function bkBanner() {
 ACT.bkDepois = () => { bkSet(BKS, addDays(TODAY(), 2)); render(); };
 ACT.exportar = async () => {
   bkSet(BKK, TODAY());
-  const data = backupJSON(), name = "rael-fit-" + norm(nomeU()).replace(/[^a-z0-9]+/g, "-") + "-" + TODAY() + ".json";
+  const data = backupJSON(), name = "frangometro-" + norm(nomeU()).replace(/[^a-z0-9]+/g, "-") + "-" + TODAY() + ".json";
   if (CAP.dl) { try { await CAP.dl.save({ filename: name, data }); toast("Backup salvo"); return; } catch (e) { if (e && e.code === "not_granted") return; } }
   if (!window.claude) { try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "application/json" })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast("Backup baixado"); return; } catch (e) {} }
   openSheet({ title: "Backup", body: `<div class="small ink2">Copie este texto e guarde (no WhatsApp para você mesmo, por exemplo). Para restaurar, use "Colar backup".</div><textarea id="bkTxt" readonly style="min-height:200px;font-size:12px">${esc(data)}</textarea>`, foot: `<button class="btn pri block" data-act="bkCopy">Copiar backup</button>` });
@@ -4743,7 +4746,7 @@ function restore(txt) {
   for (const k in o.docs) { const d = o.docs[k]; if (d && typeof d === "object") putDoc(k, d); }
   render(); toast("Backup restaurado"); return true;
 }
-ON.importar = el => { const f = el.files && el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => restore(r.result); r.readAsText(f); el.value = ""; };
+ON.importar = el => { const f = el.files && el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => syncPrepara(r.result); r.readAsText(f); el.value = ""; };
 ACT.colarBackup = () => openSheet({ title: "Colar backup", body: `<textarea id="bkIn" placeholder="Cole aqui o texto do backup" style="min-height:200px;font-size:12px"></textarea>`, foot: `<button class="btn pri block" data-act="bkRestore">Restaurar</button>` });
 ACT.bkRestore = () => { if (restore($("#bkIn").value)) closeSheet(); };
 ACT.wipeAsk = () => { UIc.confirm = "wipe"; render(); };
