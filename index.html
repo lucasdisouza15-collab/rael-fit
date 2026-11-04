@@ -2929,23 +2929,46 @@ ACT.hevyColarGo = () => {
 };
 // ---------- Ajuda: como funciona cada tela (FAQ) ----------
 const AJ_FAQ = [
+  ["Começar", [
+    ["Como o app está organizado?", "Cinco abas embaixo: Hoje (resumo do dia, água, peso, outras atividades), Comer (Diário, Alimentos, Receitas e Plano), Treino (Semana, Rotinas, Histórico e Exercícios), Evolução (gráficos, medidas, sono) e Perfil (seus dados, metas, backup e ajuda). Use as setas no topo para mudar o dia."],
+    ["Onde ficam meus dados?", "Só neste aparelho, no navegador. Cada aparelho tem os seus dados e eles não passam sozinhos de um aparelho para o outro. Limpar os dados do navegador apaga tudo, então faça backup de vez em quando (Perfil, Fazer backup)."],
+    ["Posso dividir o celular com outra pessoa?", "Pode. No Perfil, em Perfis neste aparelho, toque em Novo perfil. Cada perfil tem refeições, treinos e metas separados, e você troca com o botão Entrar."]
+  ]],
+  ["Hoje", [
+    ["O que é o Balanço do dia?", "Compara o que você comeu com o que gastou (metabolismo, rotina do dia a dia, treino e outras atividades). Mostra déficit ou superávit em kcal."],
+    ["Como registro água, peso e outras atividades?", "Na aba Hoje. Água: toque nos copos. Peso: digite e salve (uma vez por semana, em jejum, já basta). Outras atividades (corrida, futebol, bike, beach tennis...): toque em Adicionar, e o gasto entra na conta do dia."],
+    ["Posso somar as calorias do treino à meta do dia?", "Pode. Em Perfil, Preferências, marque \"Somar as calorias do treino à meta do dia\". Aí a meta sobe com o que você gastou no treino e em outras atividades (comer de volta o que gastou). Desmarcado, a meta fica fixa."]
+  ]],
+  ["Comer", [
+    ["Como adiciono uma refeição?", "Na aba Comer, Diário, toque no + da refeição. As abas são: Buscar (tabela de alimentos), Digitar (descreva o que comeu), Foto (a IA lê o prato), Rápido (itens comuns) e Prontas (refeições que você salvou)."],
+    ["A foto do prato abre a galeria?", "Sim. Há dois botões: Tirar foto e Da galeria. Confira sempre os gramas antes de salvar, porque a IA estima."],
+    ["Como salvo uma refeição que repito?", "No menu da refeição (os três pontos), use \"Salvar como refeição pronta\". Ela aparece na aba Prontas."],
+    ["Para que servem Alimentos, Receitas e Plano?", "Alimentos é a tabela (valores aproximados). Receitas guarda pratos seus com os ingredientes. Plano monta um cardápio com IA e lança no diário."]
+  ]],
   ["Treino", [
+    ["Como crio uma rotina?", "Na aba Treino, Rotinas, Nova rotina. Também dá para abrir um treino do Histórico e tocar em \"Criar rotina\" para copiar aquele treino. Em Semana você escolhe qual rotina cai em cada dia, ou pede para a IA montar a semana."],
     ["O que o número da série faz?", "Toque no número da série para trocar o tipo. A ordem é: normal (número), W (aquecimento), D (drop set) e F (falha). Só o W fica fora do volume e da progressão de carga."],
     ["Como adiciono ou tiro uma série?", "No cartão do exercício, use \"Adicionar série\" (copia o peso da última) e \"Tirar última\" (remove a última linha da lista)."],
     ["Como registro uma série feita?", "Preencha carga e repetições e toque no check. O descanso começa sozinho. Se deixar em branco, o app usa a carga da série anterior e as repetições sugeridas."],
+    ["Como funciona o descanso?", "Ao marcar a série, aparece uma barra de descanso com contagem. Dá para somar ou tirar 15 segundos e pular. Quando acaba, o Rael avisa com uma frase. Para o aviso chegar com a tela bloqueada, ligue em Perfil, Avisos com a tela bloqueada (no iPhone, antes adicione o app à Tela de Início)."],
     ["Fechei a tela do treino. Perdi tudo?", "Não. O treino fica ativo até você tocar em Finalizar treino ou Descartar. É só abrir de novo pelo botão do treino em andamento."],
-    ["O que é o aumento de carga?", "Quando você bate o topo das repetições em todas as séries de trabalho, o app sugere subir a carga no próximo treino. O valor do salto está em Ajustes, Preferências."],
-    ["Como crio uma rotina?", "Na aba Treino, Rotinas, Nova rotina. Também dá para abrir um treino do Histórico e tocar em \"Criar rotina\" para copiar aquele treino."]
+    ["O que é o aumento de carga?", "Quando você bate o topo das repetições em todas as séries de trabalho, o app sugere subir a carga no próximo treino. O valor do salto está em Perfil, Preferências."],
+    ["Uso o Hevy. Dá para trazer meus treinos?", "Dá. Em Perfil, Importar treinos do Hevy, escolha o arquivo CSV exportado pelo Hevy. Rodar de novo não duplica."]
   ]],
-  ["Comer", [
-    ["Como adiciono uma refeição?", "Na aba Comer, toque no + da refeição. As abas são: Buscar (tabela de alimentos), Digitar (descreva o que comeu), Foto (a IA lê o prato), Rápido (itens comuns) e Prontas (refeições que você salvou)."],
-    ["A foto do prato abre a galeria?", "Sim. Há dois botões: Tirar foto e Da galeria. Confira sempre os gramas antes de salvar, porque a IA estima."],
-    ["Como salvo uma refeição que repito?", "No menu da refeição (os três pontos), use \"Salvar como refeição pronta\". Ela aparece na aba Prontas."]
+  ["Evolução", [
+    ["O que vejo na Evolução?", "Escolha 7, 30 ou 90 dias. Aparecem média ingerida, déficit ou superávit acumulado, variação de peso, treinos, gráficos de calorias, saldo, peso, macros e treinos por semana. O botão Analisar pede ao coach uma leitura dos seus números."],
+    ["Como acompanho o peso?", "Registre o peso na aba Hoje. O card Peso da Evolução mostra a linha ao longo do tempo e a meta, se você definiu uma no Perfil."],
+    ["Para que servem medidas, fotos, sono e relatório?", "Na Evolução, o card Medidas guarda cintura, braço etc. com gráfico e lembrete de tempos em tempos (botão Campos escolhe o que medir). Fotos de progresso ficam no mesmo card. O card Sono guarda as horas dormidas e a média. Os botões de Relatório geram um resumo do mês."]
   ]],
-  ["Frango e o app", [
-    ["O que é o balão do Frango?", "Às vezes ele faz uma pergunta. Toque numa resposta e ele reage. As perguntas são esporádicas e mudam a cada hora."],
-    ["Como faço backup?", "Em Ajustes, Fazer backup. Guarde o arquivo. Em Restaurar backup (ou Colar backup) você recupera tudo: o app mescla com o que já existe, sem apagar nada. Para levar os dados ao Painel, use Copiar tudo e, no outro lado, Colar backup. O app avisa quando faz tempo que não há backup."],
-    ["O app não atualizou. E agora?", "Ele confere sozinho por novas versões ao abrir. Se precisar, use \"Atualizar o app agora\" em Ajustes."]
+  ["Perfil e metas", [
+    ["Como as metas são calculadas?", "Pelos seus dados (sexo, idade, altura, peso, objetivo e nível de atividade). No Perfil, \"Como as metas são calculadas\" mostra a conta. Se preferir, desmarque \"calcular sozinho\" e digite as suas."],
+    ["A IA precisa de chave?", "Sem chave, os botões de IA montam a pergunta para você colar no ChatGPT, Gemini ou Claude. Com uma chave grátis do Gemini (Google AI Studio, aistudio.google.com), a IA responde direto no app. A chave fica só neste aparelho e não vai no backup."]
+  ]],
+  ["Rael e o app", [
+    ["O que é o balão do Rael?", "Às vezes ele faz uma pergunta. Toque numa resposta e ele reage. As perguntas são esporádicas e mudam a cada hora. As frases e cenas dele mudam conforme a aba e o que você fez."],
+    ["Como faço backup e passo dados entre aparelhos?", "Em Perfil, Fazer backup. Guarde o arquivo. Em Restaurar backup (ou Colar backup) você recupera tudo: o app mescla com o que já existe, sem apagar nada. Para levar os dados a outro aparelho ou ao Painel, use Copiar tudo aqui e, no outro lado, Colar backup. O app avisa quando faz tempo que não há backup."],
+    ["O app não atualizou. E agora?", "Ele confere sozinho por novas versões ao abrir. Se precisar, use \"Atualizar o app agora\" em Perfil, Manutenção. Seus dados não mudam."],
+    ["Achei um erro ou tenho uma ideia.", "Em Perfil, Enviar feedback. Você escreve e envia pelo compartilhar do celular (WhatsApp, por exemplo)."]
   ]]
 ];
 function ajudaBody() {
