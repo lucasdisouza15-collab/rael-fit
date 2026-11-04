@@ -17,10 +17,10 @@ const FRASES = [
   "Próxima série. Eu estava prestes a chamar isso de treino de contemplação.",
   "O intervalo acabou. O Rael tinha acabado de se acomodar e já vão te tirar do conforto.",
   "Descanso encerrado. A cadeira imaginária protesta e eu a apoio.",
-  "Hora da próxima série. Sim, ela existe e sim, ela vai doer.",
+  "Hora da próxima série. Sim, ela existe e sim, ela vem com juros.",
   "O cronômetro apitou. Eu sei, eu também odeio quando o tempo passa.",
   "Série seguinte. Respira, pega o peso e finge que é fácil.",
-  "Acabou a pausa. Para o ferro, o tempo é sempre curto e o sofá, longo."
+  "Acabou a pausa. Entre as séries, o tempo é sempre curto e o sofá, longo."
 ];
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
