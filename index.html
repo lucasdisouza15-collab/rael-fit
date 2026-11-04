@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v39-20261104a"><script>(function(){try{var V="v39-20261104a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v39-20261104b"><script>(function(){try{var V="v39-20261104b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -4278,11 +4278,31 @@ function frTreinouOntem() { try { const ontem = addDays(TODAY(), -1); return (ty
 
 // ---- Controle diário: sono 1x de manhã + no máximo 2 outras perguntas por dia (4 h entre elas), nunca repete ----
 function frQDia() {
-  try { const s = JSON.parse(localStorage.getItem("frango:qdia") || "{}"); if (s.d === TODAY()) { s.ids = s.ids || []; return s; } } catch (_) {}
-  return { d: TODAY(), ids: [], cur: null, ult: 0 };
+  const hj = TODAY(); let a = null, b = null;
+  try { a = JSON.parse(localStorage.getItem("frango:qdia") || "null"); } catch (_) {}
+  try { b = P().qdia || null; } catch (_) {}
+  const v = [a, b].filter(x => x && x.d === hj);
+  if (!v.length) return { d: hj, ids: [], cur: null, ult: 0 };
+  const ids = Array.from(new Set([].concat(...v.map(x => x.ids || []))));
+  const ult = Math.max(...v.map(x => x.ult || 0));
+  const cur = v.map(x => x.cur).filter(Boolean).sort((p, q) => q.t - p.t)[0] || null;
+  return { d: hj, ids, cur: cur && ids.indexOf(cur.id) < 0 && cur.t >= ult ? cur : null, ult };
 }
-function frQSave(s) { try { localStorage.setItem("frango:qdia", JSON.stringify(s)); } catch (_) {} }
-function frQHist(id) { try { const h = JSON.parse(localStorage.getItem("frango:qhist") || "{}"); if (id) { h[id] = TODAY(); const ks = Object.keys(h); if (ks.length > 80) delete h[ks[0]]; localStorage.setItem("frango:qhist", JSON.stringify(h)); } return h; } catch (_) { return {}; } }
+function frQSave(s) {
+  try { localStorage.setItem("frango:qdia", JSON.stringify(s)); } catch (_) {}
+  try { if (JSON.stringify(P().qdia || null) !== JSON.stringify(s)) updP(p => { p.qdia = s; }); } catch (_) {}
+}
+function frQHist(id) {
+  let h = {};
+  try { h = JSON.parse(localStorage.getItem("frango:qhist") || "{}"); } catch (_) {}
+  try { const o = P().qhist || {}; Object.keys(o).forEach(k => { if (!h[k] || o[k] > h[k]) h[k] = o[k]; }); } catch (_) {}
+  if (id) {
+    h[id] = TODAY(); const ks = Object.keys(h); if (ks.length > 80) delete h[ks[0]];
+    try { localStorage.setItem("frango:qhist", JSON.stringify(h)); } catch (_) {}
+    try { updP(p => { p.qhist = h; }); } catch (_) {}
+  }
+  return h;
+}
 const FR_Q_MAX_DIA = 2, FR_Q_INTERVALO = 4 * 3600e3, FR_Q_VISIVEL = 20 * 60e3, FR_Q_COOLDOWN_DIAS = 6;
 let FR_RESP = null; // resposta do Rael, mostrada no balão por alguns segundos
 function frPergMostra(q) { return { k: "q:" + q.id, txt: frNome(q.q), resp: q.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) }; }
