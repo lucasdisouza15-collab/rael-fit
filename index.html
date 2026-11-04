@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104f"><script>(function(){try{var V="v37-20261104f";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v38-20261104a"><script>(function(){try{var V="v38-20261104a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2977,7 +2977,7 @@ const AJ_FAQ = [
     ["A IA precisa de chave?", "Sem chave, os botões de IA montam a pergunta para você colar no ChatGPT, Gemini ou Claude. Com uma chave grátis do Gemini (Google AI Studio, aistudio.google.com), a IA responde direto no app. A chave fica só neste aparelho e não vai no backup."]
   ]],
   ["Rael e o app", [
-    ["O que é o balão do Rael?", "Às vezes ele faz uma pergunta. Toque numa resposta e ele reage. As perguntas são esporádicas e mudam a cada hora. As frases e cenas dele mudam conforme a aba e o que você fez."],
+    ["O que é o balão do Rael?", "Às vezes ele faz uma pergunta. Toque numa resposta e ele reage. De manhã ele pergunta quanto você dormiu; no resto do dia são no máximo 2 perguntas, nunca repetidas. As frases e cenas dele mudam conforme a aba e o que você fez."],
     ["Como faço backup e passo dados entre aparelhos?", "Em Perfil, Fazer backup. Guarde o arquivo. Em Restaurar backup (ou Colar backup) você recupera tudo: o app mescla com o que já existe, sem apagar nada. Para levar os dados a outro aparelho ou ao Painel, use Copiar tudo aqui e, no outro lado, Colar backup. O app avisa quando faz tempo que não há backup."],
     ["O app não atualizou. E agora?", "Ele confere sozinho por novas versões ao abrir. Se precisar, use \"Atualizar o app agora\" em Perfil, Manutenção. Seus dados não mudam."],
     ["Achei um erro ou tenho uma ideia.", "Em Perfil, Enviar feedback. Você escreve e envia pelo compartilhar do celular (WhatsApp, por exemplo)."]
@@ -3902,8 +3902,8 @@ function frBalaoDo(c) {
   let k = null;
   if (c.treinavel && !c.treinou && !c.mexeu && !c.ativo && c.hr >= 17 && ok("treino")) k = "treino";
   else if (!c.temComida && c.hr >= 13 && ok("comida")) k = "comida";
-  const pq = typeof frPergEscolhe === "function" ? frPergEscolhe(c, ok) : null;
-  if (!k || (pq && c.hr % 2 === 0)) return pq;
+  const pq = (typeof frPergEscolhe === "function" && (!k || c.hr % 2 === 0)) ? frPergEscolhe(c, ok) : null;
+  if (!k || pq) return pq;
   const l = FR_BALAO[k], txt = frNome(l[(new Date().getDate() + c.hr) % l.length].replace("{h}", c.hr));
   return { k, txt, resp: FR_BAL_RESP[k] };
 }
@@ -4230,29 +4230,95 @@ const FR_PERG = [
   { id: "energia", q: "Como está sua energia agora?", on: c => c.hr >= 13 && c.hr < 20 && !c.treinou,
     o: [["Alta", "Então é hora de treinar, não de pensar.", "forte"], ["Mais ou menos", "Come algo leve e vai assim mesmo. Treino puxa a energia.", "cafeina"], ["Baixa", "Pega leve hoje: caminhada ou treino curto já conta.", "soneca"]] }
 ];
+// ---- Banco ampliado de perguntas (04/11/2026). Respostas podem ser lista: o Rael sorteia uma. ----
+FR_PERG.push(
+  { id: "humor", q: "Como está o humor hoje?", on: c => c.hr >= 9 && c.hr < 21,
+    o: [["Ótimo", ["Humor bom rende treino bom. Aproveita a maré.", "Com esse humor, até a salada fica simpática."], "aplauso"], ["Mais ou menos", ["Dia morno também passa. Uma água e uma caminhada ajudam mais do que parece.", "Normal. Nem todo dia precisa ser fogos."], "manha"], ["Pra baixo", ["Tá certo não estar bem sempre. Come direito, bebe água e dorme cedo; o resto o Rael segura contigo.", "Dia pesado. Hoje o objetivo é só não piorar: comida decente e cama cedo."], "sofa"]] },
+  { id: "caminhada", q: "Deu pra caminhar um pouco hoje?", on: c => c.hr >= 14 && c.hr < 21 && !c.mexeu && !c.treinou,
+    o: [["Sim", ["Passo é treino disfarçado. Gostei.", "Caminhada conta, sim. O Rael anota com orgulho."], "alongando"], ["Ainda não", ["Dez minutinhos depois do jantar já resolvem.", "Ainda dá tempo. Até a volta do quarteirão vale."], "relogio"], ["Hoje não deu", ["Sem drama. Amanhã uma volta curta compensa.", "Dia corrido acontece. Se der, levanta e anda um pouco agora."], "sofa"]] },
+  { id: "doce", q: "Bateu vontade de doce hoje?", on: c => c.hr >= 14 && c.hr < 22 && !c.estourou,
+    o: [["Bateu", ["Normal. Uma fruta ou um quadradinho de chocolate amargo matam a vontade sem culpa.", "Vontade de doce é coisa de corpo; negocia com um iogurte primeiro."], "geladeira"], ["Resisti", ["Respeito. Força de vontade também treina.", "Isso é músculo mental. O Rael bate palma."], "forte"], ["Cedi", ["Cedeu, anota e segue. Um doce não estraga uma semana.", "Aconteceu. Lança aqui com honestidade e bola pra frente."], "pizza"]] },
+  { id: "motivacao", q: "Qual a vontade de treinar hoje?", on: c => c.hr >= 6 && c.hr < 18 && !c.treinou && c.treinavel,
+    o: [["Muita", ["Então vai antes que a vontade mude de ideia.", "Vontade alta é o melhor pré-treino."], "forte"], ["Média", ["Média resolve: começa o aquecimento e a vontade aparece.", "Vai pelo hábito. O treino costuma ser melhor do que a ideia dele."], "alongando"], ["Zero", ["Então faz a versão curta: 20 minutos. Se ainda for zero, descansa sem culpa.", "Zero acontece. Põe a roupa de treino e vê no que dá."], "soneca"]] },
+  { id: "cafes", q: "Quantos cafés já foram hoje?", on: c => c.hr >= 12 && c.hr < 18,
+    o: [["Nenhum", ["Respeito o equilíbrio. Água primeiro, então.", "Sem café, só na raça. Impressionante."], "hidratado"], ["1 ou 2", ["Dose boa. Depois das 16h, melhor segurar para não atrapalhar o sono.", "Na medida. Café antes do treino ainda rende bônus."], "cafeina"], ["3 ou mais", ["Aí o coração já está batendo no ritmo do funk. Água agora e segura o próximo.", "Muita cafeína rouba sono depois. Troca o próximo por água."], "cafeina"]] },
+  { id: "jantar", q: "Já sabe o que vai ser o jantar?", on: c => c.hr >= 16 && c.hr < 20,
+    o: [["Já", ["Planejar o jantar já é meio caminho andado.", "Boa. Se tiver proteína no prato, o Rael aprova."], "almoco"], ["Ainda não", ["Pensa em proteína + algo verde + uma base. Resolve em cinco minutos.", "Ovo mexido com salada salva qualquer noite."], "pensando"], ["Vou pedir", ["Delivery também cabe. Escolhe a opção com proteína e lança depois.", "Tudo bem pedir. Só confere o tamanho da porção antes."], "pizza"]] },
+  { id: "doces2", q: "Satisfeito depois do almoço ou ainda com fome?", on: c => c.hr >= 13 && c.hr < 16 && c.temComida,
+    o: [["Satisfeito", ["Perfeito: comeu o suficiente.", "É assim que se mede: parou de comer porque bastou."], "almoco"], ["Com fome", ["Come uma fruta ou iogurte; fome depois do almoço quase sempre é falta de proteína.", "Pode ser pouca proteína no prato. Um ovo cozido resolve."], "geladeira"], ["Passei mal de cheio", ["Foi além do ponto. Caminhada leve ajuda; no próximo prato, menos pressa.", "Comer devagar ajuda o corpo a avisar a hora de parar."], "sofa"]] },
+  { id: "forca", q: "O treino de hoje pareceu mais forte ou mais fraco que o normal?", on: c => c.treinou,
+    o: [["Mais forte", ["Dia de pico! Anota as cargas para repetir.", "Bom sinal: recuperação em dia."], "forte"], ["Igual", ["Constância é o que mais pesa no resultado.", "Igual também é progresso, desde que apareça."], "aplauso"], ["Mais fraco", ["Dia fraco faz parte. Sono e comida explicam metade das vezes.", "Aconteceu. O que conta é a média das semanas."], "alongando"]] },
+  { id: "amanha", q: "Amanhã tem treino planejado?", on: c => c.hr >= 19,
+    o: [["Tem", ["Então dorme cedo e deixa a roupa separada.", "Combinado. O Rael te cobra pela manhã (com carinho)."], "relogio"], ["Descanso", ["Descanso planejado é parte do treino.", "Ótimo. Aproveita para comer bem e dormir bem."], "soneca"], ["Não sei ainda", ["Decide agora, que de manhã a cama ganha.", "Marca um horário, mesmo que seja curto."], "pensando"]] },
+  { id: "proteina2", q: "Foi fácil bater a proteína hoje?", on: c => c.hr >= 19 && c.temComida,
+    o: [["Fácil", ["Cardápio afinado. É assim que se faz.", "Boa. Esse dia vira modelo para os próximos."], "proteina"], ["Com esforço", ["Normal no começo. Ovo, iogurte e atum entram fácil em qualquer dia.", "Tenta deixar uma proteína pronta na geladeira."], "pensando"], ["Não bati", ["Sem pânico. Um iogurte ou whey ainda fecha parte da conta hoje.", "Amanhã começa com proteína no café e a conta fica fácil."], "geladeira"]] },
+  { id: "bebida", q: "Vai ter bebida alcoólica hoje?", on: c => (c.dow === 5 || c.dow === 6) && c.hr >= 14 && c.hr < 22,
+    o: [["Vai", ["Alterna com água e anota sem julgamento; o Rael só quer o dado.", "Cuidado com o sono: álcool piora a recuperação. O resto, aproveita."], "relogio"], ["Não", ["Isso poupa caloria, sono e carteira.", "Boa escolha pro corpo. Bom sábado."], "aplauso"], ["Talvez", ["Se rolar, lança depois e bebe um copo d'água entre as doses.", "Combinado: o que rolar, entra no registro."], "pensando"]] },
+  { id: "semana", q: "Como está sendo a semana até aqui?", on: c => c.dow >= 3 && c.dow <= 5 && c.hr >= 12 && c.hr < 21,
+    o: [["Dentro do plano", ["Segue assim, a soma dos dias é que dá resultado.", "Semana organizada. O Rael aprova."], "aplauso"], ["Meio bagunçada", ["Dá pra recuperar: um dia bom em seguida já ajeita a média.", "Acontece. Foca em duas coisas: proteína e água."], "alongando"], ["Pior que o normal", ["Respira. Recomeço pequeno hoje: uma refeição bem feita.", "Semana ruim não define o mês. Volta ao básico."], "noite"]] }
+);
+// variações extras de resposta para as perguntas antigas (índice da opção -> frases a mais)
+const FR_PERG_VAR = {
+  acordou: [["Que energia. Treino com essa disposição rende o dobro.", "Acordou inteiro! Anota o dia como bom."], ["Normal serve para um dia produtivo.", "Dia comum, rotina comum, resultado bom."], ["Dormir mal e acordar assim cobra o preço. Hoje aposta em comida simples e pouca cobrança.", "O corpo pediu pausa. Dá uma folga na meta de hoje."]],
+  cafe: [["Boa. Anota para o registro ficar completo.", "Perfeito. Conta pro Rael o que foi."], ["Antes de sair, proteína: ovo, iogurte, queijo.", "Café reforçado segura a fome até o almoço."], ["Pular o café às vezes funciona, mas hoje tenta um lanche de proteína.", "Sem café, o almoço costuma vir com exagero. Segura com algo leve."]],
+  agua: [["Água em dia, pele e rendimento agradecem.", "Isso é ser adulto com garrafinha."], ["Um copo agora e outro em uma hora. Fácil.", "Garrafa na mesa ajuda mais que força de vontade."], ["Água primeiro, depois a vida segue.", "Já são vários minutos sem beber, hein? Bora."]],
+  fome: [["Prepara um lanche com proteína antes da fome virar desespero.", "Fome da tarde costuma ser sono disfarçado. Água e fruta primeiro."], ["Controlar a fome da tarde evita exagero à noite.", "Perfeito. Janta leve e proteica fecha o dia."], ["Se não tem fome, tudo bem; só não esquece do jantar.", "Sem fome é sinal bom. Só confere se comeu proteína suficiente."]],
+  treinoOnte: [["Sem dor é sinal de recuperação ou de treino leve. Dá para subir carga.", "Corpo inteiro. Bora usar essa disposição."], ["Cansaço leve some com aquecimento. Segue com carga normal.", "Músculo cansado pede um aquecimento extra, não folga."], ["Dor forte: alonga, caminha leve e treina outro grupo hoje.", "Dor alta atrapalha a técnica. Prioriza descanso ou outro grupo muscular."]],
+  foi: [["Treino pesado merece refeição com proteína logo depois.", "Missão cumprida. Agora vem a parte da recuperação."], ["Treino leve também mantém o hábito vivo.", "Aparecer já é metade do trabalho."], ["Recorde é combustível. O Rael anota até a data.", "Parabéns! Mantém a técnica antes de pensar no próximo."]],
+  dor: [["Sem dor, só construção.", "Corpo e planilha em paz."], ["Cansaço bom é sinal de treino honesto.", "Hidrata e come proteína; o resto é recuperação."], ["Dor que não passa em um ou dois dias merece avaliação. Não insiste na carga.", "Para o movimento que doeu e procura orientação se persistir."]],
+  proteina: [["Frango e ovo nunca falham.", "Ovo, frango, atum... qualquer um serve."], ["Whey é só complemento. Prato de verdade ainda manda.", "Aprovado, mas misture com comida de verdade."], ["Escolhe um agora para não decidir com fome depois.", "Dica: deixa proteína pronta na geladeira."]],
+  passou: [["Dia livre combinado não conta como falha.", "Aproveitou, registrou, segue. É assim que se faz."], ["Escorregou? O resto da semana equilibra.", "Ninguém é perfeito, e o Rael é frango, nem tem opinião sobre isso."], ["Agora que viu, equilibra amanhã sem castigo.", "Água, caminhada leve e jantar leve ajudam."]],
+  dia: [["Dia bom: registra o que funcionou para repetir.", "Dormir cedo agora fecha com chave de ouro."], ["Média é o que a maioria dos dias é. Tá tudo bem.", "Dia médio também vira hábito bom."], ["Ruim não significa perdido. Um bom sono e comida simples e amanhã é outro dia.", "Dá um tempo pra você hoje. O Rael cuida do resto."]],
+  energia: [["Energia alta não se desperdiça: vai treinar.", "Aproveita o pico."], ["Energia média melhora depois dos primeiros 10 minutos de treino.", "Uma banana antes ajuda."], ["Hoje o treino pode ser curto. Sem energia, qualidade vale mais que quantidade.", "Respeita o corpo, mas tenta pelo menos uma caminhada."]]
+};
+try { Object.keys(FR_PERG_VAR).forEach(id => { const q = FR_PERG.find(x => x.id === id); if (!q) return; FR_PERG_VAR[id].forEach((vs, i) => { if (q.o[i]) q.o[i][1] = [q.o[i][1]].concat(vs); }); }); } catch (_) {}
+// "dor muscular de ontem" só faz sentido se treinou ontem
+try { const t = FR_PERG.find(x => x.id === "treinoOnte"); if (t) t.on = c => c.hr >= 6 && c.hr < 14 && !c.treinou && frTreinouOntem(); } catch (_) {}
+function frTreinouOntem() { try { const ontem = addDays(TODAY(), -1); return (typeof workouts === "function" ? workouts() : []).some(w => w.data === ontem); } catch (_) { return false; } }
+
+// ---- Controle diário: sono 1x de manhã + no máximo 2 outras perguntas por dia (4 h entre elas), nunca repete ----
+function frQDia() {
+  try { const s = JSON.parse(localStorage.getItem("frango:qdia") || "{}"); if (s.d === TODAY()) { s.ids = s.ids || []; return s; } } catch (_) {}
+  return { d: TODAY(), ids: [], cur: null, ult: 0 };
+}
+function frQSave(s) { try { localStorage.setItem("frango:qdia", JSON.stringify(s)); } catch (_) {} }
+function frQHist(id) { try { const h = JSON.parse(localStorage.getItem("frango:qhist") || "{}"); if (id) { h[id] = TODAY(); const ks = Object.keys(h); if (ks.length > 80) delete h[ks[0]]; localStorage.setItem("frango:qhist", JSON.stringify(h)); } return h; } catch (_) { return {}; } }
+const FR_Q_MAX_DIA = 2, FR_Q_INTERVALO = 4 * 3600e3, FR_Q_VISIVEL = 20 * 60e3, FR_Q_COOLDOWN_DIAS = 6;
 let FR_RESP = null; // resposta do Rael, mostrada no balão por alguns segundos
+function frPergMostra(q) { return { k: "q:" + q.id, txt: frNome(q.q), resp: q.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) }; }
 function frPergRespond(id, a) {
   const q = FR_PERG.find(x => x.id === id); if (!q || !q.o[a]) return;
   const op = q.o[a], fim = new Date(); fim.setHours(23, 59, 59, 999);
   frBalSet("q:" + id, fim.getTime());
-  if (id === "sono") { try { sonoSet(SONO_OP[a][1]); } catch (_) {} frBalSet("qpausa", Date.now() + 3 * 3600e3); } /* a do sono é fixa; as outras só depois de 3 h */
-  else frBalSet("qpausa", fim.getTime()); // no máximo uma pergunta respondida por dia
+  const s = frQDia(); s.ult = Date.now(); s.cur = null;
+  if (id === "sono") { try { sonoSet(SONO_OP[a][1]); } catch (_) {} } else if (s.ids.indexOf(id) < 0) s.ids.push(id);
+  frQSave(s); frQHist(id);
   try { const k = "frango:resp", o = JSON.parse(localStorage.getItem(k) || "{}"), d = TODAY(); (o[d] = o[d] || {})[id] = op[0]; const ks = Object.keys(o).sort(); while (ks.length > 30) delete o[ks.shift()]; localStorage.setItem(k, JSON.stringify(o)); } catch (_) {}
-  FR_RESP = { txt: op[1], ate: Date.now() + 9000 };
+  const rs = Array.isArray(op[1]) ? op[1] : [op[1]];
+  FR_RESP = { txt: rs[Math.floor(Math.random() * rs.length)], ate: Date.now() + 9000 };
   setTimeout(() => { if (FR_RESP && Date.now() >= FR_RESP.ate) { FR_RESP = null; try { if (!SHEET.stack.length) render(); } catch (_) {} } }, 9200);
   if (op[2] && typeof FR_EX !== "undefined") frReage(op[2], 7000); else { try { render(); } catch (_) {} }
 }
-// perguntas que combinam com o momento e ainda não foram respondidas hoje
 function frPergEscolhe(c, ok) {
-  // sono: pergunta FIXA toda manhã, até ser respondida; as outras se intercalam depois
-  try { const sq = FR_PERG.find(x => x.id === "sono"); if (sq && c.hr >= 5 && c.hr < 12 && ok("q:sono") && sonoGet()[TODAY()] == null) return { k: "q:sono", txt: frNome(sq.q), resp: sq.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) }; } catch (_) {}
-  if (!ok("qpausa")) return null;
-  // esporádico: a cada dia só 1 de cada 3 perguntas fica elegível
-  const dia = Math.floor(Date.now() / 864e5);
-  const el = FR_PERG.filter((q, i) => q.id !== "sono" && (dia + i) % 3 === 0 && ok("q:" + q.id) && q.on(c));
+  // 1) sono: UMA pergunta de manhã (até responder)
+  try { const sq = FR_PERG.find(x => x.id === "sono"); if (sq && c.hr >= 5 && c.hr < 12 && ok("q:sono") && sonoGet()[TODAY()] == null) return frPergMostra(sq); } catch (_) {}
+  const s = frQDia(), agora = Date.now();
+  // 2) pergunta em exibição: fica visível por 20 min; se ignorada, é descartada e conta como feita (não volta)
+  if (s.cur) {
+    const q = FR_PERG.find(x => x.id === s.cur.id);
+    if (q && agora - s.cur.t < FR_Q_VISIVEL) return frPergMostra(q);
+    if (s.ids.indexOf(s.cur.id) < 0) s.ids.push(s.cur.id);
+    s.ult = agora; s.cur = null; frQSave(s);
+  }
+  // 3) limites do dia
+  if (s.ids.length >= FR_Q_MAX_DIA || agora - s.ult < FR_Q_INTERVALO) return null;
+  const hist = frQHist(), lim = addDays(TODAY(), -FR_Q_COOLDOWN_DIAS);
+  const el = FR_PERG.filter(q => q.id !== "sono" && s.ids.indexOf(q.id) < 0 && ok("q:" + q.id) && !(hist[q.id] && hist[q.id] > lim) && q.on(c));
   if (!el.length) return null;
-  const q = el[(new Date().getDate() * 7 + c.hr) % el.length];
-  return { k: "q:" + q.id, txt: frNome(q.q), resp: q.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) };
+  el.sort((a, b) => (hist[a.id] || "") < (hist[b.id] || "") ? -1 : 1); // as mais antigas/nunca feitas primeiro
+  const q = el[Math.floor(Math.random() * Math.min(3, el.length))];
+  s.cur = { id: q.id, t: agora }; frQSave(s); frQHist(q.id);
+  return frPergMostra(q);
 }
 
 // ---- Respostas do balão viram frases do Rael (com moderação: 1 em cada 3 horas) e contagem de treinos ----
