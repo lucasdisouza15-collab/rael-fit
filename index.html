@@ -3158,9 +3158,9 @@ function pushEstado() {
 }
 async function pushInit() {
   try {
-    if (!pushSuportado()) return;
     const cfg = await fetch("push-config.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({}));
     PUSH.url = (cfg && cfg.url || "").replace(/\/$/, "");
+    if (!pushSuportado()) { if (PUSH.url && pushNovo()) render(); return; }   /* iPhone no Safari (sem Tela de Início) cai aqui: mostra só as instruções */
     const reg = await navigator.serviceWorker.register("sw.js"); await navigator.serviceWorker.ready;
     PUSH.reg = reg; PUSH.sub = await reg.pushManager.getSubscription(); PUSH.pronto = !!PUSH.url;
     if (PUSH.sub && pushQuer()) pushSync();
@@ -3198,8 +3198,8 @@ ON.pushHr = el => { const c = pushCfg(); if (/^\d{2}:\d{2}$/.test(el.value)) { c
 /* card único na tela inicial: apresenta as novidades e convida a ligar os avisos (some ao tocar em qualquer botão) */
 function pushNovo() {
   try {
-    if (!pushSuportado() || !PUSH.pronto || pushQuer() || localStorage.getItem("frango:push-card") === "1") return "";
     const ios = pushIOS() && !pushStandalone();
+    if ((!pushSuportado() && !ios) || !PUSH.url || pushQuer() || localStorage.getItem("frango:push-card") === "1") return "";
     return `<div class="card stack"><h2>Novidade: o Rael agora avisa você</h2>
       <div class="small ink2">Com o app fechado ou o celular bloqueado, chega aviso quando o descanso entre séries acaba, mais lembretes discretos: bom dia, hora do treino, sequência em risco, água e fechar o dia. Se você já fez, ele nem manda. Você escolhe quais ligar e o horário, e no máximo 4 por dia. Também avisa quando sai atualização.</div>
       ${ios ? `<div class="small ink2">No iPhone: toque em Compartilhar, depois em "Adicionar à Tela de Início", e abra o app por esse ícone. Só então dá para ativar.</div>` : `<button class="btn pri" data-act="pushLiga">Ativar avisos</button>`}
@@ -3777,13 +3777,13 @@ function frTopo(tab, td) {
 function frMedidorCard() {
   const p = P(), td = ui.date, isHoje = td === TODAY(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, nota = frNotaDe(td), nv = nota.nv, seq = frSeq();
   const seqTxt = FR_FRASES.seq[seq] || "";
-  return `<div class="card fr-card">${frMedidor(nota.ponteiro, nv)}<div style="text-align:center;margin-top:2px"><span class="fr-nivel fr-${nv.k}">${nv.n}</span> <span class="fr-nota-n"><b>${nota.score}</b>/100</span></div>
+  return (isHoje && typeof pushNovo === "function" ? pushNovo() : "") + `<div class="card fr-card">${frMedidor(nota.ponteiro, nv)}<div style="text-align:center;margin-top:2px"><span class="fr-nivel fr-${nv.k}">${nv.n}</span> <span class="fr-nota-n"><b>${nota.score}</b>/100</span></div>
     ${frNotaChips(nota)}
     <div class="fr-kcal"><b>${fmt(t.kcal)}</b> de ${fmt(meta)} kcal <span class="muted">· ${t.kcal > meta ? "passou " + fmt(t.kcal - meta) : "faltam " + fmt(meta - t.kcal)}</span></div>
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
     <details class="fr-info" style="margin-top:8px;text-align:center"><summary aria-label="Como a nota do dia é calculada" style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--edge,#D5D8DF);font-weight:800;font-size:14px;color:var(--muted,#5A5E6B)">?</summary><div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></details></div>`
-    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof pushNovo === "function" ? pushNovo() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
+    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
 }
 // o app inteiro fala com a voz do Rael (categorias sem frase ficam vazias, sem inventar)
