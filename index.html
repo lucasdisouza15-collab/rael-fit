@@ -3122,15 +3122,40 @@ function medBanner() {
     return h;
   } catch (e) { return ""; }
 }
-// ---------- Avisos de fim de descanso com a tela bloqueada (Web Push) ----------
+// ---------- Avisos com a tela bloqueada (Web Push): fim do descanso, lembretes do dia e novidades ----------
 // Só funciona no site (https) com service worker. Depende de um Worker próprio configurado em push-config.json.
+// O app manda ao Worker só: horários escolhidos e um resumo do dia (contagens, sem nomes de alimentos nem dados pessoais).
 const PUSH_VAPID = "BJaFRYvPv7GX37tIkqe2STVZw7X6WRshqKbPJgkup86YPdNrDsVBlZof6IQosdmWXb7nSmYHPs_NYZuz3BMt3HM";
 const PUSH = { url: "", sub: null, pronto: false };
+const PUSH_TIPOS = [
+  ["manha", "Bom dia do Rael", "Uma frase de manhã. Não vem se você já abriu o app.", "08:00", true],
+  ["treino", "Hora do treino", "Só em dia de treino do plano e se você ainda não treinou.", "17:30", true],
+  ["sequencia", "Sequência em risco", "Só se você tem 3 dias seguidos ou mais e ainda não registrou nada hoje.", "20:30", true],
+  ["almoco", "Almoço", "Se o almoço ainda não foi registrado.", "12:30", false],
+  ["agua", "Água", "Se a água de hoje está abaixo de 60% da meta.", "15:30", false],
+  ["noite", "Fechar o dia", "Se menos de 3 refeições foram registradas.", "21:00", false],
+  ["semana", "Domingo da semana", "Domingo, para olhar a Evolução.", "19:00", false]
+];
 function pushSuportado() { return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && /^https:/.test(location.protocol); }
 function pushStandalone() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
 const pushIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 const pushQuer = () => { try { return localStorage.getItem("frango:push") === "1"; } catch (e) { return false; } };
 function b64uToBytes(s) { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+function pushCfg() {
+  let c = {}; try { c = JSON.parse(localStorage.getItem("frango:push-cfg") || "{}") || {}; } catch (e) {}
+  const o = {}; for (const [k, , , h, on] of PUSH_TIPOS) o[k] = { on: typeof (c[k] || {}).on === "boolean" ? c[k].on : on, h: /^\d{2}:\d{2}$/.test((c[k] || {}).h || "") ? c[k].h : h };
+  return o;
+}
+function pushCfgSalva(c) { try { localStorage.setItem("frango:push-cfg", JSON.stringify(c)); } catch (e) {} }
+/* resumo do dia que o Worker usa para NÃO mandar lembrete de algo que você já fez */
+function pushEstado() {
+  try {
+    const td = TODAY(), d = day(td), p = P(), m = metas(p), x = (p.rotinas || []).length > 0;
+    const plano = [0, 1, 2, 3, 4, 5, 6].map(i => { const rid = (p.semana || {})[i], r = rid && rotinaById(rid, p); return r ? String(r.nome || "Treino") : null; });
+    return { dia: td, refs: MEALS.filter(([k]) => mealT(d, k).kcal > 0).length, almoco: mealT(d, "almoco").kcal > 0,
+      agua: m.agua ? Math.min(2, (d.agua || 0) / m.agua) : 1, treinou: treinosDo(td).length > 0, mexeu: frMovTipos(td).length > 0, seq: frSeq(), temPlano: x, plano };
+  } catch (e) { return null; }
+}
 async function pushInit() {
   try {
     if (!pushSuportado()) return;
@@ -3138,12 +3163,19 @@ async function pushInit() {
     PUSH.url = (cfg && cfg.url || "").replace(/\/$/, "");
     const reg = await navigator.serviceWorker.register("sw.js"); await navigator.serviceWorker.ready;
     PUSH.reg = reg; PUSH.sub = await reg.pushManager.getSubscription(); PUSH.pronto = !!PUSH.url;
+    if (PUSH.sub && pushQuer()) pushSync();
+    else if (PUSH.pronto && pushNovo()) render();
   } catch (e) {}
 }
-function pushPost(rota, seg) {
+function pushPost(rota, seg, extra) {
   if (!PUSH.pronto || !PUSH.sub || !pushQuer()) return;
-  try { fetch(PUSH.url + rota, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sub: PUSH.sub.toJSON(), seg }), keepalive: true }).catch(() => {}); } catch (e) {}
+  try { fetch(PUSH.url + rota, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ sub: PUSH.sub.toJSON(), seg }, extra || {})), keepalive: true }).catch(() => {}); } catch (e) {}
 }
+/* manda horários + resumo do dia; o aparelho informa o próprio fuso (getTimezoneOffset) */
+function pushSync() { pushPost("/config", 0, { cfg: pushCfg(), estado: pushEstado(), tz: new Date().getTimezoneOffset() }); }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") pushSync(); });
+addEventListener("pagehide", () => pushSync());
+setInterval(() => { if (document.visibilityState === "visible") pushSync(); }, 4 * 60 * 1000);
 /* +2 s: se o app estiver aberto ele avisa sozinho e cancela o aviso do servidor antes */
 const pushAgenda = seg => pushPost("/agenda", Math.max(5, Math.round(seg) + 2));
 const pushCancela = () => pushPost("/cancela", 0);
@@ -3154,17 +3186,35 @@ ACT.pushLiga = async () => {
     const perm = await Notification.requestPermission(); if (perm !== "granted") { toast("Sem permissão de notificação."); return; }
     const reg = PUSH.reg || await navigator.serviceWorker.ready;
     PUSH.sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(PUSH_VAPID) });
-    try { localStorage.setItem("frango:push", "1"); } catch (e) {}
-    pushPost("/agenda", 8); toast("Avisos ligados. Em alguns segundos chega um aviso de teste."); render();
+    try { localStorage.setItem("frango:push", "1"); localStorage.setItem("frango:push-card", "1"); } catch (e) {}
+    pushSync(); pushPost("/agenda", 8); toast("Avisos ligados. Em alguns segundos chega um aviso de teste."); render();
   } catch (e) { toast("Não deu para ligar os avisos: " + (e && e.message || e)); }
 };
-ACT.pushDesliga = async () => { try { localStorage.setItem("frango:push", "0"); pushCancela(); } catch (e) {} render(); toast("Avisos desligados."); };
+ACT.pushDesliga = async () => { try { pushPost("/sair", 0); localStorage.setItem("frango:push", "0"); } catch (e) {} render(); toast("Avisos desligados."); };
+ACT.pushTeste = () => { pushSync(); pushPost("/agenda", 8); toast("Aviso de teste a caminho."); };
+ACT.pushCardFecha = () => { try { localStorage.setItem("frango:push-card", "1"); } catch (e) {} render(); };
+ON.pushTg = el => { const c = pushCfg(); c[el.dataset.k].on = el.checked; pushCfgSalva(c); pushSync(); };
+ON.pushHr = el => { const c = pushCfg(); if (/^\d{2}:\d{2}$/.test(el.value)) { c[el.dataset.k].h = el.value; pushCfgSalva(c); pushSync(); } };
+/* card único na tela inicial: apresenta as novidades e convida a ligar os avisos (some ao tocar em qualquer botão) */
+function pushNovo() {
+  try {
+    if (!pushSuportado() || !PUSH.pronto || pushQuer() || localStorage.getItem("frango:push-card") === "1") return "";
+    const ios = pushIOS() && !pushStandalone();
+    return `<div class="card stack"><h2>Novidade: o Rael agora avisa você</h2>
+      <div class="small ink2">Com o app fechado ou o celular bloqueado, chega aviso quando o descanso entre séries acaba, mais lembretes discretos: bom dia, hora do treino, sequência em risco, água e fechar o dia. Se você já fez, ele nem manda. Você escolhe quais ligar e o horário, e no máximo 4 por dia. Também avisa quando sai atualização.</div>
+      ${ios ? `<div class="small ink2">No iPhone: toque em Compartilhar, depois em "Adicionar à Tela de Início", e abra o app por esse ícone. Só então dá para ativar.</div>` : `<button class="btn pri" data-act="pushLiga">Ativar avisos</button>`}
+      <button class="btn soft" data-act="pushCardFecha">Agora não</button></div>`;
+  } catch (e) { return ""; }
+}
 function pushCard() {
   if (!pushSuportado()) return "";
-  const on = pushQuer() && !!PUSH.sub;
+  const on = pushQuer() && !!PUSH.sub, c = pushCfg();
   const dica = pushIOS() && !pushStandalone() ? `<div class="small ink2">No iPhone, primeiro toque em Compartilhar e em "Adicionar à Tela de Início", e abra o app por esse ícone. Só assim o iOS permite avisos.</div>` : "";
   if (!PUSH.pronto) return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Em breve: o aviso de fim do descanso chega mesmo com o celular bloqueado.</div></div>`;
-  return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Quando o descanso acaba, chega uma notificação com uma frase do Rael, mesmo com o app fechado ou o celular bloqueado.</div>${dica}
+  const lista = on ? `<div class="small ink2">Escolha o que quer receber. No máximo 4 lembretes por dia, nunca antes das 7h nem depois das 22h30, e nada que você já tenha feito.</div>` +
+    PUSH_TIPOS.map(([k, nome, desc]) => `<div class="stack" style="gap:2px"><div class="row" style="gap:8px"><label class="row grow" style="gap:8px;cursor:pointer"><input type="checkbox" data-on="pushTg" data-k="${k}" ${c[k].on ? "checked" : ""}> <b>${esc(nome)}</b></label><input type="time" data-on="pushHr" data-k="${k}" value="${c[k].h}" aria-label="Horário de ${esc(nome)}"></div><div class="xs muted">${esc(desc)}</div></div>`).join("") +
+    `<div class="xs muted">Também chegam: o fim do descanso entre séries e o aviso de que o app atualizou.</div><button class="btn soft" data-act="pushTeste">Enviar aviso de teste</button>` : "";
+  return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Quando o descanso acaba, chega uma notificação com uma frase do Rael, mesmo com o app fechado ou o celular bloqueado.</div>${dica}${lista}
     ${on ? `<button class="btn" data-act="pushDesliga">Desligar avisos</button>` : `<button class="btn pri" data-act="pushLiga">Ligar avisos</button>`}</div>`;
 }
 pushInit();
@@ -3733,7 +3783,7 @@ function frMedidorCard() {
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
     <details class="fr-info" style="margin-top:8px;text-align:center"><summary aria-label="Como a nota do dia é calculada" style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--edge,#D5D8DF);font-weight:800;font-size:14px;color:var(--muted,#5A5E6B)">?</summary><div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></details></div>`
-    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
+    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof pushNovo === "function" ? pushNovo() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "");
 }
 // o app inteiro fala com a voz do Rael (categorias sem frase ficam vazias, sem inventar)
@@ -4909,7 +4959,7 @@ function viewPerfil() {
   h += secao("bk", "Backup e sincronização", bkGet(BKK) ? "Último backup: " + ddmm(bkGet(BKK)) : "Nenhum backup ainda", bk);
   h += secao("hevy", "Importar do Hevy", "Treinos por arquivo CSV", hevy);
   h += secao("perfis", "Perfis neste aparelho", po.list.length + (po.list.length === 1 ? " perfil" : " perfis"), perfisCard(), !!(UIc.confirm && String(UIc.confirm).startsWith("perfil:")));
-  if (push) h += secao("push", "Avisos com a tela bloqueada", "Fim do descanso", push);
+  if (push) h += secao("push", "Avisos com a tela bloqueada", "Descanso, lembretes e novidades", push);
   h += secao("ajuda", "Ajuda e feedback", "Como funciona cada tela", ajudaCard() + fb);
   h += secao("man", "Manutenção", "Atualizar o app, apagar dados", man, UIc.confirm === "wipe");
   h += `</div>`;

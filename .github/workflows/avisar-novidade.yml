@@ -1,0 +1,26 @@
+name: Avisar novidade (push)
+# Só dispara quando a mensagem do commit tem "[avisar]". Opcional: uma linha "Aviso: texto curto" vira o texto da notificação.
+on:
+  push:
+    branches: [main]
+    paths: ["index.html"]
+jobs:
+  avisar:
+    if: contains(github.event.head_commit.message, '[avisar]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Esperar o GitHub Pages publicar
+        run: sleep 120
+      - name: Avisar os aparelhos
+        env:
+          VAPID_PRIVATE_JWK: ${{ secrets.VAPID_PRIVATE_JWK }}
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          VER=$(grep -o 'name="app-ver" content="[^"]*"' index.html | head -1 | sed 's/.*content="//;s/"$//')
+          URL=$(jq -r .url push-config.json)
+          TEXTO=$(printf '%s\n' "$MSG" | sed -n 's/^Aviso: *//p' | head -1)
+          [ -z "$TEXTO" ] && TEXTO="O Frangômetro atualizou. Abra o app para ver o que mudou."
+          TOKEN=$(printf 'admin:%s' "$(printf '%s' "$VAPID_PRIVATE_JWK" | jq -r .d)" | sha256sum | cut -d' ' -f1)
+          curl -sS -f -X POST "$URL/novidade" -H "x-admin: $TOKEN" -H "content-type: application/json" \
+            -d "$(jq -n --arg ver "$VER" --arg texto "$TEXTO" '{ver:$ver,texto:$texto}')"
