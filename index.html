@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v38-20261104b"><script>(function(){try{var V="v38-20261104b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v39-20261104a"><script>(function(){try{var V="v39-20261104a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3621,7 +3621,7 @@ const FR_FRASES = {
   refeicao: ["Registrado. O Rael finge que não viu o segundo pão de queijo.", "Prato registrado. O Rael avaliou em silêncio; foi um silêncio longo.", "Pronto. Até o Rael sabe que \"só provei\" merece registro."],
   treino: ["Treinou! Até o Rael levantou do choco para aplaudir.", "Treino registrado. Rael levantou um peso: a expectativa alheia.", "Mais um treino feito. Rael aplaude sentado; a lombar é dele.", "Treinou! O Rael está tão orgulhoso que até penteou a crista.", "Repetições feitas. A última teve a mesma cara da primeira."],
   perna: ["Perna treinada. Descer escada agora é conteúdo de suspense."],
-  meta: ["Meta batida. Hoje você é o frango de capa de revista.", "Meta alcançada. A balança perdeu o argumento por hoje.", "Calorias dentro da meta. Estou tentando não parecer impressionado. Falhando."],
+  meta: ["Meta batida. Hoje o galinheiro inteiro pediu autógrafo.", "Meta alcançada. A balança perdeu o argumento por hoje.", "Calorias dentro da meta. Estou tentando não parecer impressionado. Falhando."],
   pulou: ["Pulou o treino? Rael entende: o sofá fez uma proposta convincente.", "Não rolou hoje. O sofá apresentou argumentos com apoio de almofadas.", "Um dia escapou. Não precisa abrir investigação criminal."],
   agua: ["Água registrada. Minha garrafa finalmente tem testemunhas."],
   pesoDesceu: ["Desceu um pouco. A balança entregou o dado e saiu de fininho."],
@@ -3750,7 +3750,7 @@ function frase(cat, rnd) {
 const nomeU = () => (P().nome || "").trim() || "você";
 
 // voz do Rael Frango nos prompts da IA (coach, análise, sugestão de refeição)
-const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: ironia carinhosa de verdade, com sarcasmo e tiradas curtas, falando DIRETAMENTE com o usuário e tirando sarro do que ele fez (ou deixou de fazer) hoje: sofá, preguiça, pizza, pão de queijo, o "amanhã eu começo". Piadas de frango são bem-vindas (crista, choco, galinheiro, aplaudir sentado). Quando o usuário vai bem, finge que não está impressionado e solta um elogio disfarçado de reclamação. Sem a palavra "campeão", sem autoajuda motivacional, sem caricatura e sem forçar a barra: uma tirada boa vale mais que três meh. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Treinou? Agora o sofá pode voltar a te desejar, mas você pagou o aluguel dele." / "Pizza registrada. Sem julgamento, só um suspiro profissional." / "17h e o treino ainda não apareceu. O sofá deve estar mandando um abraço." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
+const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: ironia carinhosa de verdade, com sarcasmo e tiradas curtas, falando DIRETAMENTE com o usuário e tirando sarro do que ele fez (ou deixou de fazer) hoje: sofá, preguiça, pizza, pão de queijo, o "amanhã eu começo". Piadas de frango são bem-vindas (crista, choco, galinheiro, aplaudir sentado). Quando o usuário vai bem, finge que não está impressionado e solta um elogio disfarçado de reclamação. Sem a palavra "campeão", sem autoajuda motivacional, sem caricatura e sem forçar a barra: uma tirada boa vale mais que três meh. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Treinou? Agora o sofá pode voltar a te desejar, mas você pagou o aluguel dele." / "Pizza registrada. Sem julgamento, só um suspiro profissional." / "17h e o treino ainda não apareceu. O sofá deve estar mandando um abraço." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não presuma o gênero do usuário (prefira formas neutras como 'bora', 'você chegou lá'); nunca comente corpo ou peso como defeito nem use vergonha ou culpa; o sarcasmo é contra o sofá, a preguiça e o próprio Rael, nunca contra a pessoa. Não use markdown pesado nem emoji em excesso.`;
 // ---- Nota do dia (0 a 100): premia fazer o dia certo, não comer mais ----
 // Nota fracionada: cada item vale a fração da meta do dia inteiro já cumprida. Pesos: calorias 35, proteína 25, atividade 25 (qualquer exercício de 20 min ou mais: treino, caminhada, aeróbico, patins, bike; folga planejada também vale), água 10, registro 5. Bônus de +5 por mais de um tipo de exercício no dia (a nota nunca passa de 100). Níveis: Pintinho < 40, Frango 40–79, Galo Alfa ≥ 80.
 const FR_NOTA = { cal: 35, prot: 25, treino: 25, agua: 10, reg: 5, bonus: 5, a: 40, b: 80 };
@@ -4202,13 +4202,13 @@ try {
 // Uma pergunta por vez, escolhida entre as que combinam com a hora, o dia e o que já foi feito.
 const FR_PERG = [
   { id: "acordou", q: "Como você acordou hoje?", on: c => c.hr >= 5 && c.hr < 12,
-    o: [["Pronto pra guerra", "Gostei da energia. Usa ela hoje, que o treino agradece.", "forte"], ["Normal", "Normal também conta. Dia comum, bom dia comum.", "manha"], ["Destruído", "Respeita o corpo hoje. Descanso e comida boa também são plano.", "bocejo"]] },
+    o: [["Pilhado", "Gostei da energia. Usa ela hoje, que o treino agradece.", "forte"], ["Normal", "Normal também conta. Dia comum, bom dia comum.", "manha"], ["Destruído", "Respeita o corpo hoje. Descanso e comida boa também são plano.", "bocejo"]] },
   { id: "sono", q: "Quantas horas você dormiu?", on: c => c.hr >= 5 && c.hr < 12,
     o: [["Menos de 5h", "Menos de 5 horas é pouco. Hoje o corpo vai pedir açúcar; a água e a proteína seguram.", "bocejo"], ["5 a 6h", "Sono curto segura o músculo e aumenta a fome. Hoje pega leve e dorme mais cedo.", "bocejo"], ["6 a 7h", "Dá para o gasto. Se der, uma noite de 7 ou 8 horas deixa tudo melhor.", "manha"], ["7 a 8h", "Na faixa. O corpo agradece e o Rael também.", "meditando"], ["Mais de 8h", "Dormiu como se fosse profissional. Isso é recuperação, não preguiça.", "soneca"]] },
   { id: "cafe", q: "Já tomou café da manhã?", on: c => c.hr >= 6 && c.hr < 11 && !c.temComida,
     o: [["Já", "Então lança aqui para o Rael acreditar.", "cafeina"], ["Ainda não", "Come algo com proteína antes de sair voando.", "cafeina"], ["Pulei", "Entendo, mas ovo ou iogurte não leva nem dois minutos.", "relogio"]] },
   { id: "agua", q: "Como está a água hoje?", on: c => c.hr >= 10 && c.hr < 21 && !c.aguaOk,
-    o: [["Já bebi bastante", "Ótimo. Não esquece de lançar para eu acreditar.", "hidratado"], ["Pouca", "Então vai agora, um copo inteiro. Eu espero.", "agua"], ["Nem lembrei", "Pronto, já lembrou. O primeiro copo é por minha conta.", "agua"]] },
+    o: [["Já bebi bastante", "Ótimo. Não esquece de lançar para eu acreditar.", "hidratado"], ["Pouca", "Então vai agora, um copo inteiro. Eu espero.", "agua"], ["Nem lembrei", "Lembrou agora, o que conta. O primeiro copo é por minha conta.", "agua"]] },
   { id: "fome", q: "Bateu aquela fome da tarde?", on: c => c.hr >= 15 && c.hr < 18,
     o: [["Bateu forte", "Fruta, iogurte ou castanha salvam. A padaria só empata.", "geladeira"], ["Controlada", "Respeito. Segura a onda e janta bem.", "alongando"], ["Nem sinto", "Então anota o lanche, se teve. Fome silenciosa também existe.", "meditando"]] },
   { id: "treinoOnte", q: "Dor muscular hoje, depois do treino de ontem?", on: c => c.hr >= 6 && c.hr < 14 && !c.treinou,
@@ -4246,8 +4246,8 @@ FR_PERG.push(
     o: [["Já", ["Planejar o jantar já é meio caminho andado.", "Boa. Se tiver proteína no prato, o Rael aprova."], "almoco"], ["Ainda não", ["Pensa em proteína + algo verde + uma base. Resolve em cinco minutos.", "Ovo mexido com salada salva qualquer noite."], "pensando"], ["Vou pedir", ["Delivery também cabe. Escolhe a opção com proteína e lança depois.", "Tudo bem pedir. Só confere o tamanho da porção antes."], "pizza"]] },
   { id: "doces2", q: "Satisfeito depois do almoço ou ainda com fome?", on: c => c.hr >= 13 && c.hr < 16 && c.temComida,
     o: [["Satisfeito", ["Perfeito: comeu o suficiente.", "É assim que se mede: parou de comer porque bastou."], "almoco"], ["Com fome", ["Come uma fruta ou iogurte; fome depois do almoço quase sempre é falta de proteína.", "Pode ser pouca proteína no prato. Um ovo cozido resolve."], "geladeira"], ["Passei mal de cheio", ["Foi além do ponto. Caminhada leve ajuda; no próximo prato, menos pressa.", "Comer devagar ajuda o corpo a avisar a hora de parar."], "sofa"]] },
-  { id: "forca", q: "O treino de hoje pareceu mais forte ou mais fraco que o normal?", on: c => c.treinou,
-    o: [["Mais forte", ["Dia de pico! Anota as cargas para repetir.", "Bom sinal: recuperação em dia."], "forte"], ["Igual", ["Constância é o que mais pesa no resultado.", "Igual também é progresso, desde que apareça."], "aplauso"], ["Mais fraco", ["Dia fraco faz parte. Sono e comida explicam metade das vezes.", "Aconteceu. O que conta é a média das semanas."], "alongando"]] },
+  { id: "forca", q: "O treino de hoje pareceu mais pesado ou mais leve que o normal?", on: c => c.treinou,
+    o: [["Mais pesado", ["Dia de pico! Anota as cargas para repetir.", "Bom sinal: recuperação em dia."], "forte"], ["Igual", ["Constância é o que mais pesa no resultado.", "Igual também é progresso, desde que apareça."], "aplauso"], ["Mais leve", ["Dia leve faz parte. Sono e comida explicam metade das vezes.", "Aconteceu. O que conta é a média das semanas."], "alongando"]] },
   { id: "amanha", q: "Amanhã tem treino planejado?", on: c => c.hr >= 19,
     o: [["Tem", ["Então dorme cedo e deixa a roupa separada.", "Combinado. O Rael te cobra pela manhã (com carinho)."], "relogio"], ["Descanso", ["Descanso planejado é parte do treino.", "Ótimo. Aproveita para comer bem e dormir bem."], "soneca"], ["Não sei ainda", ["Decide agora, que de manhã a cama ganha.", "Marca um horário, mesmo que seja curto."], "pensando"]] },
   { id: "proteina2", q: "Foi fácil bater a proteína hoje?", on: c => c.hr >= 19 && c.temComida,
@@ -4259,7 +4259,7 @@ FR_PERG.push(
 );
 // variações extras de resposta para as perguntas antigas (índice da opção -> frases a mais)
 const FR_PERG_VAR = {
-  acordou: [["Que energia. Treino com essa disposição rende o dobro.", "Acordou inteiro! Anota o dia como bom."], ["Normal serve para um dia produtivo.", "Dia comum, rotina comum, resultado bom."], ["Dormir mal e acordar assim cobra o preço. Hoje aposta em comida simples e pouca cobrança.", "O corpo pediu pausa. Dá uma folga na meta de hoje."]],
+  acordou: [["Que energia. Treino com essa disposição rende o dobro.", "Acordou com energia! Anota o dia como bom antes que o café acabe."], ["Normal serve para um dia produtivo.", "Dia comum, rotina comum, resultado bom."], ["Dormir mal e acordar assim cobra o preço. Hoje aposta em comida simples e pouca cobrança.", "O corpo pediu pausa. Dá uma folga na meta de hoje."]],
   cafe: [["Boa. Anota para o registro ficar completo.", "Perfeito. Conta pro Rael o que foi."], ["Antes de sair, proteína: ovo, iogurte, queijo.", "Café reforçado segura a fome até o almoço."], ["Pular o café às vezes funciona, mas hoje tenta um lanche de proteína.", "Sem café, o almoço costuma vir com exagero. Segura com algo leve."]],
   agua: [["Água em dia, pele e rendimento agradecem.", "Isso é ser adulto com garrafinha."], ["Um copo agora e outro em uma hora. Fácil.", "Garrafa na mesa ajuda mais que força de vontade."], ["Água primeiro, depois a vida segue.", "Já são vários minutos sem beber, hein? Bora."]],
   fome: [["Prepara um lanche com proteína antes da fome virar desespero.", "Fome da tarde costuma ser sono disfarçado. Água e fruta primeiro."], ["Controlar a fome da tarde evita exagero à noite.", "Perfeito. Janta leve e proteica fecha o dia."], ["Se não tem fome, tudo bem; só não esquece do jantar.", "Sem fome é sinal bom. Só confere se comeu proteína suficiente."]],
@@ -4324,7 +4324,7 @@ function frPergEscolhe(c, ok) {
 // ---- Respostas do balão viram frases do Rael (com moderação: 1 em cada 3 horas) e contagem de treinos ----
 const FR_REAGE = {
   sono: { "Menos de 5h": ["Dormiu pouco, você disse. Hoje o Rael pega leve nas cobranças; só não some.", "Pouco sono segura o músculo e aumenta a fome. Água, proteína e cama cedo hoje."], "5 a 6h": ["Sono curto de novo? Ele aparece no relatório do mês, e o Rael está de olho."], "Mais de 8h": ["Dormiu bem, hein. Recuperação em dia é meio treino feito."] },
-  acordou: { "Destruído": ["Você falou que acordou destruído. Se o corpo pedir, treino leve também vale."], "Pronto pra guerra": ["Acordou pronto pra guerra? Aproveita a energia antes que o sofá negocie."] },
+  acordou: { "Destruído": ["Você falou que acordou destruído. Se o corpo pedir, treino leve também vale."], "Pilhado": ["Acordou com a bateria cheia? Aproveita a energia antes que o sofá negocie."] },
   dor: { "Dor de verdade": ["Você falou de uma dor de verdade no treino. Se continuar, procura um profissional; o Rael não aposta com articulação."] },
   treinoOnte: { "Dor forte": ["Dor forte de ontem? Alonga, bebe água e pega leve hoje."] },
   fome: { "Bateu forte": ["A fome da tarde bateu forte. Deixa uma fruta ou um iogurte por perto antes da padaria."] },
@@ -4457,14 +4457,14 @@ const FR_EXTRA = {
     "Sem treino hoje. O Rael finge que acreditou na desculpa, por educação.",
     "O dia acabou sem treino. O halter ficou esperando e parece que vai sobreviver.",
     "Faltou hoje? Acontece. Só não vira costume, que o sofá aprende rápido.",
-    "Treino ausente. O Rael deixou uma luz acesa, caso você volte a ter vergonha.",
+    "Treino ausente. O Rael deixou uma luz acesa, caso o sofá afrouxe o contrato.",
     "Sem treino, mas com muita criatividade nas justificativas. Isso também é cardio, só não conta nos pontos.",
     "Hoje a rotina tirou folga e esqueceu de avisar. Amanhã a gente retoma, combinado?",
     "O treino não apareceu. Sem drama: o Rael também falta aos próprios compromissos, mas ele é um frango.",
     "Dia sem treino. Estou me segurando para não fazer uma piada sobre sofá. Quase consegui."
   ],
   meta: [
-    "Meta batida. Hoje você foi o frango de capa de revista, e eu o fotógrafo ressentido.",
+    "Meta batida. Hoje o galinheiro inteiro pediu autógrafo, e eu fui o fotógrafo ressentido.",
     "Calorias no alvo. Estou fingindo que isso não me impressionou. Está difícil.",
     "Meta cumprida. Alguém pode avisar a balança que hoje ela vai ter de respeitar.",
     "Dentro da meta. O pudim ficou de fora e ninguém foi preso.",
@@ -4561,7 +4561,7 @@ const FR_EXTRA = {
     "Gráficos prontos. Números não mentem, só omitem o que você comeu às 23h.",
     "Evolução: a linha sobe, desce e ocasionalmente dá uma pirueta. Como a vida.",
     "Seus números estão aí. O Rael olha para eles com orgulho, medo e um pouco de inveja.",
-    "Peso, treinos e hábitos. O app anota tudo; a vergonha, só você.",
+    "Peso, treinos e hábitos. O app anota tudo; os julgamentos ficam por conta do sofá.",
     "A curva fala sozinha. O Rael só traduz: continue assim e ninguém precisa reclamar.",
     "Olha o gráfico: uma jornada com altos, baixos e um domingo suspeito."
   ],
@@ -4969,7 +4969,7 @@ ACT.wipe = () => { UIc.confirm = null; Object.keys(ST.docs).forEach(k => delDoc(
 // ---------- boas-vindas ----------
 function onboarding() {
   const p = P();
-  openSheet({ title: "Bem-vindo ao Frangômetro", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">${nomeU() === "você" ? "Fala!" : "Fala, " + esc(nomeU()) + "."} Seu shape agora tem gerente.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
+  openSheet({ title: "Bem-vindo ao Frangômetro", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">${nomeU() === "você" ? "Fala!" : "Fala, " + esc(nomeU()) + "."} Agora o Rael acompanha seu treino. Ele não levanta peso, mas fiscaliza com talento.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
     foot: `<button class="btn pri block" data-act="onbSave">Calcular minhas metas</button>` });
 }
 ACT.onbSkip = () => { updP(p => { p.onb = true; }); closeSheet(); };
