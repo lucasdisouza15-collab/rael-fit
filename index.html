@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104e"><script>(function(){try{var V="v37-20261104e";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104f"><script>(function(){try{var V="v37-20261104f";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -358,6 +358,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink)}
 #fr-splash .fr-sp-nome{font-weight:900;text-transform:uppercase;font-size:46px}
 #fr-splash .fr-sp-barra{background:rgba(39,51,95,.2);border-radius:0}#fr-splash .fr-sp-barra i{background:#27335F;border-radius:0}
 #fr-splash .fr-sp-rael{filter:none}
+/* Perfil limpo: seções recolhíveis (igual aos Ajustes do Painel) */
+details.sec{padding:0}
+details.sec>summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;padding:14px 16px;min-height:56px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec .sec-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+details.sec .sec-t b{font-family:var(--f-display);font-weight:900;font-size:19px;text-transform:uppercase;letter-spacing:.02em}
+details.sec .chev{flex:none;transition:transform .2s}
+details.sec[open] .chev{transform:rotate(180deg)}
+details.sec .sec-body{padding:0 16px 16px}
+details.sec .sec-body>.card{background:none;clip-path:none;padding:0;border:0}
+details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{display:none}
+.sec-label{font:900 13px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 2px -4px}
 </style>
 
 <header class="top"><div class="in" id="topbar"></div></header>
@@ -4769,11 +4781,15 @@ ACT.extUse = () => {
 };
 
 // =================== PERFIL ===================
+function secao(k, titulo, resumo, html, forca) {
+  const open = forca || (UIc.sec || {})[k];
+  return `<details class="card sec" data-sec="${k}" ${open ? "open" : ""}><summary><span class="sec-t"><b>${titulo}</b><span class="xs muted">${resumo}</span></span>${ICON.down.replace("<svg", '<svg class="chev" width="18" height="18"')}</summary><div class="sec-body stack">${html}</div></details>`;
+}
+document.addEventListener("toggle", e => { const d = e.target; if (d && d.matches && d.matches("details.sec")) { UIc.sec = UIc.sec || {}; UIc.sec[d.dataset.sec] = d.open; } }, true);
 function viewPerfil() {
-  const p = P(), m = metas(p), c = metasCalc(p), w = pesoAtual(p);
-  let h = `<h1>Perfil e metas</h1>`;
-  h += perfisCard();
-  h += iaCard();
+  const p = P(), m = metas(p), c = metasCalc(p), w = pesoAtual();
+  const po = perfis(), via = CAP.via;
+  let h = `<h1>Perfil</h1>`;
   h += `<div class="card stack"><h2>Seus dados</h2>${perfilForm(p)}<button class="btn pri" data-act="savePerfil">Salvar dados</button></div>`;
   h += `<div class="card stack"><div class="row between"><h2>Metas diárias</h2><label class="row small" style="gap:6px;cursor:pointer"><input type="checkbox" id="metasAuto" data-on="metasAuto" ${p.metasAuto ? "checked" : ""}> calcular sozinho</label></div>
     ${c.baixo && p.metasAuto ? `<div class="pill warn" style="align-self:flex-start">Meta travada no mínimo de ${p.sexo === "F" ? "1.200" : "1.500"} kcal por segurança</div>` : ""}
@@ -4788,18 +4804,26 @@ function viewPerfil() {
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label></div>`;
-  h += `<div class="card stack"><h2>Importar treinos do Hevy</h2><div class="small ink2">Importar do Hevy${qi("No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.")}</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><div class="xs muted">${qi("Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.")}</div></div>`;
-  h += `<div class="card stack"><h2>Seus dados no app</h2><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}${bkGet(BKK) ? ` Último backup: ${ddmm(bkGet(BKK))}.` : " Nenhum backup feito ainda."}</div>
+  const hevy = `<div class="card stack"><div class="small ink2">Importar do Hevy${qi("No Hevy: Perfil, Configurações, Exportar &amp; importar dados, Exportar dados. Escolha aqui o arquivo CSV que o Hevy gerar. Os treinos entram no histórico com cargas e repetições; exercícios que o app não conhece são criados. Rodar de novo não duplica.")}</div><input type="file" id="hvIn" data-on="hevyImp" style="width:100%;font-size:15px;padding:8px 0"><button class="btn" data-act="hevyColar">Colar o texto do arquivo (se o seletor não funcionar)</button><button class="btn soft" data-act="hevyRotHist">Criar rotinas a partir do histórico já importado</button><div class="xs muted">${qi("Abra o site no Chrome, não pelo navegador interno do WhatsApp ou Instagram: esses não deixam escolher arquivos.")}</div></div>`;
+  const bk = `<div class="card stack"><div class="small ink2">${ST.mode === "nuvem" ? "Salvos na sua conta Claude (privados, só você vê) e também neste aparelho." : "Salvos neste aparelho, no navegador. Faça backup de vez em quando: limpar os dados do navegador apaga tudo."}${ST.err ? ` <span class="pill warn">última sincronização falhou</span>` : ""}${bkGet(BKK) ? ` Último backup: ${ddmm(bkGet(BKK))}.` : " Nenhum backup feito ainda."}</div>
     <div class="row wrap-ok"><button class="btn" data-act="exportar">Fazer backup</button><label class="btn" for="impIn">Restaurar backup</label><input type="file" id="impIn" accept="application/json,.json,.txt" class="hidden" data-on="importar"><button class="btn ghost" data-act="syncCola">Colar backup</button></div>
     <div class="small ink2">Para levar os dados ${syncPainel() ? "ao site" : "ao Painel"} (ou o contrário): toque em Copiar tudo aqui e, no outro lado, em Colar backup. Restaurar e Colar mesclam: só acrescentam e atualizam, nunca apagam o que você já tem.</div>
     <button class="btn soft" data-act="syncCopia">Copiar tudo</button></div>`;
-  h += `<div class="card stack"><h2>Manutenção</h2><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Só recarrega a versão do app; seus dados não mudam.</div><button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
+  const man = `<div class="card stack"><button class="btn" data-act="appAtualiza">Atualizar o app agora</button><div class="xs muted">Só recarrega a versão do app; seus dados não mudam.</div><button class="btn danger" data-act="wipeAsk">Apagar todos os dados</button>
     ${UIc.confirm === "wipe" ? confirmBox("Apagar TUDO (refeições, treinos, rotinas, perfil)? Não tem volta. Faça um backup antes.", "wipe", {}, "Apagar tudo") : ""}</div>`;
-  h += ajudaCard();
-  h += typeof pushCard === "function" ? pushCard() : "";
-  h += `<div class="card stack"><h2>Enviar feedback</h2><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
-  h += `<div class="disc card flat">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
-  h += `<div class="xs muted" style="text-align:center;padding:8px 0">Frangômetro, versão teste. ${/^(rael|israel)$/i.test((p.nome || "").trim()) ? "Presente do Lucas pro Rael. " : ""}Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
+  const fb = `<div class="card stack"><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
+  const push = typeof pushCard === "function" ? pushCard() : "";
+  h += `<div class="sec-label">Mais</div><div class="stack" style="gap:8px">`;
+  h += secao("ia", "Inteligência artificial", via === "claude" ? "Ligada pela conta Claude" : via === "gemini" ? "Ligada pelo Gemini" : via === "api" ? "Ligada pela API do Claude" : "Modo copiar e colar", iaCard(), UIc.keyBusy || !!UIc.keyMsg);
+  h += secao("bk", "Backup e sincronização", bkGet(BKK) ? "Último backup: " + ddmm(bkGet(BKK)) : "Nenhum backup ainda", bk);
+  h += secao("hevy", "Importar do Hevy", "Treinos por arquivo CSV", hevy);
+  h += secao("perfis", "Perfis neste aparelho", po.list.length + (po.list.length === 1 ? " perfil" : " perfis"), perfisCard(), !!(UIc.confirm && String(UIc.confirm).startsWith("perfil:")));
+  if (push) h += secao("push", "Avisos com a tela bloqueada", "Fim do descanso", push);
+  h += secao("ajuda", "Ajuda e feedback", "Como funciona cada tela", ajudaCard() + fb);
+  h += secao("man", "Manutenção", "Atualizar o app, apagar dados", man, UIc.confirm === "wipe");
+  h += `</div>`;
+  h += `<div class="disc">O Frangômetro é uma ferramenta de acompanhamento. Os cálculos são estimativas e não substituem médico, nutricionista ou educador físico. Valores de alimentos são aproximados: "TACO, aprox." vem da Tabela Brasileira de Composição de Alimentos; "estimativa" não tem fonte oficial (NÃO CONFIRMADO). Em caso de dor, lesão ou condição de saúde, procure um profissional.</div>`;
+  h += `<div class="xs muted" style="text-align:center;padding:4px 0">Frangômetro, versão teste. ${/^(rael|israel)$/i.test((p.nome || "").trim()) ? "Presente do Lucas pro Rael. " : ""}Feito com carinho, cobrança e zero julgamento sobre o pastel de sexta.</div>`;
   return `<div class="stack">${h}</div>`;
 }
 function perfilForm(p) {
