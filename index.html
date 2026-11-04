@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104d"><script>(function(){try{var V="v37-20261104d";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104e"><script>(function(){try{var V="v37-20261104e";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1884,7 +1884,7 @@ function foodResults(res) {
   const rec = (p.recentes || []).map(r => ({ r, f: foodByKey(r.key, p) })).filter(x => x.f).slice(0, 12);
   let h = "";
   const favs = (p.favs || []).map(k => foodByKey(k, p)).filter(Boolean).slice(0, 24);
-  if (favs.length) h += `<div class="eyebrow" style="margin-top:4px">★ Favoritos</div><div class="list">${favs.map(f => { const r = (p.recentes || []).find(x => x.key === f.key); return foodRow(f, r ? ` data-q="${r.qtd}" data-modo="${r.modo}"` : ""); }).join("")}</div>`;
+  if (favs.length) h += `<div class="eyebrow" style="margin-top:4px">${IC_STAR} Favoritos</div><div class="list">${favs.map(f => { const r = (p.recentes || []).find(x => x.key === f.key); return foodRow(f, r ? ` data-q="${r.qtd}" data-modo="${r.modo}"` : ""); }).join("")}</div>`;
   if (rec.length) h += `<div class="eyebrow" style="margin-top:8px">Recentes</div><div class="list">${rec.map(({ r, f }) => foodRow(f, ` data-q="${r.qtd}" data-modo="${r.modo}"`)).join("")}</div>`;
   const cats = [...new Set(allFoods(p).map(f => f.cat))];
   h += `<div class="eyebrow" style="margin-top:8px">Categorias</div><div class="chips" style="flex-wrap:wrap">${cats.map(c => `<button class="chip" data-act="catQ" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
@@ -2504,6 +2504,24 @@ function openSession() {
 }
 ACT.sessMin = () => { closeSheet(); toast("Treino continua rodando. Volte por Treino ou Hoje."); };
 function setHead(tipo) { return tipo === "tempo" ? ["", "seg"] : tipo === "cardio" ? ["km", "min"] : tipo === "corpo" ? ["+kg", "reps"] : ["kg", "reps"]; }
+// ---------- ícones da identidade nova (traço reto, cantos vivos) ----------
+const SVGI = (p, w, extra) => `<svg viewBox="0 0 24 24" width="${w || 18}" height="${w || 18}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" ${extra || ""} style="vertical-align:-3px;flex:none">${p}</svg>`;
+const IC_CAM = SVGI('<path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="14" r="3.5"/>');
+const IC_CARGA = SVGI('<path d="M2 12h20M5 7v10M8 5v14M16 5v14M19 7v10"/>', 18, 'data-med="carga"');
+const IC_VOL = SVGI('<path d="M4 19h16M6 14h12M9 9h6M11 4h2"/>', 18, 'data-med="volume"');
+const IC_SOM_ON = SVGI('<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 010 6M19 7a7 7 0 010 10"/>', 20);
+const IC_SOM_OFF = SVGI('<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/>', 20);
+const IC_GAL = SVGI('<path d="M3 4h18v16H3z"/><circle cx="9" cy="10" r="2"/><path d="M3 18l6-5 4 3 3-2 5 4"/>');
+const IC_STAR = SVGI('<path d="M12 3l2.7 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17.2l-5.6 3.1 1.2-6.3L3 9.6l6.3-.8z"/>', 14);
+const restRael = () => { try { const c = ["relogio", "aplauso", "comemora"]; return frRaelCena(c[Math.floor(Math.random() * c.length)], 120); } catch (e) { return ""; } };
+function restFrase() {
+  let l = []; try { l = (FRASES.descanso || []).concat(FR2.descanso || []); } catch (e) {}
+  if (!l.length) return frase("descanso");
+  let ult = ""; try { ult = localStorage.getItem("frango:descUlt") || ""; } catch (e) {}
+  let f = l[Math.floor(Math.random() * l.length)]; for (let i = 0; i < 8 && f === ult; i++) f = l[Math.floor(Math.random() * l.length)];
+  try { localStorage.setItem("frango:descUlt", f); } catch (e) {}
+  return f;
+}
 // ---------- medalhas de recorde: 🏅 maior carga e 💪 maior volume (carga x reps) do exercício no histórico ----------
 function recAt(eid, beforeTs) {
   let kg = 0, vol = 0;
@@ -2518,8 +2536,8 @@ function medalSets(x, rec) {
   if (x.tipo !== "carga" || !rec || !(rec.kg > 0)) return out;
   let bk = -1, bv = -1, mk = 0, mv = 0;
   x.series.forEach((s, i) => { if (!s.ok || s.tipo === "aq") return; const k = num(s.kg), r = num(s.reps); if (k > mk) { mk = k; bk = i; } if (k * r > mv) { mv = k * r; bv = i; } });
-  if (bk >= 0 && mk > rec.kg) out[bk] += "🏅";
-  if (bv >= 0 && mv > rec.vol) out[bv] += "💪";
+  if (bk >= 0 && mk > rec.kg) out[bk] += IC_CARGA;
+  if (bv >= 0 && mv > rec.vol) out[bv] += IC_VOL;
   return out;
 }
 const REC_SEEN = new Set(), REC_FR = ["Recorde! O Rael está chorando de orgulho.", "Isso é recorde. Eu vou contar para a vizinhança.", "Nunca ninguém levantou tanto neste exercício. Nem você, até agora.", "Recorde pessoal! A crista do Rael levantou junto.", "Quebrou o seu próprio recorde. O Rael exige foto."];
@@ -2547,7 +2565,7 @@ function sessBody() {
       <div class="row" style="margin-top:8px;gap:8px"><button class="btn soft grow sbtn" data-act="setAdd" data-x="${xi}">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar série</button>${x.series.length > 1 ? `<button class="btn ghost sbtn" data-act="setDel" data-x="${xi}">Tirar última</button>` : ""}</div></div>`;
   });
   h += `<button class="btn soft block" data-act="sessAddEx">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar exercício</button>
-    <div class="disc">🏅 maior carga e 💪 maior volume já feitos neste exercício. Toque no número da série para trocar o tipo: normal, W (aquecimento, não conta para volume nem progressão), D (drop set) ou F (falha).</div>
+    <div class="disc">${IC_CARGA} maior carga e ${IC_VOL} maior volume já feitos neste exercício. Toque no número da série para trocar o tipo: normal, W (aquecimento, não conta para volume nem progressão), D (drop set) ou F (falha).</div>
     ${UIc.confirm === "discard" ? confirmBox("Descartar este treino? Nada será salvo.", "sessDiscard", {}, "Descartar") : ""}`;
   return h;
 }
@@ -2592,7 +2610,7 @@ ACT.sessFinish = () => {
   openSheet({ title: "Treino concluído", body: `<div class="card ai" style="text-align:center">${frRaelCena("comemora", 120)}<div class="num" style="font-size:22px;font-weight:700">${esc(frase("fim"))}</div></div>
     <div class="grid2"><div class="card flat stat"><span>Duração</span><b>${hhmm((w.fim - w.inicio) / 1000)}</b></div><div class="card flat stat"><span>Volume</span><b>${fmt(volume(w))} kg</b></div><div class="card flat stat"><span>Séries</span><b>${seriesFeitas(w)}</b></div><div class="card flat stat"><span>Gasto estimado</span><b>${fmt(kcalTreino(w))} kcal</b></div></div>
     ${prs.length ? `<div class="card"><div class="eyebrow">Recordes novos</div><div class="list">${prs.map(x => `<div class="li"><div class="grow t">${esc(x.nome)}</div><span class="pill good">1RM est. ${fmt1(x.v)} kg</span></div>`).join("")}</div></div>` : ""}
-    <button class="btn soft block" data-act="fotoAbrir" data-id="${w.id}">📷 Foto do treino</button>
+    <button class="btn soft block" data-act="fotoAbrir" data-id="${w.id}">${IC_CAM} Foto do treino</button>
     ${w.rotinaId && (P().rotinas || []).some(x => x.id === w.rotinaId) ? `<button class="btn soft block" data-act="rotAtualizaAsk" data-id="${w.id}">Atualizar a rotina com este treino</button>` : ""}
     <div class="disc">Gasto calculado por MET (${fmt1(P().metMusc)}) × peso × duração. É uma estimativa.</div>`, foot: `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
 };
@@ -2648,7 +2666,7 @@ function restPop() {
   const o = document.getElementById("restpop"); if (o) o.remove();
   const p = document.createElement("div"); p.id = "restpop"; p.setAttribute("role", "alertdialog"); p.setAttribute("aria-label", "Descanso acabou");
   p.style.cssText = "position:fixed;inset:0;z-index:90;background:rgba(15,20,40,.6);display:flex;align-items:center;justify-content:center;padding:24px";
-  p.innerHTML = `<div style="background:var(--card,#fff);color:var(--ink,#1a1d2e);border-radius:22px;padding:24px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)"><div style="font-size:48px;line-height:1">🐔</div><div style="font-family:var(--f-display);font-size:22px;margin:10px 0 6px">Descanso acabou!</div><div style="font-size:16px;line-height:1.4;margin-bottom:18px">${esc(REST.frase)}</div><button class="btn" data-act="restSkip" style="width:100%;min-height:56px;font-size:20px;font-weight:800;background:#2F4C9E;color:#fff;border-color:#2F4C9E;border-radius:14px">Bora</button></div>`;
+  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:0;clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);padding:24px 20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${restRael()}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:10px 0 6px">Descanso acabou!</div><div style="font-size:16px;line-height:1.4;margin-bottom:18px">${esc(REST.frase)}</div><button class="btn" data-act="restSkip" style="width:100%;min-height:56px;font-size:20px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora</button></div>`;
   document.body.appendChild(p);
 }
 function drawRest() {
@@ -2656,20 +2674,20 @@ function drawRest() {
   const left = (REST.end - Date.now()) / 1000;
   if (left <= 0) {
     const bar = restBar(); bar.style.display = "none";
-    if (!REST.fim) { REST.fim = true; REST.fimAt = Date.now(); REST.rep = 0; REST.built = false; REST.frase = frase("descanso"); alertaDescanso(); try { pushCancela(); } catch (e) {} }
+    if (!REST.fim) { REST.fim = true; REST.fimAt = Date.now(); REST.rep = 0; REST.built = false; REST.frase = restFrase(); alertaDescanso(); try { pushCancela(); } catch (e) {} }
     else if (REST.rep < 3 && Date.now() - REST.fimAt > 12000 * (REST.rep + 1)) { REST.rep++; alertaDescanso(); }
     else if (Date.now() - REST.fimAt > 60000) { stopRest(); return; }
     if (!REST.built) { bar.innerHTML = ""; restPop(); REST.built = true; }
     return;
   }
   const bar = restBar(); bar.style.display = ""; const rp0 = document.getElementById("restpop"); if (rp0) rp0.remove();
-  if (!REST.built) { bar.style.background = ""; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><input type="number" inputmode="numeric" id="restSet" data-on="restSet" placeholder="seg" aria-label="Definir segundos" style="width:56px;min-height:36px;padding:2px 6px;text-align:center;border-radius:8px"><button class="btn sm" data-act="restSom" aria-label="Som do alerta">${somOn() ? "🔔" : "🔕"}</button><button class="btn sm" data-act="restSkip">Pular</button>`; REST.built = true; }
+  if (!REST.built) { bar.style.background = ""; bar.innerHTML = `<div class="grow"><div class="xs" style="opacity:.75">Descanso</div><b id="restT"></b></div><button class="btn sm" data-act="restAdd" data-v="-15">−15</button><button class="btn sm" data-act="restAdd" data-v="15">+15</button><input type="number" inputmode="numeric" id="restSet" data-on="restSet" placeholder="seg" aria-label="Definir segundos" style="width:56px;min-height:36px;padding:2px 6px;text-align:center;border-radius:8px"><button class="btn sm" data-act="restSom" aria-label="Som do alerta">${somOn() ? IC_SOM_ON : IC_SOM_OFF}</button><button class="btn sm" data-act="restSkip">Pular</button>`; REST.built = true; }
   const t = $("#restT"); if (t) t.textContent = mmss(Math.ceil(left));
 }
 function stopRest() { try { if (!REST.fim) pushCancela(); } catch (e) {} mudoStop(); document.documentElement.classList.remove("fx-resting"); clearInterval(REST.t); REST.t = null; REST.end = 0; REST.fim = false; REST.built = false; const b = $(".restbar"); if (b) b.remove(); const rp = document.getElementById("restpop"); if (rp) rp.remove(); }
 ACT.restAdd = ds => { REST.end += num(ds.v) * 1000; if (REST.end < Date.now() + 1000) REST.end = Date.now() + 1000; drawRest(); try { pushAgenda((REST.end - Date.now()) / 1000); } catch (e) {} };
 ON.restSet = el => { const v = clamp(num(el.value), 5, 1800); if (!el.value) return; REST.end = Date.now() + v * 1000; REST.fim = false; el.value = ""; drawRest(); try { pushAgenda(v); } catch (e) {} };
-ACT.restSom = (ds, el) => { try { localStorage.setItem("frango:som", somOn() ? "0" : "1"); } catch (e) {} if (somOn()) alertaDescanso(); el.textContent = somOn() ? "🔔" : "🔕"; };
+ACT.restSom = (ds, el) => { try { localStorage.setItem("frango:som", somOn() ? "0" : "1"); } catch (e) {} if (somOn()) alertaDescanso(); el.innerHTML = somOn() ? IC_SOM_ON : IC_SOM_OFF; };
 ACT.restSkip = () => stopRest();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && REST.t) drawRest(); }); /* ao desbloquear, o tempo real já é mostrado e o alerta dispara na hora */
 ON.exDesc = el => { const x = +el.dataset.x; updA(a => { if (a.ex[x]) a.ex[x].item.desc = el.value === "" ? 0 : clamp(num(el.value), 0, 900); }, false); };
@@ -2971,7 +2989,7 @@ function medidasCard() {
   const ym = hj.slice(0, 7), prev = addDays(ym + "-01", -1).slice(0, 7);
   return `<div class="card stack"><div class="row between"><h2>Medidas</h2><button class="btn sm" data-act="medCampos">Campos</button></div>
     <div class="list">${linhas}</div>${medGraficos()}
-    <div class="row wrap-ok" style="gap:8px"><button class="btn pri grow" data-act="medReg">Registrar medidas</button><button class="btn soft grow" data-act="progAbrir">📷 Fotos de progresso</button></div>
+    <div class="row wrap-ok" style="gap:8px"><button class="btn pri grow" data-act="medReg">Registrar medidas</button><button class="btn soft grow" data-act="progAbrir">${IC_CAM} Fotos de progresso</button></div>
     <div class="row wrap-ok" style="gap:8px"><button class="btn soft grow" data-act="relMes" data-m="${prev}">Relatório de ${mesNome(prev)}</button><button class="btn soft grow" data-act="relMes" data-m="${ym}">Relatório de ${mesNome(ym)} (até agora)</button></div></div>`;
 }
 function sonoCard() {
@@ -3240,7 +3258,7 @@ function fotoDraw(exp) {
 function fotoBody() {
   const chip = (act, on, txt, extra) => `<button class="btn sm ${on ? "pri" : "soft"}" data-act="${act}" ${extra || ""}>${txt}</button>`;
   const mets = [["dur", "Duração"], ["vol", "Volume"], ["ser", "Séries"], ["kcal", "Gasto"]].concat(FOTO.prs ? [["rec", "Recordes"]] : []);
-  return `<div class="stack"><div class="row" style="gap:8px"><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">📷 Tirar foto<input type="file" accept="image/*" capture="environment" data-on="fotoArq" style="display:none"></label><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">🖼️ Da galeria<input type="file" accept="image/*" data-on="fotoArq" style="display:none"></label></div>
+  return `<div class="stack"><div class="row" style="gap:8px"><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">${IC_CAM} Tirar foto<input type="file" accept="image/*" capture="environment" data-on="fotoArq" style="display:none"></label><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">${IC_GAL} Da galeria<input type="file" accept="image/*" data-on="fotoArq" style="display:none"></label></div>
     <div class="row" style="flex-wrap:wrap;gap:6px">${Object.keys(FOTO_FMT).map(k => chip("fotoFmt", FOTO.fmt === k, FOTO_FMT[k][2], `data-k="${k}"`)).join("")}</div>
     <canvas id="fotoCv" width="${FOTO_FMT[FOTO.fmt][0]}" height="${FOTO_FMT[FOTO.fmt][1]}" style="display:block;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:60vh;aspect-ratio:${FOTO_FMT[FOTO.fmt][0]}/${FOTO_FMT[FOTO.fmt][1]};border-radius:16px;background:#16204F;touch-action:none;cursor:grab"></canvas>
     ${FOTO.img ? `<div class="row" style="gap:10px"><span class="xs muted">Arraste a foto para ajustar. Zoom</span><input type="range" min="100" max="400" value="${Math.round(FOTO.zoom * 100)}" data-in="fotoZoom" class="grow" aria-label="Zoom da foto"><button class="btn sm soft" data-act="fotoCentra">Centralizar</button></div>` : ""}
@@ -3484,8 +3502,8 @@ function recFesta(md, frase) {
   if (typeof S !== "undefined") p.className = "fx";
   p.style.cssText = "position:fixed;inset:0;z-index:95;background:rgba(15,20,40,.62);display:flex;align-items:center;justify-content:center;padding:24px";
   let rael = ""; try { rael = frRaelCena("comemora", 150); } catch (e) { rael = '<div style="font-size:64px">🐔</div>'; }
-  const carga = md.includes("🏅");
-  p.innerHTML = `<div style="background:var(--card,#fff);color:var(--ink,#1a1d2e);border-radius:22px;padding:20px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)"><div style="display:flex;justify-content:center">${rael}</div><div style="font-size:44px;line-height:1;margin-top:4px">${md}</div><div style="font-family:var(--f-display);font-size:22px;margin:8px 0 6px">${carga ? "Recorde de carga!" : "Recorde de volume!"}</div><div style="font-size:15px;line-height:1.4;margin-bottom:16px">${esc(frase)}</div><button class="btn" data-act="festaFecha" style="width:100%;min-height:52px;font-size:18px;font-weight:800;background:#2F4C9E;color:#fff;border-color:#2F4C9E;border-radius:14px">Bora!</button></div>`;
+  const carga = md.includes('data-med="carga"');
+  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:0;clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);padding:20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${rael}</div><div style="font-size:44px;line-height:1;margin-top:4px;color:#6E85C2">${md.replace(/width="18" height="18"/g, 'width="44" height="44"')}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:8px 0 6px">${carga ? "Recorde de carga!" : "Recorde de volume!"}</div><div style="font-size:15px;line-height:1.4;margin-bottom:16px">${esc(frase)}</div><button class="btn" data-act="festaFecha" style="width:100%;min-height:52px;font-size:18px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora!</button></div>`;
   document.body.appendChild(p);
   setTimeout(() => { const q = document.getElementById("recfesta"); if (q === p) p.remove(); }, 5500);
 }
@@ -3505,7 +3523,7 @@ function progPesoDe(data) { try { const x = pesosLista().filter(p => p.data <= d
 function progBody() {
   const l = PROG.lista;
   return `<div class="stack"><div class="small ink2">Tire uma foto de tempos em tempos. Cada foto guarda a data, o peso e as medidas mais próximas. Ficam salvas só no seu Painel/aparelho.</div>
-    <div class="row" style="gap:8px"><label class="btn pri grow" style="text-align:center;cursor:pointer;margin:0">📷 Tirar foto<input type="file" accept="image/*" capture="environment" data-on="progArq" style="display:none"></label><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">🖼️ Da galeria<input type="file" accept="image/*" data-on="progArq" style="display:none"></label></div>
+    <div class="row" style="gap:8px"><label class="btn pri grow" style="text-align:center;cursor:pointer;margin:0">${IC_CAM} Tirar foto<input type="file" accept="image/*" capture="environment" data-on="progArq" style="display:none"></label><label class="btn soft grow" style="text-align:center;cursor:pointer;margin:0">${IC_GAL} Da galeria<input type="file" accept="image/*" data-on="progArq" style="display:none"></label></div>
     ${PROG.carregando ? '<div class="xs muted">Carregando…</div>' : ""}
     ${l.length ? `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">${l.map(x => { const dt = String(x.w).slice(5); const med = progMedDe(dt), pe = progPesoDe(dt); return `<div class="card flat" style="padding:6px"><img src="${x.d}" alt="Foto de progresso" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;display:block"><div class="small" style="margin-top:4px"><b>${ddmm(dt)}</b>${pe ? " · " + pe : ""}</div>${med ? `<div class="xs muted">${med}</div>` : ""}<button class="btn sm ghost" data-act="progApaga" data-id="${x.id}">Apagar</button></div>`; }).join("")}</div>` : (PROG.carregando ? "" : '<div class="xs muted">Nenhuma foto de progresso ainda.</div>')}</div>`;
 }
