@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104b"><script>(function(){try{var V="v37-20261104b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104c"><script>(function(){try{var V="v37-20261104c";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3772,7 +3772,7 @@ function frRaelCena(cena, tam) {
       `<circle class="ra-gota" cx="164" cy="150" r="3" fill="#8FC5F0"/><circle class="ra-gota" cx="170" cy="150" r="2.4" fill="#8FC5F0"/>`;
   } else if (cena === "shake") {
     cls = "ra-resp";
-    sobre = `<g class="ra-shk"><rect x="150" y="104" width="26" height="12" rx="4" fill="#2F4C9E" stroke="#1B1630" stroke-width="4.5"/><path d="M152 116h22l-2 46q0 6-6 6h-6q-6 0-6-6Z" fill="#F4EAD5" stroke="#1B1630" stroke-width="4.5" stroke-linejoin="round"/><path d="M155 140h16l-1 20h-14Z" fill="#B98A5A"/><text x="163" y="134" font-size="10" font-weight="800" text-anchor="middle" fill="#1B1630" font-family=""Big Shoulders Display",system-ui">P</text></g>`;
+    sobre = `<g class="ra-shk"><rect x="150" y="104" width="26" height="12" rx="4" fill="#2F4C9E" stroke="#1B1630" stroke-width="4.5"/><path d="M152 116h22l-2 46q0 6-6 6h-6q-6 0-6-6Z" fill="#F4EAD5" stroke="#1B1630" stroke-width="4.5" stroke-linejoin="round"/><path d="M155 140h16l-1 20h-14Z" fill="#B98A5A"/><text x="163" y="134" font-size="10" font-weight="800" text-anchor="middle" fill="#1B1630" font-family="'Big Shoulders Display',system-ui">P</text></g>`;
   } else if (cena === "corrida") {
     cls = "ra-corre";
     sobre = `<ellipse cx="82" cy="186" rx="15" ry="8" fill="#D4574A" stroke="#1B1630" stroke-width="4"/><ellipse cx="118" cy="186" rx="15" ry="8" fill="#D4574A" stroke="#1B1630" stroke-width="4"/>` +
@@ -3787,11 +3787,11 @@ function frRaelCena(cena, tam) {
   } else if (cena === "alfa") {
     cls = "ra-bal";
     sobre = `<rect x="62" y="86" width="34" height="22" rx="9" fill="#1B1630"/><rect x="104" y="86" width="34" height="22" rx="9" fill="#1B1630"/><path d="M96 94h8" stroke="#1B1630" stroke-width="4"/><path class="ra-glint" d="M70 90l8 6" stroke="#fff" stroke-width="3" stroke-linecap="round"/>` +
-      `<path d="M62 152Q100 182 138 152" fill="none" stroke="#F2C14E" stroke-width="6" stroke-linecap="round"/><path d="M62 152Q100 182 138 152" fill="none" stroke="#1B1630" stroke-width="1.5" stroke-linecap="round"/><circle cx="100" cy="171" r="9" fill="#F2C14E" stroke="#1B1630" stroke-width="4"/><text x="100" y="175" font-size="11" font-weight="800" text-anchor="middle" fill="#1B1630" font-family=""Big Shoulders Display",system-ui">A</text>` +
+      `<path d="M62 152Q100 182 138 152" fill="none" stroke="#F2C14E" stroke-width="6" stroke-linecap="round"/><path d="M62 152Q100 182 138 152" fill="none" stroke="#1B1630" stroke-width="1.5" stroke-linecap="round"/><circle cx="100" cy="171" r="9" fill="#F2C14E" stroke="#1B1630" stroke-width="4"/><text x="100" y="175" font-size="11" font-weight="800" text-anchor="middle" fill="#1B1630" font-family="'Big Shoulders Display',system-ui">A</text>` +
       `<path class="ra-brilho" d="M168 44l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#F2C14E" stroke="#1B1630" stroke-width="2.5"/>`;
   } else if (cena === "pintinho") {
     cls = "ra-pip";
-    sobre = `<path d="M62 56L70 40L82 52L92 34L102 52L112 34L122 52L130 40L138 56Q100 -10 62 56Z" fill="#fff" stroke="#1B1630" stroke-width="4.5" stroke-linejoin="round"/><text class="ra-pi" x="150" y="40" font-size="14" font-weight="800" fill="#2F4C9E" font-family=""Big Shoulders Display",system-ui">pip</text>`;
+    sobre = `<path d="M62 56L70 40L82 52L92 34L102 52L112 34L122 52L130 40L138 56Q100 -10 62 56Z" fill="#fff" stroke="#1B1630" stroke-width="4.5" stroke-linejoin="round"/><text class="ra-pi" x="150" y="40" font-size="14" font-weight="800" fill="#2F4C9E" font-family="'Big Shoulders Display',system-ui">pip</text>`;
   } else if (cena === "danca") {
     cls = "ra-danca";
     sobre = `<text class="ra-nota" x="22" y="60" font-size="26" fill="#2F4C9E" font-family="system-ui">♪</text><text class="ra-nota" x="168" y="52" font-size="26" fill="#D4574A" font-family="system-ui">♫</text><text class="ra-nota" x="150" y="30" font-size="22" fill="#F2C14E" font-family="system-ui">♪</text>`;
@@ -3800,7 +3800,7 @@ function frRaelCena(cena, tam) {
     sobre = `<rect x="46" y="188" width="108" height="14" rx="6" fill="#C9CCD6" stroke="#1B1630" stroke-width="4.5"/><circle cx="100" cy="195" r="5" fill="#fff" stroke="#1B1630" stroke-width="2.5"/><path class="ra-agulha" d="M100 195L106 190" stroke="#D4574A" stroke-width="2.5" stroke-linecap="round"/>`;
   } else if (cena === "pensando") {
     cls = "ra-resp";
-    sobre = `<text class="ra-q" x="100" y="22" font-size="42" font-weight="800" text-anchor="middle" fill="#2F4C9E" stroke="#1B1630" stroke-width="1.5" font-family=""Big Shoulders Display",system-ui">?</text>`;
+    sobre = `<text class="ra-q" x="100" y="22" font-size="42" font-weight="800" text-anchor="middle" fill="#2F4C9E" stroke="#1B1630" stroke-width="1.5" font-family="'Big Shoulders Display',system-ui">?</text>`;
   } else if (cena === "comemora") {
     cls = "ra-pulo";
     const cs = ["#F2C14E", "#2F4C9E", "#D4574A"], xs = [24, 52, 80, 120, 148, 176, 40, 160];
@@ -3921,7 +3921,7 @@ const FR_C = "#1B1630";
 const FR_EX = {
   // manhã de cafeína: olho arregalado, tremedeira, raios
   cafeina: { humor: "dorme", cls: "ra-treme", sobre: FR_OLHO.arreg + FR_SOBR("M64 70Q78 60 92 70M108 70Q122 60 136 70") +
-    `<g class="ra-xic"><rect x="140" y="126" width="38" height="44" rx="7" fill="#fff" stroke="${FR_C}" stroke-width="4.5"/><path d="M178 136q14 0 14 12t-14 12" fill="none" stroke="${FR_C}" stroke-width="4.5"/><rect x="144" y="130" width="30" height="10" fill="#6B3E1B"/><text x="159" y="160" font-size="11" font-weight="800" text-anchor="middle" fill="#2F4C9E" font-family=""Big Shoulders Display",system-ui">CAFÉ</text></g>` +
+    `<g class="ra-xic"><rect x="140" y="126" width="38" height="44" rx="7" fill="#fff" stroke="${FR_C}" stroke-width="4.5"/><path d="M178 136q14 0 14 12t-14 12" fill="none" stroke="${FR_C}" stroke-width="4.5"/><rect x="144" y="130" width="30" height="10" fill="#6B3E1B"/><text x="159" y="160" font-size="11" font-weight="800" text-anchor="middle" fill="#2F4C9E" font-family="'Big Shoulders Display',system-ui">CAFÉ</text></g>` +
     `<path class="ra-zap" d="M30 60l-8 14h8l-6 14 14-18h-9l7-10Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5" stroke-linejoin="round"/><path class="ra-zap" d="M168 50l-8 14h8l-6 14 14-18h-9l7-10Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5" stroke-linejoin="round"/><path class="ra-zap" d="M12 110l-6 10h6l-4 10 10-13h-7l5-7Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2.5" stroke-linejoin="round"/>` },
   // sofá: olho meia-bomba, pipoca, controle, luz de TV
   sofa: { humor: "dorme", cls: "ra-resp", sobre: FR_OLHO.meia + FR_SOBR("M66 86L90 86M110 86L134 86") +
@@ -3952,17 +3952,17 @@ const FR_EX = {
   // domingo zen: aura, olho fechado, "om"
   meditando: { humor: "dorme", cls: "ra-medita", sobre: FR_SOBR("M66 82Q78 78 90 84M110 84Q122 78 134 82") +
     [0, 1, 2].map(() => `<circle class="ra-aura" cx="100" cy="112" r="70" fill="none" stroke="#8FC5F0" stroke-width="5"/>`).join("") +
-    `<text class="ra-subida" x="40" y="60" font-size="18" font-weight="800" fill="#2F4C9E" font-family=""Big Shoulders Display",system-ui">om</text><text class="ra-subida" x="150" y="52" font-size="18" font-weight="800" fill="#2F4C9E" font-family=""Big Shoulders Display",system-ui">om</text><text class="ra-subida" x="100" y="30" font-size="14" font-weight="800" fill="#8A86A0" font-family=""Big Shoulders Display",system-ui">…</text>` },
+    `<text class="ra-subida" x="40" y="60" font-size="18" font-weight="800" fill="#2F4C9E" font-family="'Big Shoulders Display',system-ui">om</text><text class="ra-subida" x="150" y="52" font-size="18" font-weight="800" fill="#2F4C9E" font-family="'Big Shoulders Display',system-ui">om</text><text class="ra-subida" x="100" y="30" font-size="14" font-weight="800" fill="#8A86A0" font-family="'Big Shoulders Display',system-ui">…</text>` },
   // folga: alongando
   alongando: { humor: "feliz", cls: "ra-alonga", sobre:
-    `<path class="ra-vento" d="M20 70v-30M36 64v-34M164 64v-34M180 70v-30" stroke="#8A86A0" stroke-width="4" stroke-linecap="round" fill="none"/><text class="ra-subida" x="150" y="56" font-size="16" font-weight="800" fill="#D4574A" font-family=""Big Shoulders Display",system-ui">aaah</text>` },
+    `<path class="ra-vento" d="M20 70v-30M36 64v-34M164 64v-34M180 70v-30" stroke="#8A86A0" stroke-width="4" stroke-linecap="round" fill="none"/><text class="ra-subida" x="150" y="56" font-size="16" font-weight="800" fill="#D4574A" font-family="'Big Shoulders Display',system-ui">aaah</text>` },
   // meta de água: abraçando a garrafa gigante
   hidratado: { humor: "feliz", cls: "ra-pulo", sobre:
-    `<rect x="18" y="104" width="44" height="84" rx="14" fill="#CFE8FA" fill-opacity=".85" stroke="${FR_C}" stroke-width="4.5"/><rect x="28" y="92" width="24" height="14" rx="4" fill="#2F4C9E" stroke="${FR_C}" stroke-width="4"/><path d="M22 138q9-6 18 0t18 0v46q0 4-4 4H26q-4 0-4-4Z" fill="#5BB5F0"/><text x="40" y="170" font-size="12" font-weight="800" text-anchor="middle" fill="#fff" font-family=""Big Shoulders Display",system-ui">H₂O</text>` +
+    `<rect x="18" y="104" width="44" height="84" rx="14" fill="#CFE8FA" fill-opacity=".85" stroke="${FR_C}" stroke-width="4.5"/><rect x="28" y="92" width="24" height="14" rx="4" fill="#2F4C9E" stroke="${FR_C}" stroke-width="4"/><path d="M22 138q9-6 18 0t18 0v46q0 4-4 4H26q-4 0-4-4Z" fill="#5BB5F0"/><text x="40" y="170" font-size="12" font-weight="800" text-anchor="middle" fill="#fff" font-family="'Big Shoulders Display',system-ui">H₂O</text>` +
     `<circle class="ra-subida" cx="34" cy="150" r="3.5" fill="#fff" stroke="#5BB5F0" stroke-width="1.5"/><circle class="ra-subida" cx="46" cy="156" r="3" fill="#fff" stroke="#5BB5F0" stroke-width="1.5"/><path class="ra-brilho" d="M168 50l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-brilho" d="M150 24l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/>` },
   // balança subiu: susto
   susto: { humor: "normal", cls: "ra-treme", sobre: FR_OLHO.arreg + FR_SOBR("M64 68Q78 58 92 68M108 68Q122 58 136 68") +
-    `<text class="ra-susto" x="100" y="26" font-size="40" font-weight="800" text-anchor="middle" fill="#D4574A" stroke="${FR_C}" stroke-width="1.5" font-family=""Big Shoulders Display",system-ui">!!</text>` +
+    `<text class="ra-susto" x="100" y="26" font-size="40" font-weight="800" text-anchor="middle" fill="#D4574A" stroke="${FR_C}" stroke-width="1.5" font-family="'Big Shoulders Display',system-ui">!!</text>` +
     `<path class="ra-gota" d="M152 70q6 9 0 13q-6-4 0-13Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-gota" d="M48 76q6 9 0 13q-6-4 0-13Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2.5"/>` +
     `<rect x="46" y="188" width="108" height="14" rx="6" fill="#C9CCD6" stroke="${FR_C}" stroke-width="4.5"/><circle cx="100" cy="195" r="5" fill="#fff" stroke="${FR_C}" stroke-width="2.5"/><path class="ra-agulha" d="M100 195L114 188" stroke="#D4574A" stroke-width="2.5" stroke-linecap="round"/>` },
   // corrida com fone de ouvido
@@ -3973,7 +3973,7 @@ const FR_EX = {
   // relógio: esperando você anotar a comida
   relogio: { humor: "normal", cls: "ra-bal", sobre: FR_OLHO.lado.replace(/cx="87"/, 'cx="73"').replace(/cx="127"/, 'cx="113"') + FR_SOBR("M66 84L90 88M110 88L134 84") +
     `<circle cx="164" cy="150" r="17" fill="#fff" stroke="${FR_C}" stroke-width="4.5"/><path d="M164 150V139M164 150l8 5" stroke="${FR_C}" stroke-width="3.5" stroke-linecap="round"/><rect x="154" y="130" width="20" height="6" rx="2" fill="#2F4C9E" stroke="${FR_C}" stroke-width="3"/>` +
-    `<ellipse class="ra-tic" cx="118" cy="186" rx="15" ry="8" fill="#E08A3A" stroke="${FR_C}" stroke-width="4"/><text class="ra-subida" x="30" y="70" font-size="14" font-weight="800" fill="#8A86A0" font-family=""Big Shoulders Display",system-ui">tic</text><text class="ra-subida" x="46" y="52" font-size="14" font-weight="800" fill="#8A86A0" font-family=""Big Shoulders Display",system-ui">tac</text>` },
+    `<ellipse class="ra-tic" cx="118" cy="186" rx="15" ry="8" fill="#E08A3A" stroke="${FR_C}" stroke-width="4"/><text class="ra-subida" x="30" y="70" font-size="14" font-weight="800" fill="#8A86A0" font-family="'Big Shoulders Display',system-ui">tic</text><text class="ra-subida" x="46" y="52" font-size="14" font-weight="800" fill="#8A86A0" font-family="'Big Shoulders Display',system-ui">tac</text>` },
   // aplausos
   aplauso: { humor: "feliz", cls: "ra-pulo", sobre:
     `<ellipse class="ra-palma" cx="86" cy="150" rx="12" ry="22" transform="rotate(-18 86 150)" fill="#E9B23A" stroke="${FR_C}" stroke-width="4.5"/><ellipse class="ra-palma d" cx="114" cy="150" rx="12" ry="22" transform="rotate(18 114 150)" fill="#E9B23A" stroke="${FR_C}" stroke-width="4.5"/>` +
@@ -3981,7 +3981,7 @@ const FR_EX = {
   // bocejo largo
   bocejo: { humor: "dorme", cls: "ra-resp", sobre: FR_SOBR("M66 84Q78 80 90 86M110 86Q122 80 134 84") +
     `<ellipse class="ra-boca" cx="100" cy="126" rx="15" ry="14" fill="#7A2A2A" stroke="${FR_C}" stroke-width="4"/><ellipse class="ra-boca" cx="100" cy="134" rx="8" ry="6" fill="#D4574A"/>` +
-    `<path class="ra-gota" d="M72 108q4 7 0 10q-4-3 0-10Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2"/><text class="ra-subida" x="146" y="64" font-size="16" font-weight="800" fill="#2F4C9E" font-family=""Big Shoulders Display",system-ui">aaahh</text>` },
+    `<path class="ra-gota" d="M72 108q4 7 0 10q-4-3 0-10Z" fill="#8FC5F0" stroke="${FR_C}" stroke-width="2"/><text class="ra-subida" x="146" y="64" font-size="16" font-weight="800" fill="#2F4C9E" font-family="'Big Shoulders Display',system-ui">aaahh</text>` },
   // espelho: tab de evolução
   espelho: { humor: "alfa", cls: "ra-bal", dentro: `<g stroke="${FR_C}" stroke-width="4.5"><circle class="ra-bic" cx="30" cy="112" r="20" fill="#E9B23A"/><circle class="ra-bic" cx="170" cy="112" r="20" fill="#E9B23A"/></g>`,
     sobre: `<rect x="150" y="26" width="42" height="62" rx="21" fill="#E6F1FA" stroke="${FR_C}" stroke-width="4.5"/><path d="M160 40Q170 34 182 44" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path class="ra-brilho" d="M171 52l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#F2C14E" stroke="${FR_C}" stroke-width="2"/>` }
