@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104a"><script>(function(){try{var V="v37-20261104a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v37-20261104b"><script>(function(){try{var V="v37-20261104b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -288,7 +288,9 @@ h1,h2,h3,.sec-title h2{text-transform:uppercase;letter-spacing:.02em;font-weight
 h1{font-size:30px}h2{font-size:22px}h3{font-size:19px}.sec-title h2{font-size:20px}
 .num,.kcal-r,.stat b,.balance .n,.ring .c b,.fr-kcal b,.fr-seq,.fr-nota-n,.restbar b{font-weight:900}
 header.top{background:var(--bg);backdrop-filter:none;border-bottom:0}
-.brand .fr-logo{font-size:30px;font-weight:900;text-transform:uppercase;line-height:1;background:linear-gradient(transparent 62%,var(--gema) 62%);padding:0 4px}
+.brand .fr-logo{font-size:26px;font-weight:900;text-transform:uppercase;line-height:1;background:linear-gradient(transparent 62%,var(--gema) 62%);padding:0 4px}
+.brand{min-width:0;flex:0 1 auto}
+@media (max-width:460px){.brand .fr-logo{font-size:21px}header.top .in{gap:6px}.datenav button{width:28px}.datenav .lbl{min-width:44px;font-size:15px;padding:6px 2px}header.top .chip{padding:4px 8px;font-size:13px}}
 .brand .fr-ver{background:var(--surface-2);color:var(--ink-2);border-radius:0}
 .datenav .lbl{font-family:var(--f-display);font-weight:900;font-size:17px;text-transform:uppercase}
 nav.tabs{background:var(--ink);border-top:0}
