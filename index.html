@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v38-20261104a"><script>(function(){try{var V="v38-20261104a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v40-20261105a"><script>(function(){try{var V="v40-20261105a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -376,6 +376,8 @@ details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{displ
 <main class="wrap" id="view" aria-live="polite"></main>
 <nav class="tabs" aria-label="Seções"><div class="in" id="tabbar"></div></nav>
 <div id="layer"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="supabase-sync.js?v=1"></script>
 <script>
 // ---------- Banco de alimentos (por 100 g ou 100 ml) ----------
 // [nome, kcal, proteína, carboidrato, gordura, fibra, categoria, fonte, g por unidade (opcional), nome da unidade]
@@ -1395,6 +1397,7 @@ function getDoc(k) { const d = ST.docs[k]; return d && !d._del ? d : null; }
 function putDoc(k, data) { data._t = Date.now(); delete data._del; ST.docs[k] = data; lsWrite(); queueRemote(k); }
 function delDoc(k) { ST.docs[k] = { _del: true, _t: Date.now() }; lsWrite(); queueRemote(k); }
 function queueRemote(k) {
+  try { sbQueue(k); } catch (e) {}
   if (!ST.col) return;
   clearTimeout(ST.timers[k]);
   ST.timers[k] = setTimeout(() => {
@@ -4881,7 +4884,9 @@ function viewPerfil() {
   const push = typeof pushCard === "function" ? pushCard() : "";
   h += `<div class="sec-label">Mais</div><div class="stack" style="gap:8px">`;
   h += secao("ia", "Inteligência artificial", via === "claude" ? "Ligada pela conta Claude" : via === "gemini" ? "Ligada pelo Gemini" : via === "api" ? "Ligada pela API do Claude" : "Modo copiar e colar", iaCard(), UIc.keyBusy || !!UIc.keyMsg);
+  const nuv = `<div class="card stack">${!SB.cli ? `<div class="small ink2">Nuvem não configurada neste aparelho. Os dados ficam só aqui.</div>` : SB.user ? `<div class="small ink2">Conectado como <b>${esc(SB.user.email)}</b>. ${SB.on ? "Sincronizado com a nuvem." : "Ainda não sincronizou."}${SB.err ? ` <span class="pill warn">${esc(SB.err)}</span>` : ""}</div><button class="btn" data-act="sbSync">Sincronizar agora</button><button class="btn ghost" data-act="sbSai">Sair da nuvem</button>` : `<div class="small ink2">Entre para ter os mesmos dados em todos os aparelhos. Na primeira vez, toque em Criar conta e confirme o e-mail que chegar.</div><label class="f">E-mail<input id="sbEmail" type="email" autocomplete="email"></label><label class="f">Senha (mínimo 6)<input id="sbSenha" type="password" autocomplete="current-password"></label><div class="row wrap-ok"><button class="btn" data-act="sbEntra">Entrar</button><button class="btn soft" data-act="sbCria">Criar conta</button></div>${SB.msg ? `<div class="small">${esc(SB.msg)}</div>` : ""}`}</div>`;
   h += secao("bk", "Backup e sincronização", bkGet(BKK) ? "Último backup: " + ddmm(bkGet(BKK)) : "Nenhum backup ainda", bk);
+  h += secao("nuvem", "Nuvem (Supabase)", SB.user ? "Conectado" : "Não conectado", nuv);
   h += secao("hevy", "Importar do Hevy", "Treinos por arquivo CSV", hevy);
   h += secao("perfis", "Perfis neste aparelho", po.list.length + (po.list.length === 1 ? " perfil" : " perfis"), perfisCard(), !!(UIc.confirm && String(UIc.confirm).startsWith("perfil:")));
   if (push) h += secao("push", "Avisos com a tela bloqueada", "Fim do descanso", push);
@@ -4929,6 +4934,10 @@ function bkBanner() {
   return `<div class="card flat"><div class="small">${u ? "Faz " + dias + " dias sem backup." : "Você ainda não fez backup."} Se o celular limpar os dados do navegador, tudo some. Leva 5 segundos.</div><div class="row" style="margin-top:8px;gap:8px"><button class="btn pri sm" data-act="exportar">Fazer backup agora</button><button class="btn ghost sm" data-act="bkDepois">Lembrar depois</button></div></div>`;
 }
 ACT.bkDepois = () => { bkSet(BKS, addDays(TODAY(), 2)); render(); };
+ACT.sbEntra = async () => { SB.msg = "Entrando..."; const e = ($("#sbEmail") || {}).value || "", p = ($("#sbSenha") || {}).value || ""; const r = await sbEntrar(e.trim(), p); SB.msg = r || ""; if (!r) { await sbPull(); toast("Conectado."); } render(); };
+ACT.sbCria = async () => { const e = ($("#sbEmail") || {}).value || "", p = ($("#sbSenha") || {}).value || ""; const r = await sbCriarConta(e.trim(), p); SB.msg = r || "Conta criada. Abra o e-mail que chegou, toque no link de confirmação e volte aqui para tocar em Entrar."; render(); };
+ACT.sbSync = async () => { await sbPull(); await sbFlush(); toast(SB.err ? "Falhou: " + SB.err : "Sincronizado."); render(); };
+ACT.sbSai = async () => { await sbSair(); SB.on = false; render(); };
 ACT.exportar = async () => {
   bkSet(BKK, TODAY());
   const data = backupJSON(), name = "frangometro-" + norm(nomeU()).replace(/[^a-z0-9]+/g, "-") + "-" + TODAY() + ".json";
@@ -4995,6 +5004,7 @@ function render() {
   render();
   connectCaps();
   await Promise.race([connectCloud(), new Promise(r => setTimeout(r, 2500))]);
+  try { sbInit().then(() => { if (!SHEET.stack.length) render(); }); } catch (e) {}
   if (!P().onb && !SHEET.stack.length) onboarding();
   if (getDoc("ativo") && !SHEET.stack.length) render();
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { if (ui.date !== TODAY() && ui._lastToday && ui.date === ui._lastToday) ui.date = TODAY(); ui._lastToday = TODAY(); render(); } });
