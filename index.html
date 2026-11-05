@@ -3125,28 +3125,60 @@ function medBanner() {
     return h;
   } catch (e) { return ""; }
 }
-// ---------- Avisos de fim de descanso com a tela bloqueada (Web Push) ----------
+// ---------- Avisos com a tela bloqueada (Web Push): fim do descanso, lembretes do dia e novidades ----------
 // Só funciona no site (https) com service worker. Depende de um Worker próprio configurado em push-config.json.
+// O app manda ao Worker só: horários escolhidos e um resumo do dia (contagens, sem nomes de alimentos nem dados pessoais).
 const PUSH_VAPID = "BJaFRYvPv7GX37tIkqe2STVZw7X6WRshqKbPJgkup86YPdNrDsVBlZof6IQosdmWXb7nSmYHPs_NYZuz3BMt3HM";
 const PUSH = { url: "", sub: null, pronto: false };
+const PUSH_TIPOS = [
+  ["manha", "Bom dia do Rael", "Uma frase de manhã. Não vem se você já abriu o app.", "08:00", true],
+  ["treino", "Hora do treino", "Só em dia de treino do plano e se você ainda não treinou.", "17:30", true],
+  ["sequencia", "Sequência em risco", "Só se você tem 3 dias seguidos ou mais e ainda não registrou nada hoje.", "20:30", true],
+  ["almoco", "Almoço", "Se o almoço ainda não foi registrado.", "12:30", false],
+  ["agua", "Água", "Se a água de hoje está abaixo de 60% da meta.", "15:30", false],
+  ["noite", "Fechar o dia", "Se menos de 3 refeições foram registradas.", "21:00", false],
+  ["semana", "Domingo da semana", "Domingo, para olhar a Evolução.", "19:00", false]
+];
 function pushSuportado() { return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && /^https:/.test(location.protocol); }
 function pushStandalone() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
 const pushIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 const pushQuer = () => { try { return localStorage.getItem("frango:push") === "1"; } catch (e) { return false; } };
 function b64uToBytes(s) { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+function pushCfg() {
+  let c = {}; try { c = JSON.parse(localStorage.getItem("frango:push-cfg") || "{}") || {}; } catch (e) {}
+  const o = {}; for (const [k, , , h, on] of PUSH_TIPOS) o[k] = { on: typeof (c[k] || {}).on === "boolean" ? c[k].on : on, h: /^\d{2}:\d{2}$/.test((c[k] || {}).h || "") ? c[k].h : h };
+  return o;
+}
+function pushCfgSalva(c) { try { localStorage.setItem("frango:push-cfg", JSON.stringify(c)); } catch (e) {} }
+/* resumo do dia que o Worker usa para NÃO mandar lembrete de algo que você já fez */
+function pushEstado() {
+  try {
+    const td = TODAY(), d = day(td), p = P(), m = metas(p), x = (p.rotinas || []).length > 0;
+    const plano = [0, 1, 2, 3, 4, 5, 6].map(i => { const rid = (p.semana || {})[i], r = rid && rotinaById(rid, p); return r ? String(r.nome || "Treino") : null; });
+    return { dia: td, refs: MEALS.filter(([k]) => mealT(d, k).kcal > 0).length, almoco: mealT(d, "almoco").kcal > 0,
+      agua: m.agua ? Math.min(2, (d.agua || 0) / m.agua) : 1, treinou: treinosDo(td).length > 0, mexeu: frMovTipos(td).length > 0, seq: frSeq(), temPlano: x, plano };
+  } catch (e) { return null; }
+}
 async function pushInit() {
   try {
-    if (!pushSuportado()) return;
     const cfg = await fetch("push-config.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({}));
     PUSH.url = (cfg && cfg.url || "").replace(/\/$/, "");
+    if (!pushSuportado()) { if (PUSH.url && pushNovo()) render(); return; }   /* iPhone no Safari (sem Tela de Início) cai aqui: mostra só as instruções */
     const reg = await navigator.serviceWorker.register("sw.js"); await navigator.serviceWorker.ready;
     PUSH.reg = reg; PUSH.sub = await reg.pushManager.getSubscription(); PUSH.pronto = !!PUSH.url;
+    if (PUSH.sub && pushQuer()) pushSync();
+    else if (PUSH.pronto && pushNovo()) render();
   } catch (e) {}
 }
-function pushPost(rota, seg) {
+function pushPost(rota, seg, extra) {
   if (!PUSH.pronto || !PUSH.sub || !pushQuer()) return;
-  try { fetch(PUSH.url + rota, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sub: PUSH.sub.toJSON(), seg }), keepalive: true }).catch(() => {}); } catch (e) {}
+  try { fetch(PUSH.url + rota, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ sub: PUSH.sub.toJSON(), seg }, extra || {})), keepalive: true }).catch(() => {}); } catch (e) {}
 }
+/* manda horários + resumo do dia; o aparelho informa o próprio fuso (getTimezoneOffset) */
+function pushSync() { pushPost("/config", 0, { cfg: pushCfg(), estado: pushEstado(), tz: new Date().getTimezoneOffset() }); }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") pushSync(); });
+addEventListener("pagehide", () => pushSync());
+setInterval(() => { if (document.visibilityState === "visible") pushSync(); }, 4 * 60 * 1000);
 /* +2 s: se o app estiver aberto ele avisa sozinho e cancela o aviso do servidor antes */
 const pushAgenda = seg => pushPost("/agenda", Math.max(5, Math.round(seg) + 2));
 const pushCancela = () => pushPost("/cancela", 0);
@@ -3157,17 +3189,35 @@ ACT.pushLiga = async () => {
     const perm = await Notification.requestPermission(); if (perm !== "granted") { toast("Sem permissão de notificação."); return; }
     const reg = PUSH.reg || await navigator.serviceWorker.ready;
     PUSH.sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(PUSH_VAPID) });
-    try { localStorage.setItem("frango:push", "1"); } catch (e) {}
-    pushPost("/agenda", 8); toast("Avisos ligados. Em alguns segundos chega um aviso de teste."); render();
+    try { localStorage.setItem("frango:push", "1"); localStorage.setItem("frango:push-card", "1"); } catch (e) {}
+    pushSync(); pushPost("/agenda", 8); toast("Avisos ligados. Em alguns segundos chega um aviso de teste."); render();
   } catch (e) { toast("Não deu para ligar os avisos: " + (e && e.message || e)); }
 };
-ACT.pushDesliga = async () => { try { localStorage.setItem("frango:push", "0"); pushCancela(); } catch (e) {} render(); toast("Avisos desligados."); };
+ACT.pushDesliga = async () => { try { pushPost("/sair", 0); localStorage.setItem("frango:push", "0"); } catch (e) {} render(); toast("Avisos desligados."); };
+ACT.pushTeste = () => { pushSync(); pushPost("/agenda", 8); toast("Aviso de teste a caminho."); };
+ACT.pushCardFecha = () => { try { localStorage.setItem("frango:push-card", "1"); } catch (e) {} render(); };
+ON.pushTg = el => { const c = pushCfg(); c[el.dataset.k].on = el.checked; pushCfgSalva(c); pushSync(); };
+ON.pushHr = el => { const c = pushCfg(); if (/^\d{2}:\d{2}$/.test(el.value)) { c[el.dataset.k].h = el.value; pushCfgSalva(c); pushSync(); } };
+/* card único na tela inicial: apresenta as novidades e convida a ligar os avisos (some ao tocar em qualquer botão) */
+function pushNovo() {
+  try {
+    const ios = pushIOS() && !pushStandalone();
+    if ((!pushSuportado() && !ios) || !PUSH.url || pushQuer() || localStorage.getItem("frango:push-card") === "1") return "";
+    return `<div class="card stack"><h2>Novidade: o Rael agora avisa você</h2>
+      <div class="small ink2">Com o app fechado ou o celular bloqueado, chega aviso quando o descanso entre séries acaba, mais lembretes discretos: bom dia, hora do treino, sequência em risco, água e fechar o dia. Se você já fez, ele nem manda. Você escolhe quais ligar e o horário, e no máximo 4 por dia. Também avisa quando sai atualização.</div>
+      ${ios ? `<div class="small ink2">No iPhone: toque em Compartilhar, depois em "Adicionar à Tela de Início", e abra o app por esse ícone. Só então dá para ativar.</div>` : `<button class="btn pri" data-act="pushLiga">Ativar avisos</button>`}
+      <button class="btn soft" data-act="pushCardFecha">Agora não</button></div>`;
+  } catch (e) { return ""; }
+}
 function pushCard() {
   if (!pushSuportado()) return "";
-  const on = pushQuer() && !!PUSH.sub;
+  const on = pushQuer() && !!PUSH.sub, c = pushCfg();
   const dica = pushIOS() && !pushStandalone() ? `<div class="small ink2">No iPhone, primeiro toque em Compartilhar e em "Adicionar à Tela de Início", e abra o app por esse ícone. Só assim o iOS permite avisos.</div>` : "";
   if (!PUSH.pronto) return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Em breve: o aviso de fim do descanso chega mesmo com o celular bloqueado.</div></div>`;
-  return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Quando o descanso acaba, chega uma notificação com uma frase do Rael, mesmo com o app fechado ou o celular bloqueado.</div>${dica}
+  const lista = on ? `<div class="small ink2">Escolha o que quer receber. No máximo 4 lembretes por dia, nunca antes das 7h nem depois das 22h30, e nada que você já tenha feito.</div>` +
+    PUSH_TIPOS.map(([k, nome, desc]) => `<div class="stack" style="gap:2px"><div class="row" style="gap:8px"><label class="row grow" style="gap:8px;cursor:pointer"><input type="checkbox" data-on="pushTg" data-k="${k}" ${c[k].on ? "checked" : ""}> <b>${esc(nome)}</b></label><input type="time" data-on="pushHr" data-k="${k}" value="${c[k].h}" aria-label="Horário de ${esc(nome)}"></div><div class="xs muted">${esc(desc)}</div></div>`).join("") +
+    `<div class="xs muted">Também chegam: o fim do descanso entre séries e o aviso de que o app atualizou.</div><button class="btn soft" data-act="pushTeste">Enviar aviso de teste</button>` : "";
+  return `<div class="card stack"><h2>Avisos com a tela bloqueada</h2><div class="small ink2">Quando o descanso acaba, chega uma notificação com uma frase do Rael, mesmo com o app fechado ou o celular bloqueado.</div>${dica}${lista}
     ${on ? `<button class="btn" data-act="pushDesliga">Desligar avisos</button>` : `<button class="btn pri" data-act="pushLiga">Ligar avisos</button>`}</div>`;
 }
 pushInit();
@@ -3624,7 +3674,7 @@ const FR_FRASES = {
   refeicao: ["Registrado. O Rael finge que não viu o segundo pão de queijo.", "Prato registrado. O Rael avaliou em silêncio; foi um silêncio longo.", "Pronto. Até o Rael sabe que \"só provei\" merece registro."],
   treino: ["Treinou! Até o Rael levantou do choco para aplaudir.", "Treino registrado. Rael levantou um peso: a expectativa alheia.", "Mais um treino feito. Rael aplaude sentado; a lombar é dele.", "Treinou! O Rael está tão orgulhoso que até penteou a crista.", "Repetições feitas. A última teve a mesma cara da primeira."],
   perna: ["Perna treinada. Descer escada agora é conteúdo de suspense."],
-  meta: ["Meta batida. Hoje você é o frango de capa de revista.", "Meta alcançada. A balança perdeu o argumento por hoje.", "Calorias dentro da meta. Estou tentando não parecer impressionado. Falhando."],
+  meta: ["Meta batida. Hoje o galinheiro inteiro pediu autógrafo.", "Meta alcançada. A balança perdeu o argumento por hoje.", "Calorias dentro da meta. Estou tentando não parecer impressionado. Falhando."],
   pulou: ["Pulou o treino? Rael entende: o sofá fez uma proposta convincente.", "Não rolou hoje. O sofá apresentou argumentos com apoio de almofadas.", "Um dia escapou. Não precisa abrir investigação criminal."],
   agua: ["Água registrada. Minha garrafa finalmente tem testemunhas."],
   pesoDesceu: ["Desceu um pouco. A balança entregou o dado e saiu de fininho."],
@@ -3730,7 +3780,7 @@ function frTopo(tab, td) {
 function frMedidorCard() {
   const p = P(), td = ui.date, isHoje = td === TODAY(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, nota = frNotaDe(td), nv = nota.nv, seq = frSeq();
   const seqTxt = FR_FRASES.seq[seq] || "";
-  return `<div class="card fr-card">${frMedidor(nota.ponteiro, nv)}<div style="text-align:center;margin-top:2px"><span class="fr-nivel fr-${nv.k}">${nv.n}</span> <span class="fr-nota-n"><b>${nota.score}</b>/100</span></div>
+  return (isHoje && typeof pushNovo === "function" ? pushNovo() : "") + `<div class="card fr-card">${frMedidor(nota.ponteiro, nv)}<div style="text-align:center;margin-top:2px"><span class="fr-nivel fr-${nv.k}">${nv.n}</span> <span class="fr-nota-n"><b>${nota.score}</b>/100</span></div>
     ${frNotaChips(nota)}
     <div class="fr-kcal"><b>${fmt(t.kcal)}</b> de ${fmt(meta)} kcal <span class="muted">· ${t.kcal > meta ? "passou " + fmt(t.kcal - meta) : "faltam " + fmt(meta - t.kcal)}</span></div>
     <div style="margin-top:12px">${macroBars(t, m)}</div>
@@ -3753,7 +3803,7 @@ function frase(cat, rnd) {
 const nomeU = () => (P().nome || "").trim() || "você";
 
 // voz do Rael Frango nos prompts da IA (coach, análise, sugestão de refeição)
-const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: ironia carinhosa de verdade, com sarcasmo e tiradas curtas, falando DIRETAMENTE com o usuário e tirando sarro do que ele fez (ou deixou de fazer) hoje: sofá, preguiça, pizza, pão de queijo, o "amanhã eu começo". Piadas de frango são bem-vindas (crista, choco, galinheiro, aplaudir sentado). Quando o usuário vai bem, finge que não está impressionado e solta um elogio disfarçado de reclamação. Sem a palavra "campeão", sem autoajuda motivacional, sem caricatura e sem forçar a barra: uma tirada boa vale mais que três meh. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Treinou? Agora o sofá pode voltar a te desejar, mas você pagou o aluguel dele." / "Pizza registrada. Sem julgamento, só um suspiro profissional." / "17h e o treino ainda não apareceu. O sofá deve estar mandando um abraço." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não use markdown pesado nem emoji em excesso.`;
+const RAEL_VOZ = `Você é o Rael Frango, o frango mascote do app, e responde SEMPRE em primeira pessoa, como ele. Voz: ironia carinhosa de verdade, com sarcasmo e tiradas curtas, falando DIRETAMENTE com o usuário e tirando sarro do que ele fez (ou deixou de fazer) hoje: sofá, preguiça, pizza, pão de queijo, o "amanhã eu começo". Piadas de frango são bem-vindas (crista, choco, galinheiro, aplaudir sentado). Quando o usuário vai bem, finge que não está impressionado e solta um elogio disfarçado de reclamação. Sem a palavra "campeão", sem autoajuda motivacional, sem caricatura e sem forçar a barra: uma tirada boa vale mais que três meh. Pode se citar na terceira pessoa ("o Rael finge que não viu") de vez em quando. Exemplos do tom: "Treinou? Agora o sofá pode voltar a te desejar, mas você pagou o aluguel dele." / "Pizza registrada. Sem julgamento, só um suspiro profissional." / "17h e o treino ainda não apareceu. O sofá deve estar mandando um abraço." A piada nunca esconde a informação: números, quantidades e conselhos continuam corretos e concretos. Não presuma o gênero do usuário (prefira formas neutras como 'bora', 'você chegou lá'); nunca comente corpo ou peso como defeito nem use vergonha ou culpa; o sarcasmo é contra o sofá, a preguiça e o próprio Rael, nunca contra a pessoa. Não use markdown pesado nem emoji em excesso.`;
 // ---- Nota do dia (0 a 100): premia fazer o dia certo, não comer mais ----
 // Nota fracionada: cada item vale a fração da meta do dia inteiro já cumprida. Pesos: calorias 35, proteína 25, atividade 25 (qualquer exercício de 20 min ou mais: treino, caminhada, aeróbico, patins, bike; folga planejada também vale), água 10, registro 5. Bônus de +5 por mais de um tipo de exercício no dia (a nota nunca passa de 100). Níveis: Pintinho < 40, Frango 40–79, Galo Alfa ≥ 80.
 const FR_NOTA = { cal: 35, prot: 25, treino: 25, agua: 10, reg: 5, bonus: 5, a: 40, b: 80 };
@@ -4205,13 +4255,13 @@ try {
 // Uma pergunta por vez, escolhida entre as que combinam com a hora, o dia e o que já foi feito.
 const FR_PERG = [
   { id: "acordou", q: "Como você acordou hoje?", on: c => c.hr >= 5 && c.hr < 12,
-    o: [["Pronto pra guerra", "Gostei da energia. Usa ela hoje, que o treino agradece.", "forte"], ["Normal", "Normal também conta. Dia comum, bom dia comum.", "manha"], ["Destruído", "Respeita o corpo hoje. Descanso e comida boa também são plano.", "bocejo"]] },
+    o: [["Pilhado", "Gostei da energia. Usa ela hoje, que o treino agradece.", "forte"], ["Normal", "Normal também conta. Dia comum, bom dia comum.", "manha"], ["Destruído", "Respeita o corpo hoje. Descanso e comida boa também são plano.", "bocejo"]] },
   { id: "sono", q: "Quantas horas você dormiu?", on: c => c.hr >= 5 && c.hr < 12,
     o: [["Menos de 5h", "Menos de 5 horas é pouco. Hoje o corpo vai pedir açúcar; a água e a proteína seguram.", "bocejo"], ["5 a 6h", "Sono curto segura o músculo e aumenta a fome. Hoje pega leve e dorme mais cedo.", "bocejo"], ["6 a 7h", "Dá para o gasto. Se der, uma noite de 7 ou 8 horas deixa tudo melhor.", "manha"], ["7 a 8h", "Na faixa. O corpo agradece e o Rael também.", "meditando"], ["Mais de 8h", "Dormiu como se fosse profissional. Isso é recuperação, não preguiça.", "soneca"]] },
   { id: "cafe", q: "Já tomou café da manhã?", on: c => c.hr >= 6 && c.hr < 11 && !c.temComida,
     o: [["Já", "Então lança aqui para o Rael acreditar.", "cafeina"], ["Ainda não", "Come algo com proteína antes de sair voando.", "cafeina"], ["Pulei", "Entendo, mas ovo ou iogurte não leva nem dois minutos.", "relogio"]] },
   { id: "agua", q: "Como está a água hoje?", on: c => c.hr >= 10 && c.hr < 21 && !c.aguaOk,
-    o: [["Já bebi bastante", "Ótimo. Não esquece de lançar para eu acreditar.", "hidratado"], ["Pouca", "Então vai agora, um copo inteiro. Eu espero.", "agua"], ["Nem lembrei", "Pronto, já lembrou. O primeiro copo é por minha conta.", "agua"]] },
+    o: [["Já bebi bastante", "Ótimo. Não esquece de lançar para eu acreditar.", "hidratado"], ["Pouca", "Então vai agora, um copo inteiro. Eu espero.", "agua"], ["Nem lembrei", "Lembrou agora, o que conta. O primeiro copo é por minha conta.", "agua"]] },
   { id: "fome", q: "Bateu aquela fome da tarde?", on: c => c.hr >= 15 && c.hr < 18,
     o: [["Bateu forte", "Fruta, iogurte ou castanha salvam. A padaria só empata.", "geladeira"], ["Controlada", "Respeito. Segura a onda e janta bem.", "alongando"], ["Nem sinto", "Então anota o lanche, se teve. Fome silenciosa também existe.", "meditando"]] },
   { id: "treinoOnte", q: "Dor muscular hoje, depois do treino de ontem?", on: c => c.hr >= 6 && c.hr < 14 && !c.treinou,
@@ -4249,8 +4299,8 @@ FR_PERG.push(
     o: [["Já", ["Planejar o jantar já é meio caminho andado.", "Boa. Se tiver proteína no prato, o Rael aprova."], "almoco"], ["Ainda não", ["Pensa em proteína + algo verde + uma base. Resolve em cinco minutos.", "Ovo mexido com salada salva qualquer noite."], "pensando"], ["Vou pedir", ["Delivery também cabe. Escolhe a opção com proteína e lança depois.", "Tudo bem pedir. Só confere o tamanho da porção antes."], "pizza"]] },
   { id: "doces2", q: "Satisfeito depois do almoço ou ainda com fome?", on: c => c.hr >= 13 && c.hr < 16 && c.temComida,
     o: [["Satisfeito", ["Perfeito: comeu o suficiente.", "É assim que se mede: parou de comer porque bastou."], "almoco"], ["Com fome", ["Come uma fruta ou iogurte; fome depois do almoço quase sempre é falta de proteína.", "Pode ser pouca proteína no prato. Um ovo cozido resolve."], "geladeira"], ["Passei mal de cheio", ["Foi além do ponto. Caminhada leve ajuda; no próximo prato, menos pressa.", "Comer devagar ajuda o corpo a avisar a hora de parar."], "sofa"]] },
-  { id: "forca", q: "O treino de hoje pareceu mais forte ou mais fraco que o normal?", on: c => c.treinou,
-    o: [["Mais forte", ["Dia de pico! Anota as cargas para repetir.", "Bom sinal: recuperação em dia."], "forte"], ["Igual", ["Constância é o que mais pesa no resultado.", "Igual também é progresso, desde que apareça."], "aplauso"], ["Mais fraco", ["Dia fraco faz parte. Sono e comida explicam metade das vezes.", "Aconteceu. O que conta é a média das semanas."], "alongando"]] },
+  { id: "forca", q: "O treino de hoje pareceu mais pesado ou mais leve que o normal?", on: c => c.treinou,
+    o: [["Mais pesado", ["Dia de pico! Anota as cargas para repetir.", "Bom sinal: recuperação em dia."], "forte"], ["Igual", ["Constância é o que mais pesa no resultado.", "Igual também é progresso, desde que apareça."], "aplauso"], ["Mais leve", ["Dia leve faz parte. Sono e comida explicam metade das vezes.", "Aconteceu. O que conta é a média das semanas."], "alongando"]] },
   { id: "amanha", q: "Amanhã tem treino planejado?", on: c => c.hr >= 19,
     o: [["Tem", ["Então dorme cedo e deixa a roupa separada.", "Combinado. O Rael te cobra pela manhã (com carinho)."], "relogio"], ["Descanso", ["Descanso planejado é parte do treino.", "Ótimo. Aproveita para comer bem e dormir bem."], "soneca"], ["Não sei ainda", ["Decide agora, que de manhã a cama ganha.", "Marca um horário, mesmo que seja curto."], "pensando"]] },
   { id: "proteina2", q: "Foi fácil bater a proteína hoje?", on: c => c.hr >= 19 && c.temComida,
@@ -4262,7 +4312,7 @@ FR_PERG.push(
 );
 // variações extras de resposta para as perguntas antigas (índice da opção -> frases a mais)
 const FR_PERG_VAR = {
-  acordou: [["Que energia. Treino com essa disposição rende o dobro.", "Acordou inteiro! Anota o dia como bom."], ["Normal serve para um dia produtivo.", "Dia comum, rotina comum, resultado bom."], ["Dormir mal e acordar assim cobra o preço. Hoje aposta em comida simples e pouca cobrança.", "O corpo pediu pausa. Dá uma folga na meta de hoje."]],
+  acordou: [["Que energia. Treino com essa disposição rende o dobro.", "Acordou com energia! Anota o dia como bom antes que o café acabe."], ["Normal serve para um dia produtivo.", "Dia comum, rotina comum, resultado bom."], ["Dormir mal e acordar assim cobra o preço. Hoje aposta em comida simples e pouca cobrança.", "O corpo pediu pausa. Dá uma folga na meta de hoje."]],
   cafe: [["Boa. Anota para o registro ficar completo.", "Perfeito. Conta pro Rael o que foi."], ["Antes de sair, proteína: ovo, iogurte, queijo.", "Café reforçado segura a fome até o almoço."], ["Pular o café às vezes funciona, mas hoje tenta um lanche de proteína.", "Sem café, o almoço costuma vir com exagero. Segura com algo leve."]],
   agua: [["Água em dia, pele e rendimento agradecem.", "Isso é ser adulto com garrafinha."], ["Um copo agora e outro em uma hora. Fácil.", "Garrafa na mesa ajuda mais que força de vontade."], ["Água primeiro, depois a vida segue.", "Já são vários minutos sem beber, hein? Bora."]],
   fome: [["Prepara um lanche com proteína antes da fome virar desespero.", "Fome da tarde costuma ser sono disfarçado. Água e fruta primeiro."], ["Controlar a fome da tarde evita exagero à noite.", "Perfeito. Janta leve e proteica fecha o dia."], ["Se não tem fome, tudo bem; só não esquece do jantar.", "Sem fome é sinal bom. Só confere se comeu proteína suficiente."]],
@@ -4281,11 +4331,31 @@ function frTreinouOntem() { try { const ontem = addDays(TODAY(), -1); return (ty
 
 // ---- Controle diário: sono 1x de manhã + no máximo 2 outras perguntas por dia (4 h entre elas), nunca repete ----
 function frQDia() {
-  try { const s = JSON.parse(localStorage.getItem("frango:qdia") || "{}"); if (s.d === TODAY()) { s.ids = s.ids || []; return s; } } catch (_) {}
-  return { d: TODAY(), ids: [], cur: null, ult: 0 };
+  const hj = TODAY(); let a = null, b = null;
+  try { a = JSON.parse(localStorage.getItem("frango:qdia") || "null"); } catch (_) {}
+  try { b = P().qdia || null; } catch (_) {}
+  const v = [a, b].filter(x => x && x.d === hj);
+  if (!v.length) return { d: hj, ids: [], cur: null, ult: 0 };
+  const ids = Array.from(new Set([].concat(...v.map(x => x.ids || []))));
+  const ult = Math.max(...v.map(x => x.ult || 0));
+  const cur = v.map(x => x.cur).filter(Boolean).sort((p, q) => q.t - p.t)[0] || null;
+  return { d: hj, ids, cur: cur && ids.indexOf(cur.id) < 0 && cur.t >= ult ? cur : null, ult };
 }
-function frQSave(s) { try { localStorage.setItem("frango:qdia", JSON.stringify(s)); } catch (_) {} }
-function frQHist(id) { try { const h = JSON.parse(localStorage.getItem("frango:qhist") || "{}"); if (id) { h[id] = TODAY(); const ks = Object.keys(h); if (ks.length > 80) delete h[ks[0]]; localStorage.setItem("frango:qhist", JSON.stringify(h)); } return h; } catch (_) { return {}; } }
+function frQSave(s) {
+  try { localStorage.setItem("frango:qdia", JSON.stringify(s)); } catch (_) {}
+  try { if (JSON.stringify(P().qdia || null) !== JSON.stringify(s)) updP(p => { p.qdia = s; }); } catch (_) {}
+}
+function frQHist(id) {
+  let h = {};
+  try { h = JSON.parse(localStorage.getItem("frango:qhist") || "{}"); } catch (_) {}
+  try { const o = P().qhist || {}; Object.keys(o).forEach(k => { if (!h[k] || o[k] > h[k]) h[k] = o[k]; }); } catch (_) {}
+  if (id) {
+    h[id] = TODAY(); const ks = Object.keys(h); if (ks.length > 80) delete h[ks[0]];
+    try { localStorage.setItem("frango:qhist", JSON.stringify(h)); } catch (_) {}
+    try { updP(p => { p.qhist = h; }); } catch (_) {}
+  }
+  return h;
+}
 const FR_Q_MAX_DIA = 2, FR_Q_INTERVALO = 4 * 3600e3, FR_Q_VISIVEL = 20 * 60e3, FR_Q_COOLDOWN_DIAS = 6;
 let FR_RESP = null; // resposta do Rael, mostrada no balão por alguns segundos
 function frPergMostra(q) { return { k: "q:" + q.id, txt: frNome(q.q), resp: q.o.map((o, i) => [i ? "" : "pri", String(i), o[0]]) }; }
@@ -4327,7 +4397,7 @@ function frPergEscolhe(c, ok) {
 // ---- Respostas do balão viram frases do Rael (com moderação: 1 em cada 3 horas) e contagem de treinos ----
 const FR_REAGE = {
   sono: { "Menos de 5h": ["Dormiu pouco, você disse. Hoje o Rael pega leve nas cobranças; só não some.", "Pouco sono segura o músculo e aumenta a fome. Água, proteína e cama cedo hoje."], "5 a 6h": ["Sono curto de novo? Ele aparece no relatório do mês, e o Rael está de olho."], "Mais de 8h": ["Dormiu bem, hein. Recuperação em dia é meio treino feito."] },
-  acordou: { "Destruído": ["Você falou que acordou destruído. Se o corpo pedir, treino leve também vale."], "Pronto pra guerra": ["Acordou pronto pra guerra? Aproveita a energia antes que o sofá negocie."] },
+  acordou: { "Destruído": ["Você falou que acordou destruído. Se o corpo pedir, treino leve também vale."], "Pilhado": ["Acordou com a bateria cheia? Aproveita a energia antes que o sofá negocie."] },
   dor: { "Dor de verdade": ["Você falou de uma dor de verdade no treino. Se continuar, procura um profissional; o Rael não aposta com articulação."] },
   treinoOnte: { "Dor forte": ["Dor forte de ontem? Alonga, bebe água e pega leve hoje."] },
   fome: { "Bateu forte": ["A fome da tarde bateu forte. Deixa uma fruta ou um iogurte por perto antes da padaria."] },
@@ -4460,14 +4530,14 @@ const FR_EXTRA = {
     "Sem treino hoje. O Rael finge que acreditou na desculpa, por educação.",
     "O dia acabou sem treino. O halter ficou esperando e parece que vai sobreviver.",
     "Faltou hoje? Acontece. Só não vira costume, que o sofá aprende rápido.",
-    "Treino ausente. O Rael deixou uma luz acesa, caso você volte a ter vergonha.",
+    "Treino ausente. O Rael deixou uma luz acesa, caso o sofá afrouxe o contrato.",
     "Sem treino, mas com muita criatividade nas justificativas. Isso também é cardio, só não conta nos pontos.",
     "Hoje a rotina tirou folga e esqueceu de avisar. Amanhã a gente retoma, combinado?",
     "O treino não apareceu. Sem drama: o Rael também falta aos próprios compromissos, mas ele é um frango.",
     "Dia sem treino. Estou me segurando para não fazer uma piada sobre sofá. Quase consegui."
   ],
   meta: [
-    "Meta batida. Hoje você foi o frango de capa de revista, e eu o fotógrafo ressentido.",
+    "Meta batida. Hoje o galinheiro inteiro pediu autógrafo, e eu fui o fotógrafo ressentido.",
     "Calorias no alvo. Estou fingindo que isso não me impressionou. Está difícil.",
     "Meta cumprida. Alguém pode avisar a balança que hoje ela vai ter de respeitar.",
     "Dentro da meta. O pudim ficou de fora e ninguém foi preso.",
@@ -4564,7 +4634,7 @@ const FR_EXTRA = {
     "Gráficos prontos. Números não mentem, só omitem o que você comeu às 23h.",
     "Evolução: a linha sobe, desce e ocasionalmente dá uma pirueta. Como a vida.",
     "Seus números estão aí. O Rael olha para eles com orgulho, medo e um pouco de inveja.",
-    "Peso, treinos e hábitos. O app anota tudo; a vergonha, só você.",
+    "Peso, treinos e hábitos. O app anota tudo; os julgamentos ficam por conta do sofá.",
     "A curva fala sozinha. O Rael só traduz: continue assim e ninguém precisa reclamar.",
     "Olha o gráfico: uma jornada com altos, baixos e um domingo suspeito."
   ],
@@ -4693,6 +4763,11 @@ function viewHoje() {
       <div class="kv"><span class="muted">+ outras atividades (MET)</span><b>${fmt(g.atv)}</b></div>
       <div class="disc" style="margin-top:4px">Tudo é estimativa. O fator do dia a dia não deve contar os treinos, eles entram à parte.</div></div></details>
     ${temComida && saldo >= 300 ? `<div class="xs ink2" style="margin-top:8px">${esc(frase("deficit"))}</div>` : ""}</div>`;
+  // gasto de exercício do dia (por atividade)
+  const exs = treinosDo(ui.date).map(w => ({ n: w.nome, s: hhmm((w.fim - w.inicio) / 1000), k: kcalTreino(w, p) })).concat((d.atv || []).map(x => ({ n: x.nome, s: fmt(x.min) + " min", k: x.kcal || 0 }))), exTot = g.atv + g.tr;
+  h += `<div class="card"><div class="row between"><h2>Gasto de exercício</h2><span class="pill ${exTot > 0 ? "good" : ""}">${exTot > 0 ? fmt(exTot) + " kcal" : "nada ainda"}</span></div>
+    ${exs.length ? `<div class="list" style="margin-top:4px">${exs.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.n)}</div><div class="s">${x.s}</div></div><span class="kcal-r small">${fmt(x.k)} kcal</span></div>`).join("")}</div>` : `<div class="small muted" style="margin-top:6px">Treino ou atividade (bike, corrida...) registrado aparece aqui, um por um.</div>`}
+    <div class="xs ink2" style="margin-top:8px">${exTot > 0 ? `Entra no gasto do dia (${fmt(g.total)} kcal = ${fmt(g.base)} do dia a dia + ${fmt(exTot)} de exercício). ` : ""}${p.somarTreino ? "A meta de hoje sobe junto: " + fmt(metas(p).kcal) + " + " + fmt(exTot) + " = " + fmt(meta) + " kcal." : "A meta de comida não muda (Perfil > Preferências: somar calorias do exercício à meta)."}</div></div>`;
   // treino de hoje
   const a = getDoc("ativo"), feitos = treinosDo(ui.date), rid = (p.semana || {})[dowOf(ui.date)], r = rid && rotinaById(rid, p);
   h += `<div class="card"><div class="row between"><h2>Treino</h2>${feitos.length ? `<span class="pill good">${ICON.check.replace("<svg", '<svg width="12" height="12"')} feito</span>` : ""}</div>`;
@@ -4889,7 +4964,7 @@ function viewPerfil() {
   h += secao("nuvem", "Nuvem (Supabase)", SB.user ? "Conectado" : "Não conectado", nuv);
   h += secao("hevy", "Importar do Hevy", "Treinos por arquivo CSV", hevy);
   h += secao("perfis", "Perfis neste aparelho", po.list.length + (po.list.length === 1 ? " perfil" : " perfis"), perfisCard(), !!(UIc.confirm && String(UIc.confirm).startsWith("perfil:")));
-  if (push) h += secao("push", "Avisos com a tela bloqueada", "Fim do descanso", push);
+  if (push) h += secao("push", "Avisos com a tela bloqueada", "Descanso, lembretes e novidades", push);
   h += secao("ajuda", "Ajuda e feedback", "Como funciona cada tela", ajudaCard() + fb);
   h += secao("man", "Manutenção", "Atualizar o app, apagar dados", man, UIc.confirm === "wipe");
   h += `</div>`;
@@ -4973,7 +5048,7 @@ ACT.wipe = () => { UIc.confirm = null; Object.keys(ST.docs).forEach(k => delDoc(
 // ---------- boas-vindas ----------
 function onboarding() {
   const p = P();
-  openSheet({ title: "Bem-vindo ao Frangômetro", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">${nomeU() === "você" ? "Fala!" : "Fala, " + esc(nomeU()) + "."} Seu shape agora tem gerente.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
+  openSheet({ title: "Bem-vindo ao Frangômetro", full: true, closeAct: "onbSkip", body: () => `<div class="card ai"><div class="num" style="font-size:20px;font-weight:700">${nomeU() === "você" ? "Fala!" : "Fala, " + esc(nomeU()) + "."} Agora o Rael acompanha seu treino. Ele não levanta peso, mas fiscaliza com talento.</div><div class="small ink2" style="margin-top:6px">Preencha seus dados para o app calcular suas metas de calorias e macros. Leva 30 segundos, menos que um intervalo entre séries.</div></div>${perfilForm(p)}<div class="disc">Os dados ficam só com você. Não substitui orientação de médico ou nutricionista.</div>`,
     foot: `<button class="btn pri block" data-act="onbSave">Calcular minhas metas</button>` });
 }
 ACT.onbSkip = () => { updP(p => { p.onb = true; }); closeSheet(); };

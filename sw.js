@@ -1,4 +1,4 @@
-// Service worker do Frangômetro: recebe o aviso de fim de descanso (Web Push) e mostra a notificação.
+// Service worker do Frangômetro: recebe os avisos (Web Push: descanso, lembretes do dia, novidades) e mostra a notificação.
 const FRASES = [
   "O intervalo acabou. Eu tinha acabado de me acomodar.",
   "Descanso encerrado. Minha cadeira imaginária protesta em silêncio.",
@@ -17,17 +17,33 @@ const FRASES = [
   "Próxima série. Eu estava prestes a chamar isso de treino de contemplação.",
   "O intervalo acabou. O Rael tinha acabado de se acomodar e já vão te tirar do conforto.",
   "Descanso encerrado. A cadeira imaginária protesta e eu a apoio.",
-  "Hora da próxima série. Sim, ela existe e sim, ela vai doer.",
+  "Hora da próxima série. Sim, ela existe e sim, ela vem com juros.",
   "O cronômetro apitou. Eu sei, eu também odeio quando o tempo passa.",
   "Série seguinte. Respira, pega o peso e finge que é fácil.",
-  "Acabou a pausa. Para o ferro, o tempo é sempre curto e o sofá, longo."
+  "Acabou a pausa. Entre as séries, o tempo é sempre curto e o sofá, longo."
 ];
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
+/* O push chega sem conteúdo: o Worker diz o que mostrar (descanso, lembrete do dia ou novidade).
+   Se a consulta falhar, cai no aviso de descanso (comportamento antigo). */
+async function proximoAviso() {
+  try {
+    const cfg = await fetch("push-config.json", { cache: "no-store" }).then(r => r.json());
+    const sub = await self.registration.pushManager.getSubscription();
+    if (!cfg || !cfg.url || !sub) return { tipo: "descanso" };
+    const r = await fetch(cfg.url.replace(/\/$/, "") + "/proximo", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sub: sub.toJSON() }) });
+    return r.ok ? await r.json() : { tipo: "descanso" };
+  } catch (e) { return { tipo: "descanso" }; }
+}
 self.addEventListener("push", e => {
-  e.waitUntil(self.registration.showNotification("Descanso acabou", {
-    body: FRASES[Math.floor(Math.random() * FRASES.length)], tag: "descanso", renotify: true, icon: "icon.png", badge: "icon.png",
-    vibrate: [300, 120, 300, 120, 300], requireInteraction: true
+  e.waitUntil(proximoAviso().then(m => {
+    if (!m || !m.tipo || m.tipo === "descanso") {
+      return self.registration.showNotification("Descanso acabou", {
+        body: FRASES[Math.floor(Math.random() * FRASES.length)], tag: "descanso", renotify: true, icon: "icon.png", badge: "icon.png",
+        vibrate: [300, 120, 300, 120, 300], requireInteraction: true
+      });
+    }
+    return self.registration.showNotification(m.titulo || "Rael", { body: m.corpo || "", tag: m.tag || "rael", icon: "icon.png", badge: "icon.png" });
   }));
 });
 self.addEventListener("notificationclick", e => {
