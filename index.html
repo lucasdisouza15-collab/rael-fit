@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v42-20261106a"><script>(function(){try{var V="v42-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v43-20261106a"><script>(function(){try{var V="v42-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1471,8 +1471,23 @@ function saveP(p) { putDoc("perfil", p); }
 function updP(fn) { const p = P(); fn(p); saveP(p); }
 
 // ---------- dias ----------
-const MEALS = [["cafe","Café da manhã"],["almoco","Almoço"],["lanche","Lanche"],["jantar","Jantar"],["ceia","Ceia"]];
-const MEAL_NAME = Object.fromEntries(MEALS);
+// Refeições editáveis: p.refeicoes = [{k, n, h, on}] (k = chave dos dados, n = nome, h = hora em que começa, on = ativa).
+// Os dados dos dias continuam em d.ref[k]; desativar só esconde (nada é apagado).
+const MEALS_PADRAO = [{ k: "cafe", n: "Café da manhã", h: 0, on: 1 }, { k: "almoco", n: "Almoço", h: 10, on: 1 }, { k: "lanche", n: "Lanche", h: 15, on: 1 }, { k: "jantar", n: "Jantar", h: 18, on: 1 }, { k: "ceia", n: "Ceia", h: 22, on: 1 }];
+let _mcSrc = null, _mcAt = null, _mcOn = null;
+function mealCfg() {
+  const p = getDoc("perfil"), src = p && p.refeicoes;
+  if (src === _mcSrc && _mcAt) return _mcAt;
+  _mcSrc = src; _mcAt = Array.isArray(src) && src.length ? src.filter(x => x && x.k) : MEALS_PADRAO;
+  if (!_mcAt.length) _mcAt = MEALS_PADRAO;
+  _mcOn = _mcAt.filter(x => x.on).map(x => [x.k, x.n || x.k]);
+  if (!_mcOn.length) _mcOn = MEALS_PADRAO.map(x => [x.k, x.n]);
+  return _mcAt;
+}
+function meals() { mealCfg(); return _mcOn; }
+function mealName(k) { const c = mealCfg().find(x => x.k === k) || MEALS_PADRAO.find(x => x.k === k); return c ? c.n : k; }
+function refKeys(...ds) { const s = new Set(MEALS_PADRAO.map(x => x.k)); mealCfg().forEach(x => s.add(x.k)); ds.forEach(d => d && d.ref && Object.keys(d.ref).forEach(k => s.add(k))); return Array.from(s); }
+function mealsDay(d) { const on = meals(), ks = on.map(x => x[0]); return on.concat(refKeys(d).filter(k => !ks.includes(k) && ((d.ref || {})[k] || []).length).map(k => [k, mealName(k)])); }
 function newDay() { return { ref: { cafe: [], almoco: [], lanche: [], jantar: [], ceia: [] }, agua: 0, peso: null, atv: [], nota: "" }; }
 function day(date) { const d = getDoc("dia-" + date); if (!d) return newDay(); const n = newDay(); n.ref = Object.assign(n.ref, d.ref || {}); return Object.assign(n, d, { ref: n.ref }); }
 function saveDay(date, d) { const prev = getDoc("dia-" + date); if (prev && typeof syncIds === "function") { const now = syncIds(d), rem = syncIds(prev).filter(i => !now.includes(i)); if (rem.length) d.del = syncUn(d.del, rem).slice(-300); } putDoc("dia-" + date, d); }
@@ -1493,7 +1508,7 @@ function factor(e) { return e.modo === "g" ? e.qtd / 100 : e.modo === "un" ? e.q
 function entryT(e) { const k = factor(e), b = e.base || {}; return { kcal: (b.kcal || 0) * k, p: (b.p || 0) * k, c: (b.c || 0) * k, g: (b.g || 0) * k, f: (b.f || 0) * k }; }
 function sumT(list) { const t = { kcal: 0, p: 0, c: 0, g: 0, f: 0 }; list.forEach(x => { for (const k in t) t[k] += x[k] || 0; }); return t; }
 function mealT(d, m) { return sumT((d.ref[m] || []).map(entryT)); }
-function dayT(d) { return sumT(MEALS.map(([m]) => mealT(d, m))); }
+function dayT(d) { return sumT(refKeys(d).map(m => mealT(d, m))); }
 function recipePer(r) { const t = sumT((r.itens || []).map(entryT)); const n = Math.max(1, num(r.porcoes) || 1); for (const k in t) t[k] /= n; return t; }
 function entryFromFood(f, qtd, modo) {
   const base = { kcal: f.kcal, p: f.p, c: f.c, g: f.g, f: f.f };
@@ -1734,7 +1749,7 @@ function viewDiario() {
   let h = `<div class="card"><div class="row between"><div><div class="eyebrow">Consumido</div><div class="num" style="font-size:26px;font-weight:600">${fmt(t.kcal)} <span class="muted small">/ ${fmt(meta)} kcal</span></div></div>
     <div style="text-align:right"><div class="eyebrow">${rest >= 0 ? "Restam" : "Passou"}</div><div class="num" style="font-size:22px;font-weight:600;color:${rest >= 0 ? "var(--ink)" : "var(--bad)"}">${fmt(Math.abs(rest))}</div></div></div>
     <div style="margin-top:12px">${macroBars(t, m)}</div></div>`;
-  MEALS.forEach(([k, nome]) => {
+  mealsDay(d).forEach(([k, nome]) => {
     const list = d.ref[k] || [], mt = mealT(d, k);
     h += `<div class="card"><div class="meal-h"><h3>${nome}</h3><span class="kcal-r small">${fmt(mt.kcal)} kcal</span>
       <button class="iconbtn" data-act="mealMenu" data-m="${k}" aria-label="Opções de ${nome}">${ICON.more}</button>
@@ -1776,11 +1791,14 @@ function sugestoesCard(t, m, meta) {
 }
 ACT.addSug = ds => {
   const f = foodByKey(ds.key); if (!f) return;
-  openMealPick(meal => { const e = f.un && num(ds.g) % f.un === 0 ? entryFromFood(f, num(ds.g) / f.un, "un") : entryFromFood(f, num(ds.g), "g"); addEntries(ui.date, meal, [e]); toast("Adicionado em " + MEAL_NAME[meal]); });
+  openMealPick(meal => { const e = f.un && num(ds.g) % f.un === 0 ? entryFromFood(f, num(ds.g) / f.un, "un") : entryFromFood(f, num(ds.g), "g"); addEntries(ui.date, meal, [e]); toast("Adicionado em " + mealName(meal)); });
 };
-function guessMeal() { const h = new Date().getHours(); return h < 10 ? "cafe" : h < 15 ? "almoco" : h < 18 ? "lanche" : h < 22 ? "jantar" : "ceia"; }
+function guessMeal() {
+  const h = new Date().getHours(), on = mealCfg().filter(x => x.on); if (!on.length) return "almoco";
+  let r = on[0].k, best = -1; on.forEach(x => { const xh = num(x.h); if (xh <= h && xh >= best) { best = xh; r = x.k; } }); return r;
+}
 function openMealPick(cb) {
-  openSheet({ title: "Em qual refeição?", body: `<div class="list">${MEALS.map(([k, n]) => `<div class="li tap" data-act="mealPicked" data-m="${k}"><div class="grow t">${n}</div>${k === guessMeal() ? '<span class="pill acc">agora</span>' : ""}</div>`).join("")}</div>`, cb });
+  openSheet({ title: "Em qual refeição?", body: `<div class="list">${meals().map(([k, n]) => `<div class="li tap" data-act="mealPicked" data-m="${k}"><div class="grow t">${n}</div>${k === guessMeal() ? '<span class="pill acc">agora</span>' : ""}</div>`).join("")}</div>`, cb });
 }
 ACT.mealPicked = ds => { const o = SHEET.stack[SHEET.stack.length - 1]; const cb = o.cb; closeSheet(); cb(ds.m); };
 
@@ -1796,8 +1814,8 @@ function addEntries(date, meal, entries) {
 // ---------- menu da refeição ----------
 ACT.mealMenu = ds => {
   const m = ds.m, d = day(ui.date), has = (d.ref[m] || []).length;
-  openSheet({ title: MEAL_NAME[m], body: () => `<div class="list">
-    <div class="li tap" data-act="copyMealPrev" data-m="${m}"><div class="grow t">Copiar ${MEAL_NAME[m].toLowerCase()} de ontem</div></div>
+  openSheet({ title: mealName(m), body: () => `<div class="list">
+    <div class="li tap" data-act="copyMealPrev" data-m="${m}"><div class="grow t">Copiar ${mealName(m).toLowerCase()} de ontem</div></div>
     ${has ? `<div class="li tap" data-act="saveMealAsk" data-m="${m}"><div class="grow t">Salvar como refeição pronta</div></div>
     <div class="li tap" data-act="moveMeal" data-m="${m}"><div class="grow t">Mover para outra refeição</div></div>
     <div class="li tap" data-act="clearMeal" data-m="${m}"><div class="grow t" style="color:var(--bad)">Limpar refeição</div></div>` : ""}</div>` });
@@ -1810,11 +1828,11 @@ ACT.copyMealPrev = ds => {
 ACT.clearMeal = ds => { updDay(ui.date, d => { d.ref[ds.m] = []; }); closeSheet(); toast("Refeição limpa"); };
 ACT.moveMeal = ds => {
   const from = ds.m;
-  replaceSheet({ title: "Mover para", body: `<div class="list">${MEALS.filter(([k]) => k !== from).map(([k, n]) => `<div class="li tap" data-act="moveMealTo" data-from="${from}" data-m="${k}"><div class="grow t">${n}</div></div>`).join("")}</div>` });
+  replaceSheet({ title: "Mover para", body: `<div class="list">${meals().filter(([k]) => k !== from).map(([k, n]) => `<div class="li tap" data-act="moveMealTo" data-from="${from}" data-m="${k}"><div class="grow t">${n}</div></div>`).join("")}</div>` });
 };
 ACT.moveMealTo = ds => { updDay(ui.date, d => { d.ref[ds.m] = (d.ref[ds.m] || []).concat(d.ref[ds.from] || []); d.ref[ds.from] = []; }); closeSheet(); toast("Movido"); };
 ACT.saveMealAsk = ds => {
-  replaceSheet({ title: "Salvar refeição pronta", body: `<label class="f">Nome<input type="text" id="salvaNome" value="${esc(MEAL_NAME[ds.m] + " padrão")}" maxlength="60"></label><div class="xs muted">Ela aparece na aba "Prontas" ao adicionar comida, para lançar tudo de uma vez.</div>`,
+  replaceSheet({ title: "Salvar refeição pronta", body: `<label class="f">Nome<input type="text" id="salvaNome" value="${esc(mealName(ds.m) + " padrão")}" maxlength="60"></label><div class="xs muted">Ela aparece na aba "Prontas" ao adicionar comida, para lançar tudo de uma vez.</div>`,
     foot: `<button class="btn pri block" data-act="saveMeal" data-m="${ds.m}">Salvar</button>` });
 };
 ACT.saveMeal = ds => {
@@ -1825,24 +1843,24 @@ ACT.saveMeal = ds => {
 };
 ACT.copyPrevDay = () => {
   const prev = day(addDays(ui.date, -1));
-  if (!MEALS.some(([k]) => (prev.ref[k] || []).length)) { toast("O dia anterior está vazio."); return; }
-  updDay(ui.date, d => { MEALS.forEach(([k]) => { d.ref[k] = (d.ref[k] || []).concat((prev.ref[k] || []).map(e => Object.assign(clean(e), { id: uid() }))); }); });
+  if (!refKeys(prev).some(k => (prev.ref[k] || []).length)) { toast("O dia anterior está vazio."); return; }
+  updDay(ui.date, d => { refKeys(prev).forEach(k => { d.ref[k] = (d.ref[k] || []).concat((prev.ref[k] || []).map(e => Object.assign(clean(e), { id: uid() }))); }); });
   render(); toast("Dia anterior copiado");
 };
 ACT.saveAsPlan = () => {
   const dw = dowOf(ui.date), d = day(ui.date);
-  if (!MEALS.some(([k]) => (d.ref[k] || []).length)) { toast("Lance as refeições antes de salvar o plano."); return; }
+  if (!refKeys(d).some(k => (d.ref[k] || []).length)) { toast("Lance as refeições antes de salvar o plano."); return; }
   updP(p => { p.planoAlim = p.planoAlim || {}; p.planoAlim[dw] = clean(d.ref); });
   render(); toast("Plano de " + DOWL[dw].toLowerCase() + " salvo");
 };
 ACT.applyPlan = ds => {
   const date = ds.date || ui.date, dw = ds.dw != null ? +ds.dw : dowOf(date), pl = (P().planoAlim || {})[dw];
   if (!pl) { toast("Ainda não há plano para " + DOWL[dw].toLowerCase() + "."); return; }
-  updDay(date, d => { MEALS.forEach(([k]) => { d.ref[k] = (d.ref[k] || []).concat((pl[k] || []).map(e => Object.assign(clean(e), { id: uid() }))); }); });
+  updDay(date, d => { refKeys(d, { ref: pl }).forEach(k => { d.ref[k] = (d.ref[k] || []).concat((pl[k] || []).map(e => Object.assign(clean(e), { id: uid() }))); }); });
   render(); toast("Plano aplicado em " + labelDate(date).toLowerCase());
 };
 ACT.clearDayAsk = () => { UIc.confirm = "clearDay"; render(); };
-ACT.clearDay = () => { UIc.confirm = null; updDay(ui.date, d => { MEALS.forEach(([k]) => { d.ref[k] = []; }); }); render(); toast("Refeições apagadas"); };
+ACT.clearDay = () => { UIc.confirm = null; updDay(ui.date, d => { refKeys(d).forEach(k => { d.ref[k] = []; }); }); render(); toast("Refeições apagadas"); };
 
 // ---------- folha Adicionar comida ----------
 // rascunho do "Digitar": guarda no aparelho enquanto digita (o app pode recarregar e perder o texto)
@@ -1850,7 +1868,7 @@ const DRAFT_K = "frango:rascunho-texto";
 const draftGet = () => { try { return localStorage.getItem(DRAFT_K) || ""; } catch (e) { return ""; } };
 const draftSet = v => { try { v ? localStorage.setItem(DRAFT_K, v) : localStorage.removeItem(DRAFT_K); } catch (e) {} };
 const ADD = { tab: "buscar", q: "", texto: draftGet(), parsed: null, foto: null, fotoUrl: "", fotoTxt: "", aiItens: null, aiBusy: false, aiErr: "", rapido: {} };
-ACT.addFood = ds => openAdd({ title: "Adicionar em " + MEAL_NAME[ds.m], onAdd: list => { addEntries(ui.date, ds.m, list); toast(list.length > 1 ? list.length + " itens adicionados" : "Adicionado"); } });
+ACT.addFood = ds => openAdd({ title: "Adicionar em " + mealName(ds.m), onAdd: list => { addEntries(ui.date, ds.m, list); toast(list.length > 1 ? list.length + " itens adicionados" : "Adicionado"); } });
 function openAdd(o) {
   Object.assign(ADD, { tab: ADD.texto.trim() ? "texto" : "buscar", q: "", parsed: null, aiItens: null, aiErr: "", aiBusy: false, onAdd: o.onAdd, noSaved: !!o.noSaved });
   if (ADD.tab === "salvas" && o.noSaved) ADD.tab = "buscar";
@@ -2230,7 +2248,7 @@ function viewPlano() {
   const pl = P().planoAlim || {};
   let h = `<div class="card flat small ink2">Monte um dia no Diário e toque em "Salvar como plano". Ele vira o cardápio daquele dia da semana, e você aplica em qualquer data com um toque.</div>`;
   h += `<div class="card"><div class="list">${[1, 2, 3, 4, 5, 6, 0].map(dw => {
-    const r = pl[dw]; const t = r ? sumT(MEALS.flatMap(([k]) => (r[k] || []).map(entryT))) : null;
+    const r = pl[dw]; const t = r ? sumT(meals().flatMap(([k]) => (r[k] || []).map(entryT))) : null;
     return `<div class="li"><div class="grow"><div class="t">${DOWL[dw]}</div><div class="s">${t ? fmt(t.kcal) + " kcal · " + macroTxt(t) : "Sem plano"}</div></div>
       ${r ? `<button class="btn sm" data-act="viewPlan" data-dw="${dw}">Ver</button><button class="btn sm soft" data-act="applyPlan" data-dw="${dw}">Aplicar em ${labelDate(ui.date).toLowerCase()}</button>` : ""}</div>`; }).join("")}</div></div>`;
   h += `<div class="card ai"><div class="ai-badge">${ICON.spark} Cardápio com IA</div><div class="small ink2" style="margin:4px 0 8px">A IA monta um dia de cardápio dentro das suas metas. Ele entra no diário de ${labelDate(ui.date).toLowerCase()} para você revisar.</div>
@@ -2239,7 +2257,7 @@ function viewPlano() {
 }
 ACT.viewPlan = ds => {
   const r = (P().planoAlim || {})[ds.dw]; if (!r) return;
-  openSheet({ title: "Plano de " + DOWL[ds.dw].toLowerCase(), body: `${MEALS.map(([k, n]) => (r[k] || []).length ? `<div class="card flat"><div class="row between"><h3>${n}</h3><span class="kcal-r small">${fmt(sumT(r[k].map(entryT)).kcal)} kcal</span></div><div class="list">${r[k].map(e => `<div class="li"><div class="grow"><div class="t">${esc(e.nome)}</div><div class="s">${esc(qtdLabel(e))}</div></div><span class="kcal-r small">${fmt(entryT(e).kcal)}</span></div>`).join("")}</div></div>` : "").join("")}
+  openSheet({ title: "Plano de " + DOWL[ds.dw].toLowerCase(), body: `${meals().map(([k, n]) => (r[k] || []).length ? `<div class="card flat"><div class="row between"><h3>${n}</h3><span class="kcal-r small">${fmt(sumT(r[k].map(entryT)).kcal)} kcal</span></div><div class="list">${r[k].map(e => `<div class="li"><div class="grow"><div class="t">${esc(e.nome)}</div><div class="s">${esc(qtdLabel(e))}</div></div><span class="kcal-r small">${fmt(entryT(e).kcal)}</span></div>`).join("")}</div></div>` : "").join("")}
     ${UIc.confirm === "delPlan" ? confirmBox("Apagar o plano de " + DOWL[ds.dw].toLowerCase() + "?", "delPlan", { dw: ds.dw }) : ""}`,
     foot: `<button class="btn danger" data-act="delPlanAsk" data-dw="${ds.dw}">Apagar plano</button>` });
 };
@@ -2251,12 +2269,13 @@ const AI = { busy: null, err: "", where: "", out: "", chat: [] };
 function planPrompt(p, m, pref) {
   return  `Monte um cardápio brasileiro de UM dia para alguém com meta de ${m.kcal} kcal, ${m.p} g de proteína, ${m.c} g de carboidrato e ${m.g} g de gordura. Objetivo: ${p.objetivo} peso. Preferências: ${pref || "nenhuma"}.
 Use alimentos simples e comuns no Brasil, quantidades em gramas, valores pela tabela TACO quando possível.
-Responda apenas JSON: {"refeicoes":{"cafe":[{"nome":"Ovo inteiro cozido","gramas":100,"kcal":146,"p":13.3,"c":0.6,"g":9.5,"f":0}],"almoco":[],"lanche":[],"jantar":[],"ceia":[]}}
+Use somente estas refeições (chave = nome): ${meals().map(([k, n]) => k + " = " + n).join("; ")}.
+Responda apenas JSON: {"refeicoes":{${meals().map(([k], i) => JSON.stringify(k) + ":" + (i ? "[]" : '[{"nome":"Ovo inteiro cozido","gramas":100,"kcal":146,"p":13.3,"c":0.6,"g":9.5,"f":0}]')).join(",")}}}
 Os valores de cada item são os TOTAIS daquela quantidade. A soma do dia deve ficar a no máximo 5% da meta de calorias.`;
 }
 function applyPlanResult(r) {
   const ref = r && r.refeicoes || {}; let n = 0;
-  updDay(ui.date, d => { MEALS.forEach(([k]) => { const it = aiToParsed({ itens: ref[k] || [] }).map(x => x.e); n += it.length; d.ref[k] = (d.ref[k] || []).concat(it); }); });
+  updDay(ui.date, d => { meals().forEach(([k]) => { const it = aiToParsed({ itens: ref[k] || [] }).map(x => x.e); n += it.length; d.ref[k] = (d.ref[k] || []).concat(it); }); });
   if (!n) AI.err = "A resposta não trouxe itens. Tente de novo."; else { AI.err = ""; ui.sub.comer = "diario"; toast("Cardápio lançado no diário de " + labelDate(ui.date).toLowerCase()); }
 }
 ACT.aiPlan = async () => {
@@ -2269,7 +2288,7 @@ ACT.aiPlan = async () => {
 };
 ACT.aiSuggest = async () => {
   const p = P(), d = day(ui.date), t = dayT(d), m = metas(p), meta = metaDoDia(ui.date, p);
-  const comido = MEALS.map(([k, n]) => (d.ref[k] || []).length ? n + ": " + d.ref[k].map(e => e.nome + " (" + qtdLabel(e) + ")").join(", ") : "").filter(Boolean).join("\n") || "nada ainda";
+  const comido = meals().map(([k, n]) => (d.ref[k] || []).length ? n + ": " + d.ref[k].map(e => e.nome + " (" + qtdLabel(e) + ")").join(", ") : "").filter(Boolean).join("\n") || "nada ainda";
   const prompt = `${RAEL_VOZ}\nPapel agora: nutricionista prático. Em português do Brasil, em no máximo 8 linhas curtas, sugira 3 opções do que comer no resto do dia para fechar as metas, com quantidades em gramas e kcal aproximadas. Sem markdown pesado.
 Meta: ${meta} kcal, P ${m.p} g, C ${m.c} g, G ${m.g} g. Já comeu: ${fmt(t.kcal)} kcal, P ${fmt(t.p)}, C ${fmt(t.c)}, G ${fmt(t.g)}.
 Refeições de hoje:\n${comido}`;
@@ -3159,7 +3178,7 @@ function pushEstado() {
   try {
     const td = TODAY(), d = day(td), p = P(), m = metas(p), x = (p.rotinas || []).length > 0;
     const plano = [0, 1, 2, 3, 4, 5, 6].map(i => { const rid = (p.semana || {})[i], r = rid && rotinaById(rid, p); return r ? String(r.nome || "Treino") : null; });
-    return { dia: td, refs: MEALS.filter(([k]) => mealT(d, k).kcal > 0).length, almoco: mealT(d, "almoco").kcal > 0,
+    return { dia: td, refs: meals().filter(([k]) => mealT(d, k).kcal > 0).length, almoco: mealT(d, "almoco").kcal > 0,
       agua: m.agua ? Math.min(2, (d.agua || 0) / m.agua) : 1, treinou: treinosDo(td).length > 0, mexeu: frMovTipos(td).length > 0, seq: frSeq(), temPlano: x, plano };
   } catch (e) { return null; }
 }
@@ -3426,14 +3445,15 @@ ACT.fotoEnviar = async ds => { try { const l = await fotoLista(); const r = l.fi
 ACT.fotoApagar = async ds => { try { await fotoDelDB(ds.id); SHEET.stack.pop(); await fotoLoad(ds.w); toast("Foto apagada"); } catch (e) { toast("Não consegui apagar"); } };
 // ---------- sincronizar Painel <-> site por copiar e colar: MESCLA por id e por data, com exclusões ----------
 const SYNC = { p: null, o: null };
-const SYNC_REFS = ["cafe", "almoco", "lanche", "jantar", "ceia"];
+const SYNC_BASE = ["cafe", "almoco", "lanche", "jantar", "ceia"];
+const syncKs = (...ds) => { const s = new Set(SYNC_BASE); if (typeof mealCfg === "function") mealCfg().forEach(x => s.add(x.k)); ds.forEach(d => d && d.ref && Object.keys(d.ref).forEach(k => s.add(k))); return Array.from(s); };
 const syncPainel = () => typeof ST === "undefined";
 const syncT = x => (x && x._t) || 0;
 const syncUn = (a, b) => Array.from(new Set([].concat(a || [], b || [])));
 const syncClone = o => JSON.parse(JSON.stringify(o));
-const syncIds = d => { const s = []; SYNC_REFS.forEach(k => ((d && d.ref && d.ref[k]) || []).forEach(e => e && e.id && s.push(e.id))); return s; };
+const syncIds = d => { const s = []; syncKs(d).forEach(k => ((d && d.ref && d.ref[k]) || []).forEach(e => e && e.id && s.push(e.id))); return s; };
 const SYNC_LISTAS = ["exCustom", "rotinas", "salvas", "receitas", "alimentos"];
-const SYNC_ESC = ["objetivo", "ajuste", "incremento", "metaPeso", "metMusc", "somarTreino", "sexo", "semana", "planoAlim", "recentes"];
+const SYNC_ESC = ["objetivo", "ajuste", "incremento", "metaPeso", "metMusc", "somarTreino", "sexo", "semana", "planoAlim", "recentes", "refeicoes"];
 const syncKeyOf = (lista, x) => lista === "alimentos" ? (x.key || x.id || x.nome) : x.id;
 
 // --- leitura do que existe deste lado (formato único, igual ao backup do site) ---
@@ -3443,7 +3463,7 @@ function syncSnap() {
     const datas = new Set(Object.keys(S.nuDias || {})); ((S.peso && S.peso.itens) || []).forEach(x => x && x.data && datas.add(x.data));
     Array.from(datas).forEach(date => {
       if (date < lim) return; const raw = S.nuDias[date] || {}, d = day(date);
-      const ref = {}; SYNC_REFS.forEach(k => { ref[k] = (d.ref[k] || []).map(e => { const c = Object.assign({}, e); delete c._o; return syncClone(c); }); });
+      const ref = {}; syncKs(d).forEach(k => { ref[k] = (d.ref[k] || []).map(e => { const c = Object.assign({}, e); delete c._o; return syncClone(c); }); });
       if (!syncIds({ ref }).length && !num(d.agua) && !(raw.del || []).length && pesoDoDia(date) == null) return;
       docs["dia-" + date] = { ref, agua: num(d.agua), peso: pesoDoDia(date), del: raw.del || [], _t: raw._t || 0 };
     });
@@ -3464,12 +3484,12 @@ function syncSnap() {
 function syncMergeDia(l, r) {
   l = l || { ref: {}, del: [] };
   const del = syncUn(l.del, r.del), nova = syncT(r) > syncT(l), out = syncClone(l); out.ref = {};
-  SYNC_REFS.forEach(k => {
+  syncKs(l, r).forEach(k => {
     const m = new Map(); ((l.ref || {})[k] || []).forEach(e => m.set(e.id, e));
     ((r.ref || {})[k] || []).forEach(e => { if (e && e.id && (!m.has(e.id) || nova)) m.set(e.id, e); });
     out.ref[k] = Array.from(m.values()).filter(e => !del.includes(e.id));
   });
-  const vistos = new Set(); SYNC_REFS.forEach(k => { out.ref[k] = out.ref[k].filter(e => !vistos.has(e.id) && vistos.add(e.id)); });
+  const vistos = new Set(); syncKs(l, r).forEach(k => { out.ref[k] = out.ref[k].filter(e => !vistos.has(e.id) && vistos.add(e.id)); });
   if (nova) { out.agua = r.agua; if (r.peso != null) out.peso = r.peso; }
   else { if (out.peso == null && r.peso != null) out.peso = r.peso; if (!num(out.agua) && num(r.agua)) out.agua = r.agua; }
   if (r.atv && r.atv.length) { const m = new Map((out.atv || []).map(a => [a.id, a])); r.atv.forEach(a => { if (a && a.id && !m.has(a.id)) m.set(a.id, a); }); out.atv = Array.from(m.values()); }
@@ -3524,8 +3544,8 @@ function syncAplica(ops) {
     if (op.t === "dia") {
       const date = op.k.slice(4), v = op.v;
       if (syncPainel()) {
-        const d = day(date), porId = {}; SYNC_REFS.forEach(k => (d.ref[k] || []).forEach(e => { porId[e.id] = e; }));
-        SYNC_REFS.forEach(k => { d.ref[k] = (v.ref[k] || []).map(e => { const lo = porId[e.id]; return lo && JSON.stringify(lo.base) === JSON.stringify(e.base) && lo.qtd === e.qtd ? lo : e; }); });
+        const d = day(date), porId = {}; syncKs(d, v).forEach(k => (d.ref[k] || []).forEach(e => { porId[e.id] = e; }));
+        syncKs(d, v).forEach(k => { d.ref[k] = (v.ref[k] || []).map(e => { const lo = porId[e.id]; return lo && JSON.stringify(lo.base) === JSON.stringify(e.base) && lo.qtd === e.qtd ? lo : e; }); });
         d.agua = num(v.agua); d.del = v.del || []; d._t = v._t; saveDay(date, d, true);
         if (v.peso != null && pesoDoDia(date) !== v.peso) { const itens = ((S.peso && S.peso.itens) || []).filter(x => x.data !== date).concat([{ data: date, kg: v.peso }]); S.peso = Object.assign({}, S.peso || {}, { itens }); sv("peso/historico", S.peso); }
       } else { ST.docs[op.k] = syncClone(v); lsWrite(); queueRemote(op.k); }
@@ -4930,6 +4950,21 @@ ACT.extUse = () => {
 };
 
 // =================== PERFIL ===================
+function refeicoesCard() {
+  const cf = mealCfg().map(x => Object.assign({}, x)), hrs = Array.from({ length: 24 }, (_, i) => i);
+  const linha = (x, i) => `<div class="card flat stack" style="gap:6px"><div class="row" style="gap:8px"><input type="checkbox" data-on="refOn" data-i="${i}" ${x.on ? "checked" : ""} aria-label="Ativa"><input type="text" class="grow" data-on="refNome" data-i="${i}" value="${esc(x.n)}" maxlength="30" aria-label="Nome da refeição">
+    <button class="iconbtn" data-act="refMove" data-i="${i}" data-d="-1" aria-label="Subir" ${i ? "" : "disabled"}>↑</button><button class="iconbtn" data-act="refMove" data-i="${i}" data-d="1" aria-label="Descer" ${i < cf.length - 1 ? "" : "disabled"}>↓</button></div>
+    <label class="row small ink2" style="gap:6px">Começa às <select data-on="refHora" data-i="${i}">${hrs.map(h => `<option value="${h}" ${num(x.h) === h ? "selected" : ""}>${h}h</option>`).join("")}</select> (sugere a refeição ao lançar comida)</label></div>`;
+  return `<div class="small ink2">Marque as refeições que você faz, renomeie, mude a ordem ou adicione outras. Desmarcar só esconde: o que já foi lançado não se perde nem sai da soma do dia.</div>${cf.map(linha).join("")}
+    <div class="row wrap-ok"><button class="btn sm soft" data-act="refAdd">Adicionar refeição</button><button class="btn sm" data-act="refReset">Voltar ao padrão</button></div>`;
+}
+function refSave(fn) { const c = mealCfg().map(x => Object.assign({}, x)); fn(c); updP(p => { p.refeicoes = c; }); UIc.refNovo = 0; render(); }
+ON.refOn = el => { const i = +el.dataset.i; if (!el.checked && mealCfg().filter(x => x.on).length <= 1) { toast("Deixe ao menos uma refeição ativa."); render(); return; } refSave(c => { c[i].on = el.checked ? 1 : 0; }); };
+ON.refNome = el => { const i = +el.dataset.i, v = (el.value || "").trim(); if (!v) { render(); return; } refSave(c => { c[i].n = v.slice(0, 30); }); };
+ON.refHora = el => { const i = +el.dataset.i; refSave(c => { c[i].h = num(el.value); }); };
+ACT.refMove = ds => { const i = +ds.i, j = i + +ds.d; refSave(c => { if (j < 0 || j >= c.length) return; const t = c[i]; c[i] = c[j]; c[j] = t; }); };
+ACT.refAdd = () => { UIc.sec = UIc.sec || {}; UIc.sec.refs = true; refSave(c => { c.push({ k: "x" + uid().slice(0, 6), n: "Nova refeição", h: 12, on: 1 }); }); };
+ACT.refReset = () => { updP(p => { p.refeicoes = clean(MEALS_PADRAO); }); render(); toast("Refeições no padrão"); };
 function secao(k, titulo, resumo, html, forca) {
   const open = forca || (UIc.sec || {})[k];
   return `<details class="card sec" data-sec="${k}" ${open ? "open" : ""}><summary><span class="sec-t"><b>${titulo}</b><span class="xs muted">${resumo}</span></span>${ICON.down.replace("<svg", '<svg class="chev" width="18" height="18"')}</summary><div class="sec-body stack">${html}</div></details>`;
@@ -4963,6 +4998,7 @@ function viewPerfil() {
   const fb = `<div class="card stack"><div class="small ink2">Achou um erro ou tem uma ideia? Escreva aqui e envie pelo compartilhar do celular (WhatsApp, por exemplo). Nada vai para servidor: a mensagem só sai quando você escolher o app e a pessoa.</div><button class="btn" data-act="fbOpen">Escrever feedback</button></div>`;
   const push = typeof pushCard === "function" ? pushCard() : "";
   h += `<div class="sec-label">Mais</div><div class="stack" style="gap:8px">`;
+  h += secao("refs", "Refeições do dia", meals().length + " ativas", refeicoesCard(), !!UIc.refNovo);
   h += secao("ia", "Inteligência artificial", via === "claude" ? "Ligada pela conta Claude" : via === "gemini" ? "Ligada pelo Gemini" : via === "api" ? "Ligada pela API do Claude" : "Modo copiar e colar", iaCard(), UIc.keyBusy || !!UIc.keyMsg);
   const nuv = `<div class="card stack">${!SB.cli ? `<div class="small ink2">Nuvem não configurada neste aparelho. Os dados ficam só aqui.</div>` : SB.user ? `<div class="small ink2">Conectado como <b>${esc(SB.user.email)}</b>. ${SB.on ? "Sincronizado com a nuvem." : "Ainda não sincronizou."}${SB.err ? ` <span class="pill warn">${esc(SB.err)}</span>` : ""}</div><button class="btn" data-act="sbSync">Sincronizar agora</button><button class="btn ghost" data-act="sbSai">Sair da nuvem</button>` : `<div class="small ink2">Entre para ter os mesmos dados em todos os aparelhos. Na primeira vez, toque em Criar conta e confirme o e-mail que chegar.</div><label class="f">E-mail<input id="sbEmail" type="email" autocomplete="email"></label><label class="f">Senha (mínimo 6)<input id="sbSenha" type="password" autocomplete="current-password"></label><div class="row wrap-ok"><button class="btn" data-act="sbEntra">Entrar</button><button class="btn soft" data-act="sbCria">Criar conta</button></div>${SB.msg ? `<div class="small">${esc(SB.msg)}</div>` : ""}`}</div>`;
   h += secao("bk", "Backup e sincronização", bkGet(BKK) ? "Último backup: " + ddmm(bkGet(BKK)) : "Nenhum backup ainda", bk);
