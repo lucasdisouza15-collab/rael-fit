@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v43-20261106a"><script>(function(){try{var V="v42-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v44-20261106a"><script>(function(){try{var V="v44-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3741,9 +3741,9 @@ function frMovFim(td) {
 // nota do dia a partir dos dados do app
 function frNotaDe(td) {
   const p = P(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, x = frPlanoDe(td), feitos = treinosDo(td);
-  const refeicoes = Object.values(d.ref || {}).filter(a => a && a.length).length;
+  const refeicoes = Object.values(d.ref || {}).filter(a => a && a.length).length, mref = Math.max(1, Math.min(3, meals().length));
   const tipos = frMovTipos(td).length, treino = tipos ? { feito: true, tipos } : x ? { folga: !!x.folga } : null;
-  return frNotaCalc({ kcal: t.kcal, meta, p: t.p, mp: m.p, agua: d.agua || 0, ma: m.agua, refeicoes, exp: frEsperado(td), treino });
+  return frNotaCalc({ kcal: t.kcal, meta, p: t.p, mp: m.p, agua: d.agua || 0, ma: m.agua, refeicoes, mref, exp: frEsperado(td), treino });
 }
 // Rael Frango: SVG idêntico ao do canvas de identidade aprovado (Main.dc.html). Só os olhos/sobrancelhas mudam com o humor.
 function frRael(humor, tam) {
@@ -3845,7 +3845,7 @@ function frNotaCalc(i) {
   if (i.treino) { const f = i.treino.feito || i.treino.folga ? 1 : 0; add("treino", "Atividade", FR_NOTA.treino, f, i.treino.feito ? "feito" : i.treino.folga ? "folga" : "pendente", f === 1);
     if ((i.treino.tipos || 0) >= 2) partes.push({ k: "bonus", rotulo: "Bônus", max: 0, pts: FR_NOTA.bonus, frac: 1, txt: "2 tipos", ok: true, bonus: true }); }
   if (i.ma) { const f = i.agua / i.ma; add("agua", "Água", FR_NOTA.agua, f, f >= 1 ? "ok" : Math.round(clamp(f, 0, 1) * 100) + "%", f >= 1); }
-  { const f = i.refeicoes / 3; add("reg", "Refeições", FR_NOTA.reg, f, Math.min(i.refeicoes, 3) + "/3", f >= 1); }
+  { const mr = i.mref || 3, f = i.refeicoes / mr; add("reg", "Refeições", FR_NOTA.reg, f, Math.min(i.refeicoes, mr) + "/" + mr, f >= 1); }
   // selo à parte (não entra na nota): está no ritmo do horário? (calorias e proteína ≥ 90% e água ≥ 80% do esperado até agora)
   const ritmo = (!i.meta || i.kcal >= 0.9 * exp * i.meta) && (!i.mp || i.p >= 0.9 * exp * i.mp) && (!i.ma || i.agua >= 0.8 * exp * i.ma) && !(i.meta && i.kcal > i.meta * 1.05);
   partes.push({ k: "ritmo", rotulo: "Ritmo", max: 0, pts: 0, frac: ritmo ? 1 : 0, txt: ritmo ? "no ritmo" : "atrasado", ok: ritmo, bonus: true });
