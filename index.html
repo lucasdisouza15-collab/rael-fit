@@ -2643,11 +2643,13 @@ function wavUrl(fn, seg, rate) {
   return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
 }
 /* áudio mudo em loop mantém o app vivo em segundo plano enquanto o descanso corre (pode não funcionar em todo aparelho) */
+function audioMix() { try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch (e) {} } /* "ambient" mistura com a música de outro app, sem abaixar nem pausar */
 function mudoStart() {
   try {
+    audioMix();
+    if (/Android/i.test(navigator.userAgent)) return; /* Android: áudio em loop segura o foco de áudio e abaixa/pausa a música; o aviso em segundo plano fica com push + vibração */
     if (!AUD.sil) { AUD.sil = new Audio(wavUrl(() => 0, 1, 8000)); AUD.sil.loop = true; AUD.sil.setAttribute("playsinline", ""); }
     const pr = AUD.sil.play(); if (pr && pr.catch) pr.catch(() => {});
-    if (navigator.mediaSession && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: "Descanso em andamento", artist: "Frangômetro" });
   } catch (e) {}
 }
 function mudoStop() { try { if (AUD.sil) AUD.sil.pause(); } catch (e) {} }
@@ -2662,6 +2664,7 @@ function beepWebAudio() {
   try { [880, 1175, 880, 1175].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), t0 = c.currentTime + i * 0.26; o.type = "square"; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.28, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22); o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + 0.24); }); } catch (e) {}
 }
 function alertaDescanso() {
+  mudoStop(); audioMix();
   try { navigator.vibrate && navigator.vibrate([300, 120, 300, 120, 300]); } catch (e) {}
   if (!somOn()) return;
   if (!bipAudio()) beepWebAudio();
