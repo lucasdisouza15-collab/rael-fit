@@ -2647,6 +2647,7 @@ function audioMix() { try { if (navigator.audioSession) navigator.audioSession.t
 function mudoStart() {
   try {
     audioMix();
+    if (/Android/i.test(navigator.userAgent)) return; /* Android: áudio em loop segura o foco de áudio e abaixa/pausa a música; o aviso em segundo plano fica com push + vibração */
     if (!AUD.sil) { AUD.sil = new Audio(wavUrl(() => 0, 1, 8000)); AUD.sil.loop = true; AUD.sil.setAttribute("playsinline", ""); }
     const pr = AUD.sil.play(); if (pr && pr.catch) pr.catch(() => {});
   } catch (e) {}
