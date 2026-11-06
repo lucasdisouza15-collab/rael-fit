@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v54-20261106a"><script>(function(){try{var V="v54-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v55-20261106a"><script>(function(){try{var V="v55-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3154,7 +3154,18 @@ function relRotulo(ini, fim) {
   if (fim === hj) { const n = Math.round((new Date(fim + "T12:00:00") - new Date(ini + "T12:00:00")) / 864e5) + 1; if ([7, 30, 90].includes(n)) return { txt: "dos últimos " + n + " dias", parc: false }; }
   return { txt: "de " + ddmm(ini) + " a " + ddmm(fim), parc: false };
 }
-const humDoDia = dt => { const d = day(dt); return { v: num(d.humor) || 0, nota: String(d.nota || "").trim() }; };
+// humor com vários registros por dia: checkins [{hora:"HH:MM", humor:1-5, nota}] (mesmo formato do Painel). d.humor = média, d.nota = "HH:MM texto | ..."
+function dayChecks(d) {
+  if (Array.isArray(d.checkins) && d.checkins.length) return d.checkins.filter(c => num(c.humor) > 0).slice().sort((a, b) => String(a.hora).localeCompare(String(b.hora)));
+  if (num(d.humor) > 0) { const t = d.humorT ? new Date(d.humorT) : null; return [{ hora: t ? String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") : "12:00", humor: Math.round(num(d.humor)), nota: String(d.nota || "").trim(), legado: true }]; }
+  return [];
+}
+function checksGrava(d, arr) {
+  arr = arr.slice().sort((a, b) => String(a.hora).localeCompare(String(b.hora)));
+  d.checkins = arr; d.humor = arr.length ? Math.round(humMedia(arr.map(c => c.humor)) * 10) / 10 : 0;
+  d.nota = arr.filter(c => c.nota).map(c => c.hora + " " + c.nota).join(" | "); d.humorT = Date.now();
+}
+const humDoDia = dt => { const d = day(dt), cs = dayChecks(d), vs = cs.map(c => c.humor); return { v: vs.length ? Math.round(humMedia(vs) * 10) / 10 : 0, n: vs.length, min: vs.length ? Math.min(...vs) : 0, max: vs.length ? Math.max(...vs) : 0, nota: cs.filter(c => c.nota).map(c => c.hora + " " + c.nota).join(" | ") || String(d.nota || "").trim() }; };
 const HUM_NOMES = ["Péssimo", "Ruim", "Normal", "Bom", "Ótimo"];
 const humNome = v => HUM_NOMES[Math.round(v) - 1] || "";
 const humMedia = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
@@ -3164,7 +3175,7 @@ function humRelatorio(dias, ws, sv, curto, ok) {
   const out = [];
   if (com.length) {
     const md = humMedia(com.map(x => x.v)), bons = com.filter(x => x.v >= 4).length, ruins = com.filter(x => x.v <= 2).length;
-    out.push(`Humor registrado em ${com.length} de ${dias.length} dias, média ${fmt1(md)} de 5 (${humNome(md).toLowerCase()}). ${bons} ${bons === 1 ? "dia bom" : "dias bons"} e ${ruins} ${ruins === 1 ? "dia pesado" : "dias pesados"}.`);
+    out.push(`Humor registrado em ${com.length} de ${dias.length} dias (${hum.reduce((a, x) => a + x.n, 0)} registros no total), média ${fmt1(md)} de 5 (${humNome(md).toLowerCase()}). ${bons} ${bons === 1 ? "dia bom" : "dias bons"} e ${ruins} ${ruins === 1 ? "dia pesado" : "dias pesados"}.`);
     if (com.length >= 4) { const h = Math.floor(com.length / 2), a = humMedia(com.slice(0, h).map(x => x.v)), b = humMedia(com.slice(h).map(x => x.v)); out.push(b - a >= 0.4 ? "A tendência é de alta: a segunda metade do período foi melhor que a primeira." : a - b >= 0.4 ? "A tendência é de queda: a segunda metade do período foi mais pesada que a primeira." : "A tendência é estável."); }
     const vd = new Map(com.map(x => [x.d, x.v])), mc = humMedia(curto.map(x => vd.get(x.d)).filter(Boolean)), mo = humMedia(ok.map(x => vd.get(x.d)).filter(Boolean));
     const nc = curto.filter(x => vd.has(x.d)).length, no = ok.filter(x => vd.has(x.d)).length;
@@ -5096,7 +5107,7 @@ function viewEvo() {
 ACT.evoPer = ds => { ui.evoPer = +ds.n; render(); };
 function contexto(per = 14) {
   const p = P(), m = metas(p), end = TODAY();
-  const linhas = Array.from({ length: per }, (_, i) => addDays(end, i - per + 1)).map(dt => { const d = day(dt), t = dayT(d); const hm = humDoDia(dt); if (!t.kcal && !d.peso && !hm.v && !hm.nota) return null; return `${dt}: comeu ${fmt(t.kcal)} kcal (P ${fmt(t.p)} C ${fmt(t.c)} G ${fmt(t.g)}), gasto ${fmt(gastoDia(dt, p).total)}${d.peso ? ", peso " + d.peso : ""}${hm.v ? ", humor " + humNome(hm.v).toLowerCase() + " (" + hm.v + "/5)" : ""}${hm.nota ? ", anotou: “" + hm.nota.slice(0, 160) + "”" : ""}`; }).filter(Boolean);
+  const linhas = Array.from({ length: per }, (_, i) => addDays(end, i - per + 1)).map(dt => { const d = day(dt), t = dayT(d); const hm = humDoDia(dt); if (!t.kcal && !d.peso && !hm.v && !hm.nota) return null; return `${dt}: comeu ${fmt(t.kcal)} kcal (P ${fmt(t.p)} C ${fmt(t.c)} G ${fmt(t.g)}), gasto ${fmt(gastoDia(dt, p).total)}${d.peso ? ", peso " + d.peso : ""}${hm.v ? ", humor " + humNome(hm.v).toLowerCase() + " (média " + hm.v + "/5" + (hm.n > 1 ? " em " + hm.n + " registros, de " + hm.min + " a " + hm.max : "") + ")" : ""}${hm.nota ? ", anotou: “" + hm.nota.slice(0, 160) + "”" : ""}`; }).filter(Boolean);
   const tr = workouts().filter(w => w.data >= addDays(end, -per)).map(w => `${w.data}: ${w.nome}, ${seriesFeitas(w)} séries, volume ${fmt(volume(w))} kg; ${w.ex.map(x => x.nome + " " + x.series.filter(s => s.tipo !== "aq").map(s => (num(s.kg) ? s.kg + "x" : "") + s.reps).join("/")).join("; ")}`);
   return `Perfil: ${p.sexo === "F" ? "mulher" : "homem"}, ${p.idade} anos, ${p.altura} cm, peso atual ${fmt1(pesoAtual(p))} kg, objetivo ${p.objetivo} peso${p.metaPeso ? " (meta " + p.metaPeso + " kg)" : ""}. Metas: ${m.kcal} kcal, P ${m.p} g, C ${m.c} g, G ${m.g} g.
 Dias registrados:\n${linhas.join("\n") || "nenhum"}\nTreinos:\n${tr.join("\n") || "nenhum"}`;
@@ -5446,11 +5457,21 @@ ACT.jejumIni = () => { const h = num(($("#jejH") || {}).value) || 16; updP(p => 
 ACT.jejumFim = () => { updP(p => { if (p.jejum && p.jejum.ini) { p.jejumHist = (p.jejumHist || []).concat([{ ini: p.jejum.ini, fim: Date.now(), h: p.jejum.h }]).slice(-30); } p.jejum = null; }); render(); toast("Jejum encerrado"); };
 const HUM = [["pessimo", "Péssimo"], ["mal", "Ruim"], ["normal", "Normal"], ["feliz", "Bom"], ["otimo", "Ótimo"]];
 function notaCard(d, td) {
-  return `<div class="card flat"><b>Como foi o dia?</b><div class="humrow">${HUM.map(([k, n], i) => `<button class="humb${d.humor === i + 1 ? " on" : ""}" data-act="humor" data-v="${i + 1}" aria-label="${n}" aria-pressed="${d.humor === i + 1}">${frRael(k, 46)}<span>${n}</span></button>`).join("")}</div><textarea id="notaDia" data-on="notaDia" placeholder="Anotações: sono, fome, o que deu certo, o que pesou..." style="min-height:64px;margin-top:8px">${esc(d.nota || "")}</textarea><div class="row between" style="margin-top:6px"><div class="xs muted">Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}. Entra nos relatórios e no coach.</div><button class="btn sm pri" data-act="notaSalva">Salvar</button></div></div>`;
+  const cs = dayChecks(d), sel = UIc.hmSel || 0, ag = new Date(), hh = String(ag.getHours()).padStart(2, "0") + ":" + String(ag.getMinutes()).padStart(2, "0"), md = cs.length ? humMedia(cs.map(c => c.humor)) : 0;
+  return `<div class="card flat"><div class="row between"><b>Como você está agora?</b>${cs.length ? `<span class="pill acc">${cs.length} ${cs.length === 1 ? "registro" : "registros"} · média ${fmt1(md)}</span>` : ""}</div><div class="humrow">${HUM.map(([k, n], i) => `<button class="humb${sel === i + 1 ? " on" : ""}" data-act="humor" data-v="${i + 1}" aria-label="${n}" aria-pressed="${sel === i + 1}">${frRael(k, 46)}<span>${n}</span></button>`).join("")}</div>
+    <textarea id="notaDia" placeholder="Opcional: o que está sentindo agora (sono, fome, o que pesou, o que deu certo)..." style="min-height:56px">${esc(UIc.hmNota || "")}</textarea>
+    <div class="row between" style="margin-top:6px;gap:8px"><label class="row xs muted" style="gap:6px">Hora <input type="time" id="humHora" value="${esc(UIc.hmHora || hh)}" style="width:auto"></label><button class="btn sm pri" data-act="humRegistra" ${sel ? "" : "disabled"}>Registrar</button></div>
+    ${cs.length ? `<div class="list" style="margin-top:8px">${cs.map((c, i) => `<div class="li"><span>${frRael(HUM[c.humor - 1] ? HUM[c.humor - 1][0] : "normal", 30)}</span><div class="grow"><div class="t">${esc(c.hora)} · ${esc(HUM_NOMES[c.humor - 1] || "")}</div>${c.nota ? `<div class="s">${esc(c.nota)}</div>` : ""}</div><button class="iconbtn" data-act="humApaga" data-i="${i}" aria-label="Remover registro">${ICON.trash}</button></div>`).join("")}</div>` : ""}
+    <div class="xs muted" style="margin-top:6px">O humor muda ao longo do dia: registre quantas vezes quiser. Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}. A média e a variação entram nos relatórios e no coach.</div></div>`;
 }
-ACT.humor = ds => { updDay(ui.date, d => { d.humor = d.humor === num(ds.v) ? 0 : num(ds.v); d.humorT = Date.now(); }); render(); };
-ACT.notaSalva = () => { const el = $("#notaDia"); updDay(ui.date, d => { d.nota = el ? el.value.trim() : ""; d.humorT = Date.now(); }); render(); toast("Anotação salva"); };
-ON.notaDia = el => { updDay(ui.date, d => { d.nota = el.value; d.humorT = Date.now(); }); };
+ACT.humor = ds => { const e = $("#notaDia"); if (e) UIc.hmNota = e.value; const h = $("#humHora"); if (h) UIc.hmHora = h.value; UIc.hmSel = UIc.hmSel === num(ds.v) ? 0 : num(ds.v); render(); };
+ACT.humRegistra = () => {
+  const e = $("#notaDia"), h = $("#humHora"), sel = UIc.hmSel; if (!sel) return;
+  const hora = /^\d\d:\d\d$/.test(h && h.value) ? h.value : "12:00", nota = (e ? e.value : "").trim();
+  updDay(ui.date, d => { const cs = dayChecks(d).map(c => ({ hora: c.hora, humor: c.humor, nota: c.nota })); cs.push({ hora, humor: sel, nota }); checksGrava(d, cs); });
+  UIc.hmSel = 0; UIc.hmNota = ""; UIc.hmHora = ""; render(); toast("Registrado às " + hora);
+};
+ACT.humApaga = ds => { updDay(ui.date, d => { const cs = dayChecks(d).map(c => ({ hora: c.hora, humor: c.humor, nota: c.nota })); cs.splice(+ds.i, 1); checksGrava(d, cs); }); render(); };
 
 // meta de calorias por refeição e distribuição de macros
 const MEAL_PESO = { cafe: .25, almoco: .35, lanche: .10, jantar: .25, ceia: .05 };
