@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v55-20261106a"><script>(function(){try{var V="v55-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v56-20261106a"><script>(function(){try{var V="v56-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3156,16 +3156,16 @@ function relRotulo(ini, fim) {
 }
 // humor com vários registros por dia: checkins [{hora:"HH:MM", humor:1-5, nota}] (mesmo formato do Painel). d.humor = média, d.nota = "HH:MM texto | ..."
 function dayChecks(d) {
-  if (Array.isArray(d.checkins) && d.checkins.length) return d.checkins.filter(c => num(c.humor) > 0).slice().sort((a, b) => String(a.hora).localeCompare(String(b.hora)));
+  if (Array.isArray(d.checkins) && d.checkins.length) return d.checkins.filter(c => num(c.humor) > 0 || c.nota).slice().sort((a, b) => String(a.hora).localeCompare(String(b.hora)));
   if (num(d.humor) > 0) { const t = d.humorT ? new Date(d.humorT) : null; return [{ hora: t ? String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") : "12:00", humor: Math.round(num(d.humor)), nota: String(d.nota || "").trim(), legado: true }]; }
   return [];
 }
 function checksGrava(d, arr) {
   arr = arr.slice().sort((a, b) => String(a.hora).localeCompare(String(b.hora)));
-  d.checkins = arr; d.humor = arr.length ? Math.round(humMedia(arr.map(c => c.humor)) * 10) / 10 : 0;
+  d.checkins = arr; const hv = arr.filter(c => c.humor > 0).map(c => c.humor); d.humor = hv.length ? Math.round(humMedia(hv) * 10) / 10 : 0;
   d.nota = arr.filter(c => c.nota).map(c => c.hora + " " + c.nota).join(" | "); d.humorT = Date.now();
 }
-const humDoDia = dt => { const d = day(dt), cs = dayChecks(d), vs = cs.map(c => c.humor); return { v: vs.length ? Math.round(humMedia(vs) * 10) / 10 : 0, n: vs.length, min: vs.length ? Math.min(...vs) : 0, max: vs.length ? Math.max(...vs) : 0, nota: cs.filter(c => c.nota).map(c => c.hora + " " + c.nota).join(" | ") || String(d.nota || "").trim() }; };
+const humDoDia = dt => { const d = day(dt), cs = dayChecks(d), vs = cs.map(c => c.humor).filter(x => x > 0); return { v: vs.length ? Math.round(humMedia(vs) * 10) / 10 : 0, n: vs.length, min: vs.length ? Math.min(...vs) : 0, max: vs.length ? Math.max(...vs) : 0, nota: cs.filter(c => c.nota).map(c => c.hora + " " + c.nota).join(" | ") || String(d.nota || "").trim() }; };
 const HUM_NOMES = ["Péssimo", "Ruim", "Normal", "Bom", "Ótimo"];
 const humNome = v => HUM_NOMES[Math.round(v) - 1] || "";
 const humMedia = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
@@ -5457,19 +5457,24 @@ ACT.jejumIni = () => { const h = num(($("#jejH") || {}).value) || 16; updP(p => 
 ACT.jejumFim = () => { updP(p => { if (p.jejum && p.jejum.ini) { p.jejumHist = (p.jejumHist || []).concat([{ ini: p.jejum.ini, fim: Date.now(), h: p.jejum.h }]).slice(-30); } p.jejum = null; }); render(); toast("Jejum encerrado"); };
 const HUM = [["pessimo", "Péssimo"], ["mal", "Ruim"], ["normal", "Normal"], ["feliz", "Bom"], ["otimo", "Ótimo"]];
 function notaCard(d, td) {
-  const cs = dayChecks(d), sel = UIc.hmSel || 0, ag = new Date(), hh = String(ag.getHours()).padStart(2, "0") + ":" + String(ag.getMinutes()).padStart(2, "0"), md = cs.length ? humMedia(cs.map(c => c.humor)) : 0;
-  return `<div class="card flat"><div class="row between"><b>Como você está agora?</b>${cs.length ? `<span class="pill acc">${cs.length} ${cs.length === 1 ? "registro" : "registros"} · média ${fmt1(md)}</span>` : ""}</div><div class="humrow">${HUM.map(([k, n], i) => `<button class="humb${sel === i + 1 ? " on" : ""}" data-act="humor" data-v="${i + 1}" aria-label="${n}" aria-pressed="${sel === i + 1}">${frRael(k, 46)}<span>${n}</span></button>`).join("")}</div>
-    <textarea id="notaDia" placeholder="Opcional: o que está sentindo agora (sono, fome, o que pesou, o que deu certo)..." style="min-height:56px">${esc(UIc.hmNota || "")}</textarea>
-    <div class="row between" style="margin-top:6px;gap:8px"><label class="row xs muted" style="gap:6px">Hora <input type="time" id="humHora" value="${esc(UIc.hmHora || hh)}" style="width:auto"></label><button class="btn sm pri" data-act="humRegistra" ${sel ? "" : "disabled"}>Registrar</button></div>
-    ${cs.length ? `<div class="list" style="margin-top:8px">${cs.map((c, i) => `<div class="li"><span>${frRael(HUM[c.humor - 1] ? HUM[c.humor - 1][0] : "normal", 30)}</span><div class="grow"><div class="t">${esc(c.hora)} · ${esc(HUM_NOMES[c.humor - 1] || "")}</div>${c.nota ? `<div class="s">${esc(c.nota)}</div>` : ""}</div><button class="iconbtn" data-act="humApaga" data-i="${i}" aria-label="Remover registro">${ICON.trash}</button></div>`).join("")}</div>` : ""}
-    <div class="xs muted" style="margin-top:6px">O humor muda ao longo do dia: registre quantas vezes quiser. Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}. A média e a variação entram nos relatórios e no coach.</div></div>`;
+  const cs = dayChecks(d), hv = cs.filter(c => c.humor > 0).map(c => c.humor), md = hv.length ? humMedia(hv) : 0, ult = cs.filter(c => c.humor > 0).slice(-1)[0];
+  return `<div class="card flat"><div class="row between"><b>Como você está agora?</b>${hv.length ? `<span class="pill acc">${hv.length} ${hv.length === 1 ? "registro" : "registros"} · média ${fmt1(md)}</span>` : ""}</div><div class="humrow">${HUM.map(([k, n], i) => `<button class="humb${ult && ult.humor === i + 1 ? " on" : ""}" data-act="humor" data-v="${i + 1}" aria-label="${n}">${frRael(k, 46)}<span>${n}</span></button>`).join("")}</div>
+    <div class="xs muted">${ult ? "Agora: " + (HUM_NOMES[ult.humor - 1] || "").toLowerCase() + " · marcado às " + esc(ult.hora) : "Toque no rosto de como você está agora."} O humor muda ao longo do dia: toque de novo quando mudar.</div>
+    <textarea id="notaDia" placeholder="Anotações: sono, fome, o que deu certo, o que pesou..." style="min-height:56px;margin-top:8px"></textarea>
+    <div class="row between" style="margin-top:6px"><div class="xs muted">Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}. Média e variação entram nos relatórios e no coach.</div><button class="btn sm pri" data-act="notaSalva">Salvar</button></div>
+    ${cs.length ? `<div class="list" style="margin-top:8px">${cs.map((c, i) => `<div class="li"><span>${frRael(HUM[c.humor - 1] ? HUM[c.humor - 1][0] : "normal", 30)}</span><div class="grow"><div class="t">${esc(c.hora)}${c.humor ? " · " + esc(HUM_NOMES[c.humor - 1] || "") : ""}</div>${c.nota ? `<div class="s">${esc(c.nota)}</div>` : ""}</div><button class="iconbtn" data-act="humApaga" data-i="${i}" aria-label="Remover registro">${ICON.trash}</button></div>`).join("")}</div>` : ""}</div>`;
 }
-ACT.humor = ds => { const e = $("#notaDia"); if (e) UIc.hmNota = e.value; const h = $("#humHora"); if (h) UIc.hmHora = h.value; UIc.hmSel = UIc.hmSel === num(ds.v) ? 0 : num(ds.v); render(); };
-ACT.humRegistra = () => {
-  const e = $("#notaDia"), h = $("#humHora"), sel = UIc.hmSel; if (!sel) return;
-  const hora = /^\d\d:\d\d$/.test(h && h.value) ? h.value : "12:00", nota = (e ? e.value : "").trim();
-  updDay(ui.date, d => { const cs = dayChecks(d).map(c => ({ hora: c.hora, humor: c.humor, nota: c.nota })); cs.push({ hora, humor: sel, nota }); checksGrava(d, cs); });
-  UIc.hmSel = 0; UIc.hmNota = ""; UIc.hmHora = ""; render(); toast("Registrado às " + hora);
+const humAgora = () => { const t = new Date(); return String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0"); };
+const humMin = t => { const [a, b] = String(t || "").split(":").map(Number); return a * 60 + b; };
+const humLista = d => dayChecks(d).map(c => ({ hora: c.hora, humor: c.humor, nota: c.nota }));
+// igual ao Painel: tocar no rosto registra agora; a anotação gruda no último registro (até 15 min) ou vira um novo
+ACT.humor = ds => { updDay(ui.date, d => { const l = humLista(d); l.push({ hora: humAgora(), humor: num(ds.v), nota: "" }); checksGrava(d, l); }); render(); toast((HUM_NOMES[num(ds.v) - 1] || "") + " · registrado às " + humAgora()); };
+ACT.notaSalva = () => {
+  const e = $("#notaDia"), nota = e ? e.value.trim() : ""; if (!nota) { toast("Escreva algo ou toque num rosto."); return; }
+  updDay(ui.date, d => { const l = humLista(d), u = l[l.length - 1], ag = humAgora();
+    if (u && !u.nota && humMin(ag) - humMin(u.hora) <= 15 && humMin(ag) >= humMin(u.hora)) u.nota = nota; else l.push({ hora: ag, humor: u ? u.humor : 0, nota });
+    checksGrava(d, l); });
+  render(); toast("Anotação salva");
 };
 ACT.humApaga = ds => { updDay(ui.date, d => { const cs = dayChecks(d).map(c => ({ hora: c.hora, humor: c.humor, nota: c.nota })); cs.splice(+ds.i, 1); checksGrava(d, cs); }); render(); };
 
