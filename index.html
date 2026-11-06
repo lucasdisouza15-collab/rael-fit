@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v45-20261106a"><script>(function(){try{var V="v45-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v46-20261106a"><script>(function(){try{var V="v46-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -140,6 +140,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 .sheet{background:var(--bg);width:100%;max-width:640px;max-height:92%;border-radius:20px 20px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,.2)}
 .sheet.anim{animation:up .22s ease-out}
 .sheet.full{height:100%;max-height:100%;border-radius:0}
+.exfig{position:relative;width:100%;max-width:360px;aspect-ratio:1/1;margin:6px auto;background:#fff;overflow:hidden}.exfig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.exfig img.b{animation:exAlt 1.6s steps(1,end) infinite}@keyframes exAlt{0%{opacity:0}50%{opacity:1}100%{opacity:0}}@media (prefers-reduced-motion:reduce){.exfig img.b{animation:none;opacity:0}}
 @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.sheet.anim{animation:none}}
 .sheet-h{display:flex;align-items:center;gap:8px;padding:12px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line)}
@@ -2811,6 +2812,25 @@ ON.exE = el => { ui.exFiltro.e = el.value; render(); };
 ACT.exG = ds => { ui.exFiltro.g = ds.g; render(); };
 ACT.newExLib = () => { XP.cb = null; XP.q = ui.exFiltro.q; XP.g = ui.exFiltro.g; ACT.newEx(); };
 // instruções do exercício (EX_INFO): músculos, como fazer, dica e erro comum; sem texto próprio, usa uma orientação geral do grupo
+// Imagens de execução: free-exercise-db (domínio público, licença Unlicense), github.com/yuhonas/free-exercise-db. Duas fotos por exercício (início e fim) alternam como animação.
+const EX_IMG = {"supino-reto-barra":"Barbell_Bench_Press_-_Medium_Grip","supino-reto-halter":"Dumbbell_Bench_Press","supino-incl-barra":"Barbell_Incline_Bench_Press_-_Medium_Grip","supino-incl-halter":"Incline_Dumbbell_Press","supino-decl-barra":"Decline_Barbell_Bench_Press","supino-maquina":"Machine_Bench_Press","supino-smith":"Smith_Machine_Bench_Press","crucifixo-halter":"Dumbbell_Flyes","peck-deck":"Butterfly","crossover":"Cable_Crossover","flexao":"Pushups","paralelas-peito":"Dips_-_Chest_Version","pullover":"Bent-Arm_Dumbbell_Pullover","barra-fixa":"Pullups","barra-supinada":"Chin-Up","puxada-frente":"Wide-Grip_Lat_Pulldown","puxada-triangulo":"Close-Grip_Front_Lat_Pulldown","remada-curvada":"Bent_Over_Barbell_Row","remada-unilateral":"One-Arm_Dumbbell_Row","remada-baixa":"Seated_Cable_Rows","remada-maquina":"Leverage_Iso_Row","remada-cavalinho":"T-Bar_Row_with_Handle","pulldown":"Straight-Arm_Pulldown","levantamento-terra":"Barbell_Deadlift","hiperextensao":"Hyperextensions_Back_Extensions","encolhimento":"Dumbbell_Shrug","desenvolvimento-barra":"Standing_Military_Press","desenvolvimento-halter":"Dumbbell_Shoulder_Press","desenvolvimento-maquina":"Leverage_Shoulder_Press","arnold":"Arnold_Dumbbell_Press","elevacao-lateral":"Side_Lateral_Raise","elevacao-lateral-polia":"Standing_Low-Pulley_Deltoid_Raise","elevacao-frontal":"Front_Dumbbell_Raise","crucifixo-inverso":"Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench","face-pull":"Face_Pull","remada-alta":"Upright_Barbell_Row","rosca-direta":"Barbell_Curl","rosca-w":"EZ-Bar_Curl","rosca-alternada":"Dumbbell_Alternate_Bicep_Curl","rosca-martelo":"Hammer_Curls","rosca-scott":"Machine_Preacher_Curls","rosca-concentrada":"Concentration_Curls","rosca-polia":"Standing_Biceps_Cable_Curl","rosca-inclinada":"Incline_Dumbbell_Curl","triceps-corda":"Triceps_Pushdown_-_Rope_Attachment","triceps-pulley":"Triceps_Pushdown","triceps-testa":"EZ-Bar_Skullcrusher","triceps-frances":"Standing_Dumbbell_Triceps_Extension","triceps-coice":"Tricep_Dumbbell_Kickback","supino-fechado":"Close-Grip_Barbell_Bench_Press","mergulho-banco":"Bench_Dips","paralelas":"Dips_-_Triceps_Version","rosca-punho":"Palms-Up_Barbell_Wrist_Curl_Over_A_Bench","rosca-inversa":"Reverse_Barbell_Curl","farmer-walk":"Farmers_Walk","agachamento-livre":"Barbell_Full_Squat","agachamento-frontal":"Front_Barbell_Squat","agachamento-smith":"Smith_Machine_Squat","agachamento-goblet":"Goblet_Squat","hack":"Hack_Squat","leg-press-45":"Leg_Press","leg-press-horizontal":"Leg_Press","cadeira-extensora":"Leg_Extensions","afundo":"Dumbbell_Lunges","bulgaro":"Split_Squat_with_Dumbbells","passada":"Dumbbell_Lunges","agachamento-livre-pc":"Bodyweight_Squat","sissy":"Weighted_Sissy_Squat","stiff":"Stiff-Legged_Barbell_Deadlift","stiff-halter":"Stiff-Legged_Dumbbell_Deadlift","terra-romeno":"Romanian_Deadlift","mesa-flexora":"Lying_Leg_Curls","cadeira-flexora":"Seated_Leg_Curl","flexora-pe":"Standing_Leg_Curl","good-morning":"Good_Morning","nordico":"Natural_Glute_Ham_Raise","elevacao-pelvica":"Barbell_Hip_Thrust","elevacao-pelvica-maq":"Barbell_Hip_Thrust","ponte-gluteo":"Butt_Lift_Bridge","gluteo-polia":"One-Legged_Cable_Kickback","gluteo-maquina":"Glute_Kickback","abducao":"Thigh_Abductor","aducao":"Thigh_Adductor","sumo":"Plie_Dumbbell_Squat","panturrilha-pe":"Standing_Calf_Raises","panturrilha-sentado":"Seated_Calf_Raise","panturrilha-leg":"Calf_Press_On_The_Leg_Press_Machine","panturrilha-pc":"Calf_Raise_On_A_Dumbbell","abdominal-supra":"Crunches","abdominal-infra":"Reverse_Crunch","prancha":"Plank","prancha-lateral":"Side_Bridge","abdominal-polia":"Cable_Crunch","abdominal-maquina":"Ab_Crunch_Machine","elevacao-pernas":"Hanging_Leg_Raise","russian-twist":"Russian_Twist","roda-abdominal":"Ab_Roller","bicicleta-abd":"Air_Bike","kb-swing":"One-Arm_Kettlebell_Swings","thruster":"Kettlebell_Thruster","clean":"Power_Clean","polichinelo":"Star_Jump","mountain-climber":"Mountain_Climbers","esteira":"Running_Treadmill","bike":"Bicycling_Stationary"};
+function exAnim(ex) {
+  const i = EX_IMG[ex.id]; if (!i) return "";
+  return `<div class="card flat exanim"><div class="eyebrow">Execução</div><div class="exfig" role="img" aria-label="Demonstração: ${esc(ex.nome)}"><img src="ex/${i}-0.jpg" alt="Posição inicial" loading="lazy"><img class="b" src="ex/${i}-1.jpg" alt="Posição final" loading="lazy"></div><div class="xs muted">Início e fim do movimento, alternando. Imagens: free-exercise-db, domínio público.</div></div>`;
+}
+function exRecordes(eid, tipo) {
+  let kg = 0, kgD = "", e = 0, eD = "", vol = 0, volD = "", reps = 0, repsD = "";
+  workouts().forEach(w => { const x = (w.ex || []).find(z => z.eid === eid); if (!x) return; let v = 0; x.series.forEach(s => { if (!s.ok || s.tipo === "aq") return; const k = num(s.kg), r = num(s.reps); v += k * r; if (k > kg) { kg = k; kgD = w.data; } const ee = e1rm(k, r); if (ee > e) { e = ee; eD = w.data; } if (r > reps) { reps = r; repsD = w.data; } }); if (v > vol) { vol = v; volD = w.data; } });
+  const li = (n, v, d) => v ? `<div class="li"><div class="grow"><div class="t">${n}</div><div class="s">${d ? ddmm(d) : ""}</div></div><b class="tnum">${v}</b></div>` : "";
+  const carga = tipo === "carga";
+  return (kg || reps) ? `<div class="card flat"><div class="eyebrow">Recordes pessoais</div><div class="list">${carga ? li("Maior peso", fmt1(kg) + " kg", kgD) + li("1RM estimado", fmt1(e) + " kg", eD) + li("Maior volume em um treino", fmt(vol) + " kg", volD) : ""}${li("Mais repetições numa série", reps, repsD)}</div></div>` : "";
+}
+function exSerie(eid, tipo, met, per) {
+  const lim = per ? addDays(TODAY(), -per) : "";
+  return workouts().slice().reverse().filter(w => !lim || w.data >= lim).map(w => { const x = (w.ex || []).find(z => z.eid === eid); if (!x) return null; const s = x.series.filter(z => z.ok && z.tipo !== "aq"); if (!s.length) return null; const v = met === "kg" ? Math.max(...s.map(z => num(z.kg))) : met === "e1rm" ? Math.max(...s.map(z => e1rm(num(z.kg), num(z.reps)))) : met === "vol" ? s.reduce((a, z) => a + num(z.kg) * num(z.reps), 0) : Math.max(...s.map(z => num(z.reps))); return v ? { x: w.data, y: v } : null; }).filter(Boolean);
+}
+ACT.exMet = ds => { ui.exMet = ds.k; const sh = SHEET.stack[SHEET.stack.length - 1]; if (sh && sh.reabre) sh.reabre(); };
+ACT.exPer = ds => { ui.exPer = +ds.n; const sh = SHEET.stack[SHEET.stack.length - 1]; if (sh && sh.reabre) sh.reabre(); };
 function exComoFazer(ex) {
   const i = EX_INFO[ex.id], geral = {
     carga: "Escolha uma carga que permita fazer todas as repetições com boa técnica › Controle a descida e a subida, sem impulso › Respire: solte o ar no esforço › Pare 1 a 2 repetições antes da falha em exercícios mais técnicos",
@@ -2823,15 +2843,23 @@ function exComoFazer(ex) {
     <div class="small"><b>Dica:</b> ${esc(dica)}</div><div class="small" style="margin-top:4px"><b>Erro comum:</b> ${esc(erro)}</div><div class="xs muted" style="margin-top:6px">Orientação geral. Em caso de dor ou dúvida, reduza a carga e procure um profissional.</div></div>`;
 }
 ACT.exInfo = ds => {
-  const ex = exById(ds.id), b = bestOf(ds.id);
-  const pts = workouts().slice().reverse().map(w => { const x = (w.ex || []).find(z => z.eid === ds.id); if (!x) return null; const v = Math.max(0, ...x.series.filter(s => s.tipo !== "aq").map(s => x.tipo === "carga" ? e1rm(num(s.kg), num(s.reps)) : num(s.reps))); return v ? { x: w.data, y: v } : null; }).filter(Boolean);
-  const hist = workouts().filter(w => (w.ex || []).some(z => z.eid === ds.id)).slice(0, 8);
-  openSheet({ title: ex.nome, body: `<div class="small muted">${esc(ex.grupo)} · ${esc(ex.equip)}</div>
+  const ex = exById(ds.id), carga = ex.tipo === "carga";
+  const corpo = () => {
+    const met = carga ? (ui.exMet || "e1rm") : "reps", per = ui.exPer === undefined ? 0 : ui.exPer;
+    const pts = exSerie(ds.id, ex.tipo, met, per);
+    const hist = workouts().filter(w => (w.ex || []).some(z => z.eid === ds.id)).slice(0, 8);
+    const nm = { kg: "Maior peso", e1rm: "1RM estimado", vol: "Volume", reps: "Repetições" }[met], un = met === "reps" ? "" : "kg";
+    return `<div class="small muted">${esc(ex.grupo)} · ${esc(ex.equip)}</div>
+    ${exAnim(ex)}
+    ${exRecordes(ds.id, ex.tipo)}
+    <div class="card flat"><div class="row between" style="flex-wrap:wrap;gap:6px"><div class="eyebrow">Progresso: ${nm}</div><div class="seg" style="width:auto">${[[30, "30d"], [90, "90d"], [365, "1 ano"], [0, "Tudo"]].map(([n, t]) => `<button aria-pressed="${per === n}" data-act="exPer" data-n="${n}">${t}</button>`).join("")}</div></div>
+      ${carga ? `<div class="seg" style="width:auto;margin:6px 0">${[["e1rm", "1RM est."], ["kg", "Maior peso"], ["vol", "Volume"], ["reps", "Reps"]].map(([k, t]) => `<button aria-pressed="${met === k}" data-act="exMet" data-k="${k}">${t}</button>`).join("")}</div>` : ""}
+      ${pts.length > 1 ? lineChart(pts, { unit: un, color: "--prot", h: 170 }) : `<div class="small muted">${pts.length ? "Só um registro no período; faça mais um treino para ver a curva." : "Sem registros no período."}</div>`}</div>
     ${exComoFazer(ex)}
-    ${b.e1rm ? `<div class="grid2"><div class="card flat stat"><span>Maior carga</span><b>${fmt1(b.kg)} kg</b></div><div class="card flat stat"><span>1RM estimado</span><b>${fmt1(b.e1rm)} kg</b></div></div>` : ""}
-    ${pts.length > 1 ? `<div class="card flat"><div class="eyebrow">${ex.tipo === "carga" ? "1RM estimado por treino" : "Melhor série por treino"}</div>${lineChart(pts, { unit: ex.tipo === "carga" ? "kg" : "", color: "--prot", h: 170 })}</div>` : ""}
     ${hist.length ? `<div class="card flat"><div class="eyebrow">Últimos treinos</div><div class="list">${hist.map(w => { const x = w.ex.find(z => z.eid === ds.id); const [hk] = setHead(x.tipo); return `<div class="li"><div class="grow"><div class="t">${ddmm(w.data)}</div><div class="s tnum">${x.series.map(s => (hk && num(s.kg) ? fmt1(s.kg) + "×" : "") + s.reps).join(", ")}</div></div></div>`; }).join("")}</div></div>` : `<div class="empty">Ainda sem registros deste exercício.</div>`}
-    ${ex.custom ? `<button class="btn danger" data-act="delEx" data-id="${esc(ex.id)}">Apagar exercício próprio</button>` : ""}` });
+    ${ex.custom ? `<button class="btn danger" data-act="delEx" data-id="${esc(ex.id)}">Apagar exercício próprio</button>` : ""}`;
+  };
+  openSheet({ title: ex.nome, body: corpo, reabre: () => redrawSheet() });
 };
 ACT.delEx = ds => { updP(p => { p.exCustom = (p.exCustom || []).filter(x => x.id !== ds.id); }); closeSheet(); toast("Exercício apagado"); };
 // =================== IMPORTAR TREINOS DO HEVY (CSV exportado pelo app, tudo no navegador) ===================
