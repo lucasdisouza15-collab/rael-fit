@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v46-20261106a"><script>(function(){try{var V="v46-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v47-20261106a"><script>(function(){try{var V="v47-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -3079,7 +3079,7 @@ function medidasCard() {
   return `<div class="card stack"><div class="row between"><h2>Medidas</h2><button class="btn sm" data-act="medCampos">Campos</button></div>
     <div class="list">${linhas}</div>${medGraficos()}
     <div class="row wrap-ok" style="gap:8px"><button class="btn pri grow" data-act="medReg">Registrar medidas</button><button class="btn soft grow" data-act="progAbrir">${IC_CAM} Fotos de progresso</button></div>
-    <div class="row wrap-ok" style="gap:8px"><button class="btn soft grow" data-act="relMes" data-m="${prev}">Relatório de ${mesNome(prev)}</button><button class="btn soft grow" data-act="relMes" data-m="${ym}">Relatório de ${mesNome(ym)} (até agora)</button></div></div>`;
+    <div class="row wrap-ok" style="gap:8px"><button class="btn soft grow" data-act="relPer" data-k="30">Relatório por período</button></div></div>`;
 }
 function sonoCard() {
   const s = sonoGet(), hj = TODAY(), m7 = sonoMedia(7), m30 = sonoMedia(30);
@@ -3121,8 +3121,14 @@ ACT.medDel = ds => { medMut(cs => { cs.splice(+ds.i, 1); }); redrawSheet(false);
 ACT.medAdd = () => { medMut(cs => { cs.push({ id: "m" + uid(), nome: "Nova medida", freq: 14 }); }); redrawSheet(false); };
 
 // ---- relatório mensal na voz do Rael ----
-function relDados(ym) {
-  const p = P(), m = metas(p), ini = ym + "-01", fimMes = addDays(addDays(ini, 32).slice(0, 7) + "-01", -1), hj = TODAY(), fim = fimMes > hj ? hj : fimMes;
+function relRotulo(ini, fim) {
+  const hj = TODAY();
+  if (ini.slice(8) === "01" && ini.slice(0, 7) === fim.slice(0, 7)) { const ult = addDays(addDays(ini, 32).slice(0, 7) + "-01", -1); if (fim === ult || fim === hj) return { txt: "de " + mesNome(ini), parc: fim === hj && fim < ult }; }
+  if (fim === hj) { const n = Math.round((new Date(fim + "T12:00:00") - new Date(ini + "T12:00:00")) / 864e5) + 1; if ([7, 30, 90].includes(n)) return { txt: "dos últimos " + n + " dias", parc: false }; }
+  return { txt: "de " + ddmm(ini) + " a " + ddmm(fim), parc: false };
+}
+function relDados(ini, fim) {
+  const p = P(), m = metas(p), hj = TODAY(); if (fim > hj) fim = hj; if (ini > fim) ini = fim; const ym = ini.slice(0, 7), rot = relRotulo(ini, fim);
   const dias = []; for (let d = ini; d <= fim; d = addDays(d, 1)) dias.push(d);
   const reg = dias.map(dt => ({ dt, t: dayT(day(dt)) })).filter(r => r.t.kcal > 0);
   const media = reg.length ? reg.reduce((s, r) => s + r.t.kcal, 0) / reg.length : 0, prot = reg.length ? reg.reduce((s, r) => s + r.t.p, 0) / reg.length : 0;
@@ -3135,18 +3141,18 @@ function relDados(ym) {
   const kc = arr => { const r = arr.map(x => dayT(day(x.d)).kcal).filter(k => k > 0); return r.length ? r.reduce((a, b) => a + b, 0) / r.length : 0; };
   const treinoNoDia = arr => arr.length ? arr.filter(x => ws.some(w => w.data === x.d)).length / arr.length : 0;
   const mm = medGet(), meds = mm.campos.map(c => { const a = mm.hist.filter(x => x.data >= ini && x.data <= fim && x.v && x.v[c.id] != null); const pr = medUltimo(c.id, mm.hist, addDays(ini, -1)); if (!a.length) return null; const ult = a[a.length - 1].v[c.id], base = a.length > 1 ? a[0].v[c.id] : (pr ? pr.v : null); return { nome: c.nome, ult, d: base != null ? ult - base : null }; }).filter(Boolean);
-  return { ym, ini, fim, dias: dias.length, m, reg, media, prot, naMeta, ps, pAnt, ws, vol, prs, sv, curto, ok, kcCurto: kc(curto), kcOk: kc(ok), trCurto: treinoNoDia(curto), trOk: treinoNoDia(ok), meds, mediaSono: sv.length ? sv.reduce((s, x) => s + x.h, 0) / sv.length : 0 };
+  return { ym, rot, ini, fim, dias: dias.length, m, reg, media, prot, naMeta, ps, pAnt, ws, vol, prs, sv, curto, ok, kcCurto: kc(curto), kcOk: kc(ok), trCurto: treinoNoDia(curto), trOk: treinoNoDia(ok), meds, mediaSono: sv.length ? sv.reduce((s, x) => s + x.h, 0) / sv.length : 0 };
 }
 function relSecoes(r) {
   const nome = nomeU(), S = [];
-  const parc = r.fim < addDays(r.ini, 27) || r.fim === TODAY();
-  S.push(["Geral", `${nome}, aqui é o Rael com o relatório de ${mesNome(r.ym)}${parc ? " (até agora)" : ""}. Foram ${r.reg.length} ${r.reg.length === 1 ? "dia" : "dias"} com comida anotada, ${r.ws.length} ${r.ws.length === 1 ? "treino" : "treinos"} e ${r.sv.length} ${r.sv.length === 1 ? "noite" : "noites"} de sono contadas. ${r.reg.length + r.ws.length + r.sv.length < 8 ? "Ainda tem pouca coisa anotada. Relatório bom nasce de registro honesto, e eu não invento número." : "Dá para tirar conclusão sem inventar moda."}`]);
+  const parc = r.rot.parc;
+  S.push(["Geral", `${nome}, aqui é o Rael com o relatório ${r.rot.txt}${parc ? " (até agora)" : ""}. Foram ${r.reg.length} ${r.reg.length === 1 ? "dia" : "dias"} com comida anotada, ${r.ws.length} ${r.ws.length === 1 ? "treino" : "treinos"} e ${r.sv.length} ${r.sv.length === 1 ? "noite" : "noites"} de sono contadas. ${r.reg.length + r.ws.length + r.sv.length < 8 ? "Ainda tem pouca coisa anotada. Relatório bom nasce de registro honesto, e eu não invento número." : "Dá para tirar conclusão sem inventar moda."}`]);
   S.push(["Calorias", r.reg.length ? `Média de ${fmt(r.media)} kcal por dia, para uma meta de ${fmt(r.m.kcal)}. ${r.naMeta} dos ${r.reg.length} dias ficaram perto da meta (10% para cima ou para baixo). Proteína média de ${fmt(r.prot)} g, meta de ${fmt(r.m.p)} g. ${r.media > r.m.kcal * 1.1 ? "Passou da meta na média. Não é crime, mas a balança lê planilha." : r.media < r.m.kcal * 0.8 ? "Comeu bem menos que a meta. Fome crônica atrapalha músculo e humor." : "Média na faixa. O Rael finge que não está orgulhoso."}` : "Sem refeições registradas no período. Sem dado eu só consigo fazer piada."]);
-  if (r.ps.length) { const a = r.ps[0].kg, b = r.ps[r.ps.length - 1].kg, base = r.pAnt ? r.pAnt.kg : a, d = b - base; S.push(["Peso", `Terminou em ${fmt1(b)} kg${r.ps.length > 1 || r.pAnt ? `, ${d <= 0 ? "menos" : "mais"} ${fmt1(Math.abs(d))} kg que ${r.pAnt ? "antes do mês" : "na primeira pesagem do mês"}` : ""}. ${d < -0.3 ? "Ponteiro descendo. O Rael aplaude baixinho para não assustar a balança." : d > 0.5 ? "Subiu um pouco. Pode ser água, treino ou pizza; olha a tendência, não o dia." : "Praticamente estável. Constância também é resultado."}`]); }
-  else S.push(["Peso", "Nenhuma pesagem no mês. A balança sentiu sua falta, e eu também."]);
+  if (r.ps.length) { const a = r.ps[0].kg, b = r.ps[r.ps.length - 1].kg, base = r.pAnt ? r.pAnt.kg : a, d = b - base; S.push(["Peso", `Terminou em ${fmt1(b)} kg${r.ps.length > 1 || r.pAnt ? `, ${d <= 0 ? "menos" : "mais"} ${fmt1(Math.abs(d))} kg que ${r.pAnt ? "antes do período" : "na primeira pesagem do período"}` : ""}. ${d < -0.3 ? "Ponteiro descendo. O Rael aplaude baixinho para não assustar a balança." : d > 0.5 ? "Subiu um pouco. Pode ser água, treino ou pizza; olha a tendência, não o dia." : "Praticamente estável. Constância também é resultado."}`]); }
+  else S.push(["Peso", "Nenhuma pesagem no período. A balança sentiu sua falta, e eu também."]);
   if (r.meds.length) S.push(["Medidas", r.meds.map(x => `${x.nome}: ${fmt1(x.ult)} cm${x.d != null ? " (" + (x.d > 0 ? "+" : "") + fmt1(x.d) + ")" : ""}`).join("; ") + ". Medida conta o que a balança não conta, principalmente quando se treina."]);
-  else S.push(["Medidas", "Nenhuma medida registrada no mês. Peito, braço e barriga contam a história que a balança esconde."]);
-  S.push(["Treino", r.ws.length ? `${r.ws.length} treinos no mês, ${fmt(r.vol)} kg de volume total${r.prs ? " e " + r.prs + " recorde" + (r.prs > 1 ? "s" : "") + " novo" + (r.prs > 1 ? "s" : "") : ""}. Média de ${fmt1(r.ws.length / Math.max(1, r.dias / 7))} treinos por semana. ${r.ws.length / Math.max(1, r.dias / 7) >= 4 ? "Frequência de gente séria." : "Tem espaço para encaixar mais um dia na semana."}` : "Nenhum treino registrado no mês. A academia mandou lembranças e um boleto."]);
+  else S.push(["Medidas", "Nenhuma medida registrada no período. Peito, braço e barriga contam a história que a balança esconde."]);
+  S.push(["Treino", r.ws.length ? `${r.ws.length} treinos no período, ${fmt(r.vol)} kg de volume total${r.prs ? " e " + r.prs + " recorde" + (r.prs > 1 ? "s" : "") + " novo" + (r.prs > 1 ? "s" : "") : ""}. Média de ${fmt1(r.ws.length / Math.max(1, r.dias / 7))} treinos por semana. ${r.ws.length / Math.max(1, r.dias / 7) >= 4 ? "Frequência de gente séria." : "Tem espaço para encaixar mais um dia na semana."}` : "Nenhum treino registrado no período. A academia mandou lembranças e um boleto."]);
   if (r.sv.length) {
     let tx = `Dormiu em média ${fmt1(r.mediaSono)} h por noite (${r.sv.length} noites registradas). ${r.curto.length} noites com menos de 6 h.`;
     if (r.curto.length >= 3 && r.ok.length >= 3) { tx += ` Nos dias de sono curto você comeu em média ${fmt(r.kcCurto)} kcal, contra ${fmt(r.kcOk)} kcal nos dias de sono normal, e treinou em ${Math.round(r.trCurto * 100)}% desses dias, contra ${Math.round(r.trOk * 100)}% nos outros.`; }
@@ -3155,13 +3161,39 @@ function relSecoes(r) {
   } else S.push(["Sono", "Sem noites registradas. O Rael pergunta toda manhã: responder leva dois segundos e muda o relatório."]);
   return S;
 }
+const REL = { k: "30", ini: "", fim: "" };
+function relFaixa() {
+  const hj = TODAY(), k = REL.k;
+  if (k === "7" || k === "30" || k === "90") return [addDays(hj, -(+k - 1)), hj];
+  if (k === "mes") return [hj.slice(0, 7) + "-01", hj];
+  if (k === "ant") { const u = addDays(hj.slice(0, 7) + "-01", -1); return [u.slice(0, 7) + "-01", u]; }
+  const a = REL.ini || addDays(hj, -29), b = REL.fim || hj; return a <= b ? [a, b] : [b, a];
+}
+function relCorpo() {
+  const [ini, fim] = relFaixa(), r = relDados(ini, fim), sec = relSecoes(r), hj = TODAY();
+  const opt = [["7", "7 dias"], ["30", "30 dias"], ["90", "90 dias"], ["mes", "Este mês"], ["ant", "Mês passado"], ["per", "Personalizado"]];
+  window.__relTxt = "Relatório do Rael, " + r.rot.txt + " (" + ddmm(ini) + " a " + ddmm(fim) + ")\n\n" + sec.map(([t, x]) => t + ": " + x).join("\n\n");
+  return `<div class="row wrap-ok" style="gap:6px">${opt.map(([k, n]) => `<button class="btn sm ${REL.k === k ? "pri" : "soft"}" data-act="relPer" data-k="${k}">${n}</button>`).join("")}</div>
+    ${REL.k === "per" ? `<div class="row" style="gap:8px"><label class="f grow">De<input type="date" value="${ini}" max="${hj}" data-on="relIni"></label><label class="f grow">Até<input type="date" value="${fim}" max="${hj}" data-on="relFim"></label></div>` : ""}
+    <div class="xs muted">${ddmm(ini)} a ${ddmm(fim)} · ${r.dias} dia${r.dias === 1 ? "" : "s"}</div>
+    <div class="row" style="justify-content:center">${(() => { try { return frRaelCena("pensando", 90); } catch (e) { return ""; } })()}</div>${sec.map(([t, x]) => `<div class="card flat"><div class="eyebrow">${esc(t)}</div><div class="small ink2" style="margin-top:4px;line-height:1.45">${esc(x)}</div></div>`).join("")}<div class="disc">Gerado com os seus próprios registros, sem IA. Estimativas, não é orientação médica.</div>`;
+}
+ACT.relPer = ds => {
+  REL.k = ds.k || "30";
+  if (REL.k === "per" && !REL.ini) { REL.ini = addDays(TODAY(), -29); REL.fim = TODAY(); }
+  const top = SHEET.stack[SHEET.stack.length - 1];
+  if (top && top.relSheet) { redrawSheet(true); return; }
+  openSheet({ title: "Relatório por período", relSheet: true, body: relCorpo, foot: () => `<button class="btn" data-act="sheetClose">Fechar</button><button class="btn pri block" data-act="relCopia">Copiar texto</button>` });
+};
+ON.relIni = el => { if (el.value) { REL.ini = el.value; redrawSheet(true); } };
+ON.relFim = el => { if (el.value) { REL.fim = el.value; redrawSheet(true); } };
 ACT.relMes = ds => {
-  const ym = ds.m || TODAY().slice(0, 7); const r = relDados(ym), sec = relSecoes(r);
+  const ym = ds.m || TODAY().slice(0, 7), ult = addDays(addDays(ym + "-01", 32).slice(0, 7) + "-01", -1), hj = TODAY();
+  REL.k = "per"; REL.ini = ym + "-01"; REL.fim = ult > hj ? hj : ult;
   try { localStorage.setItem("frango:rel-visto", ym); } catch (e) {}
-  const txt = "Relatório do Rael, " + mesNome(ym) + "\n\n" + sec.map(([t, x]) => t + ": " + x).join("\n\n");
-  openSheet({ title: "Relatório de " + mesNome(ym), body: () => `<div class="row" style="justify-content:center">${(() => { try { return frRaelCena("pensando", 90); } catch (e) { return ""; } })()}</div>${sec.map(([t, x]) => `<div class="card flat"><div class="eyebrow">${esc(t)}</div><div class="small ink2" style="margin-top:4px;line-height:1.45">${esc(x)}</div></div>`).join("")}<div class="disc">Gerado com os seus próprios registros, sem IA. Estimativas, não é orientação médica.</div>`,
-    foot: () => `<button class="btn" data-act="sheetClose">Fechar</button><button class="btn pri block" data-act="relCopia">Copiar texto</button>` });
-  window.__relTxt = txt;
+  const top = SHEET.stack[SHEET.stack.length - 1];
+  if (top && top.relSheet) { redrawSheet(true); return; }
+  openSheet({ title: "Relatório por período", relSheet: true, body: relCorpo, foot: () => `<button class="btn" data-act="sheetClose">Fechar</button><button class="btn pri block" data-act="relCopia">Copiar texto</button>` });
 };
 ACT.relCopia = () => { const t = window.__relTxt || ""; try { navigator.clipboard.writeText(t).then(() => toast("Relatório copiado"), () => toast("Não deu para copiar.")); } catch (e) { toast("Não deu para copiar."); } };
 
@@ -4905,13 +4937,29 @@ function recordesTreino() {
 // mapa de calor do corpo: regiões simples por grupo muscular, frente e costas
 function mapaCorpo(cont) {
   const mx = Math.max(1, ...Object.values(cont));
-  const cor = g => { const n = cont[g] || 0; return n ? `color-mix(in srgb, var(--gord) ${Math.round(25 + 75 * n / mx)}%, var(--surface-2))` : "var(--surface-2)"; };
-  const R = (g, x, y, w, h, r = 6) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${cor(g)}" stroke="var(--line)" stroke-width="1"><title>${g}: ${cont[g] || 0} séries</title></rect>`;
-  const base = `<circle cx="60" cy="20" r="14" fill="var(--surface-2)" stroke="var(--line)"/>`;
-  const frente = base + R("Ombros", 24, 38, 22, 16) + R("Ombros", 74, 38, 22, 16) + R("Peito", 46, 38, 28, 24) + R("Bíceps", 14, 56, 14, 28) + R("Bíceps", 92, 56, 14, 28) + R("Antebraço", 10, 86, 14, 32) + R("Antebraço", 96, 86, 14, 32) + R("Abdômen", 46, 64, 28, 36) + R("Quadríceps", 40, 104, 18, 52) + R("Quadríceps", 62, 104, 18, 52) + R("Panturrilha", 40, 160, 16, 40) + R("Panturrilha", 64, 160, 16, 40);
-  const costas = base + R("Ombros", 24, 38, 22, 16) + R("Ombros", 74, 38, 22, 16) + R("Costas", 44, 38, 32, 40) + R("Tríceps", 14, 56, 14, 28) + R("Tríceps", 92, 56, 14, 28) + R("Antebraço", 10, 86, 14, 32) + R("Antebraço", 96, 86, 14, 32) + R("Glúteos", 44, 82, 32, 24) + R("Posteriores", 40, 108, 18, 48) + R("Posteriores", 62, 108, 18, 48) + R("Panturrilha", 40, 160, 16, 40) + R("Panturrilha", 64, 160, 16, 40);
-  const svg = (t, c) => `<div style="text-align:center"><svg viewBox="0 0 120 206" width="120" height="206" role="img" aria-label="${t}">${c}</svg><div class="xs muted">${t}</div></div>`;
-  return `<div class="row" style="justify-content:center;gap:24px">${svg("Frente", frente)}${svg("Costas", costas)}</div>`;
+  const cor = g => { const n = cont[g] || 0; return n ? `color-mix(in srgb, var(--gord) ${Math.round(30 + 70 * n / mx)}%, var(--surface-2))` : "var(--surface-2)"; };
+  // arte própria: silhueta atlética com músculos em curvas; cabeça do Rael. Esquerda desenhada e espelhada.
+  const P1 = (g, d) => `<path d="${d}" fill="${cor(g)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.1" stroke-linejoin="round"><title>${g}: ${cont[g] || 0} séries</title></path>`;
+  const par = (g, d) => P1(g, d) + `<g transform="translate(160 0) scale(-1 1)">${P1(g, d)}</g>`;
+  const pele = `<path d="M80 52C68 52 66 58 58 62C46 64 38 74 36 90C34 110 32 140 28 164C26 174 30 178 36 176C42 174 46 164 48 152C50 138 54 118 56 104C58 120 58 134 60 146C58 172 56 196 60 214C58 236 56 256 62 272C60 280 56 284 60 288C68 290 76 288 78 282C80 270 78 236 78 214C80 200 80 190 80 180C80 190 80 200 82 214C82 236 80 270 82 282C84 288 92 290 100 288C104 284 100 280 98 272C104 256 102 236 100 214C104 196 102 172 100 146C102 134 102 120 104 104C106 118 110 138 112 152C114 164 118 174 124 176C130 178 134 174 132 164C128 140 126 110 124 90C122 74 114 64 102 62C94 58 92 52 80 52Z" fill="var(--surface-2)" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.1" stroke-linejoin="round"/>`;
+  const cabeca = `<g stroke="#1B1630" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="72" cy="9" r="6" fill="#D4574A"/><circle cx="80" cy="6" r="7" fill="#D4574A"/><circle cx="88" cy="9" r="6" fill="#D4574A"/><ellipse cx="80" cy="30" rx="21" ry="20" fill="#F7D77A"/><path d="M60 22Q80 12 100 22" fill="none" stroke="#2F4C9E" stroke-width="4"/><circle cx="72" cy="31" r="4.2" fill="#fff"/><circle cx="88" cy="31" r="4.2" fill="#fff"/><circle cx="73" cy="32" r="1.8" fill="#1B1630" stroke="none"/><circle cx="87" cy="32" r="1.8" fill="#1B1630" stroke="none"/><path d="M62 26L75 29M98 26L85 29" fill="none" stroke-width="2.4"/><path d="M75 36H85L80 45Z" fill="#E8903A"/><ellipse cx="80" cy="47" rx="3" ry="4" fill="#D4574A"/></g>`;
+  const pescoco = `<path d="M72 48H88L90 60H70Z" fill="var(--surface-2)" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.1"/>`;
+  const frente = pele + pescoco + par("Ombros", "M60 62C48 62 40 70 38 86C44 90 52 88 57 80C58 72 59 66 60 62Z")
+    + par("Peito", "M62 64C68 62 76 64 79 67V94C72 98 62 94 57 86C56 76 58 68 62 64Z")
+    + par("Bíceps", "M38 90C35 102 35 112 37 120C43 122 49 118 51 110C53 100 53 94 52 88C47 92 42 92 38 90Z")
+    + par("Antebraço", "M36 124C33 138 31 152 30 164C35 168 42 164 45 154C47 142 49 132 50 122C45 126 40 126 36 124Z")
+    + par("Abdômen", "M63 98C70 100 76 98 79 96V142C72 142 66 136 64 126C62 116 62 106 63 98Z")
+    + par("Quadríceps", "M60 148C56 170 56 192 60 210C68 212 75 208 78 200C79 182 79 164 79 148C72 152 66 152 60 148Z")
+    + par("Panturrilha", "M60 220C57 238 57 254 62 270C67 274 74 270 77 262C79 248 78 232 77 220C72 224 66 224 60 220Z");
+  const costas = pele + pescoco + par("Ombros", "M60 62C48 62 40 70 38 86C44 90 52 88 57 80C58 72 59 66 60 62Z")
+    + par("Costas", "M62 64C68 62 76 62 79 62V116C70 120 62 112 58 100C56 86 58 72 62 64Z")
+    + par("Tríceps", "M38 90C35 102 35 112 37 120C43 122 49 118 51 110C53 100 53 94 52 88C47 92 42 92 38 90Z")
+    + par("Antebraço", "M36 124C33 138 31 152 30 164C35 168 42 164 45 154C47 142 49 132 50 122C45 126 40 126 36 124Z")
+    + par("Glúteos", "M60 124C57 140 62 154 79 156V122C72 128 66 128 60 124Z")
+    + par("Posteriores", "M60 160C56 178 57 196 60 210C68 212 75 208 78 200C79 186 79 172 79 160C72 164 66 164 60 160Z")
+    + par("Panturrilha", "M60 220C57 238 57 254 62 270C67 274 74 270 77 262C79 248 78 232 77 220C72 224 66 224 60 220Z");
+  const svg = (t, c) => `<div style="text-align:center"><svg viewBox="0 0 160 296" width="150" height="278" role="img" aria-label="${t}">${c}${cabeca}</svg><div class="xs muted">${t}</div></div>`;
+  return `<div class="row" style="justify-content:center;gap:8px">${svg("Frente", frente)}${svg("Costas", costas)}</div>`;
 }
 function treinoStatsCard(per) {
   const end = TODAY(), all = workouts();
