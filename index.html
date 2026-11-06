@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v51-20261106a"><script>(function(){try{var V="v51-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v52-20261106a"><script>(function(){try{var V="v52-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -5441,17 +5441,21 @@ const HUM = [["pessimo", "Péssimo"], ["mal", "Ruim"], ["normal", "Normal"], ["f
 function notaCard(d, td) {
   return `<div class="card flat"><b>Como foi o dia?</b><div class="humrow">${HUM.map(([k, n], i) => `<button class="humb${d.humor === i + 1 ? " on" : ""}" data-act="humor" data-v="${i + 1}" aria-label="${n}" aria-pressed="${d.humor === i + 1}">${frRael(k, 46)}<span>${n}</span></button>`).join("")}</div><textarea id="notaDia" data-on="notaDia" placeholder="Anotações: sono, fome, o que deu certo, o que pesou..." style="min-height:64px;margin-top:8px">${esc(d.nota || "")}</textarea><div class="row between" style="margin-top:6px"><div class="xs muted">Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}. Entra nos relatórios e no coach.</div><button class="btn sm pri" data-act="notaSalva">Salvar</button></div></div>`;
 }
-ACT.humor = ds => { updDay(ui.date, d => { d.humor = d.humor === num(ds.v) ? 0 : num(ds.v); }); render(); };
-ACT.notaSalva = () => { const el = $("#notaDia"); updDay(ui.date, d => { d.nota = el ? el.value.trim() : ""; }); render(); toast("Anotação salva"); };
-ON.notaDia = el => { updDay(ui.date, d => { d.nota = el.value; }); };
+ACT.humor = ds => { updDay(ui.date, d => { d.humor = d.humor === num(ds.v) ? 0 : num(ds.v); d.humorT = Date.now(); }); render(); };
+ACT.notaSalva = () => { const el = $("#notaDia"); updDay(ui.date, d => { d.nota = el ? el.value.trim() : ""; d.humorT = Date.now(); }); render(); toast("Anotação salva"); };
+ON.notaDia = el => { updDay(ui.date, d => { d.nota = el.value; d.humorT = Date.now(); }); };
 
 // meta de calorias por refeição e distribuição de macros
 const MEAL_PESO = { cafe: .25, almoco: .35, lanche: .10, jantar: .25, ceia: .05 };
 function metaRef(date, k, p = P()) { const on = meals().map(x => x[0]), w = x => MEAL_PESO[x] || .10, tot = on.reduce((s, x) => s + w(x), 0); if (!on.includes(k) || !tot) return 0; return r0(metaDoDia(date, p) * w(k) / tot); }
 function distCard(t, m) {
   const mk = (p, c, g) => { const tot = p * 4 + c * 4 + g * 9; return tot ? [p * 4 / tot * 100, c * 4 / tot * 100, g * 9 / tot * 100] : [0, 0, 0]; };
-  const obj = mk(m.p, m.c, m.g), at = mk(t.p, t.c, t.g), tem = t.kcal > 0;
-  return `<div class="card"><h2>Distribuição das calorias</h2><div class="xs muted">Quanto de cada macro entra no total de calorias, comparado com a meta (traço)</div>${[["Carboidrato", 1, "--carb"], ["Proteína", 0, "--prot"], ["Gordura", 2, "--gord"]].map(([n, i, c]) => `<div style="margin-top:10px"><div class="row between small"><span>${n}</span><span class="muted">${tem ? Math.round(at[i]) + "%" : "–"} · meta ${Math.round(obj[i])}%</span></div><div class="bar" style="position:relative"><i style="width:${clamp(at[i], 0, 100)}%;background:var(${c})"></i><span style="position:absolute;top:-2px;bottom:-2px;left:${clamp(obj[i], 0, 100)}%;width:2px;background:var(--ink)"></span></div></div>`).join("")}</div>`;
+  const obj = mk(m.p, m.c, m.g), at = mk(t.p, t.c, t.g), tem = t.kcal > 0, gr = [[t.p, m.p], [t.c, m.c], [t.g, m.g]];
+  const est = i => { const d = at[i] - obj[i]; return Math.abs(d) <= 5 ? ["no alvo", "var(--good,var(--ok,#2B7A57))"] : d > 0 ? ["acima da meta", "var(--warn,#8A5A00)"] : ["abaixo da meta", "var(--bad,#C0392B)"]; };
+  const lin = ([n, i, c]) => { const [e, ec] = est(i); return `<div style="margin-top:12px"><div class="row between"><b>${n}</b>${tem ? `<span class="small" style="font-weight:700;color:${ec}">${e}</span>` : `<span class="small muted">sem comida ainda</span>`}</div>
+    <div class="bar" style="position:relative;margin-top:4px"><i style="width:${clamp(at[i], 0, 100)}%;background:var(${c})"></i><span style="position:absolute;top:-3px;bottom:-3px;left:${clamp(obj[i], 0, 100)}%;width:3px;background:var(--ink)"></span></div>
+    <div class="small" style="margin-top:3px">${tem ? `Você: <b>${Math.round(at[i])}%</b> (${fmt(gr[i][0])} g) · ` : ""}Meta: <b>${Math.round(obj[i])}%</b> (${fmt(gr[i][1])} g no dia)</div></div>`; };
+  return `<details class="card acc"><summary><b>Proporção das calorias</b> <span class="small muted">os mesmos macros, em % em vez de gramas</span></summary><div class="small ink2" style="margin-top:8px">O cartão de cima mostra quantos <b>gramas</b> você comeu de cada macro. Aqui é o mesmo consumo visto como <b>% das calorias</b>: de tudo que você comeu, quanto veio de cada um. O traço preto é a proporção da sua meta. “No alvo” é até 5 pontos de diferença.</div>${[["Proteína", 0, "--prot"], ["Carboidrato", 1, "--carb"], ["Gordura", 2, "--gord"]].map(lin).join("")}</details>`;
 }
 
 
