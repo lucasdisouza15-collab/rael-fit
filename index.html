@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v53-20261106a"><script>(function(){try{var V="v53-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v54-20261106a"><script>(function(){try{var V="v54-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -5334,7 +5334,7 @@ function onbPassos() {
 function onbTmp() { const d = ONB.d; return Object.assign(P(), { sexo: d.sexo, idade: d.idade, altura: d.altura, atividade: d.atividade, objetivo: d.objetivo, ajuste: d.ajuste, metaPeso: d.metaPeso }); }
 function onbSanf() { const d = ONB.d; return d.objetivo === "perder" && !d.sanfOk && (num(d.ajuste) >= 750 || (d.peso > 20 && metasCalc(onbTmp(), d.peso).baixo)); }
 function onbIni(ret) {
-  const p = P(); ONB.ret = !!ret; ONB.i = 0;
+  const p = P(); ONB.ret = !!ret; ONB.prev = false; ONB.i = 0;
   ONB.d = { motivos: (p.motivos || []).slice(), dif: [], objetivo: p.objetivo || "perder", nome: p.nome || "", sexo: p.sexo || "M", idade: p.idade, altura: p.altura, atividade: p.atividade, peso: r1(pesoAtual(p)), metaPeso: p.metaPeso || "", ajuste: p.ajuste || 500, evento: p.evento && p.evento.tipo || "", eventoData: p.evento && p.evento.data || "", eventoNome: p.evento && p.evento.nome || "", desafio: (p.desafio && p.desafio.dias) || 14, comp: false, fds: p.fimSemana ? num(p.fimSemana.pct) : undefined, reg: p.regPref || "", sanfOk: false };
 }
 function onbLe() {
@@ -5383,7 +5383,7 @@ function onbFoot() {
   if (st === "sanfona") return "";
   const pend = (st === "evento" && !d.evento) || (st === "fds" && d.fds === undefined) || (st === "reg" && !d.reg);
   if (st.startsWith("t_")) return `<button class="btn pri block" data-act="${st === "t_perfil" ? "onbDone" : "onbProx"}">${st === "t_perfil" ? "Bora" : "Próximo"}</button>${st === "t_perfil" ? "" : `<button class="btn ghost block" data-act="onbDone" style="margin-top:6px">Pular tutorial</button>`}`;
-  return `<button class="btn pri block" data-act="${st === "pronto" ? "onbFim" : "onbProx"}" ${pend ? "disabled" : ""}>${st === "oi" ? "Começar" : st === "pronto" ? "Salvar e ver como funciona" : "Próximo"}</button>`;
+  return `<button class="btn pri block" data-act="${st === "pronto" ? "onbFim" : "onbProx"}" ${pend ? "disabled" : ""}>${st === "oi" ? "Começar" : st === "pronto" ? (ONB.prev ? "Fechar (nada é alterado)" : "Salvar e ver como funciona") : "Próximo"}</button>`;
 }
 function onboarding(ret) { onbIni(ret); openSheet({ title: "Frangômetro", full: true, closeAct: ret ? "sheetClose" : "onbSkip", body: onbBody, foot: onbFoot }); }
 ACT.onbRefaz = () => { SHEET.stack = []; onboarding(true); };
@@ -5406,6 +5406,7 @@ const holdSolta = () => { if (_hold) { clearTimeout(_hold); _hold = null; } cons
 document.addEventListener("pointerup", holdSolta); document.addEventListener("pointercancel", holdSolta);
 ACT.onbSkip = () => { updP(p => { p.onb = true; }); closeSheet(); };
 ACT.onbFim = () => {
+  if (ONB.prev) { ONB.prev = false; closeSheet(); toast("Só uma olhada: nada foi alterado."); return; }
   onbLe(); const d = ONB.d; let peso = d.peso;
   updP(p => {
     p.nome = d.nome; p.sexo = d.sexo; p.idade = d.idade; p.altura = d.altura; p.atividade = d.atividade; p.objetivo = d.objetivo; p.ajuste = d.ajuste; p.metaPeso = num(d.metaPeso) || null; p.onb = true;
@@ -5484,19 +5485,22 @@ function render() {
   connectCaps();
   await Promise.race([connectCloud(), new Promise(r => setTimeout(r, 2500))]);
   try { sbInit().then(() => { if (!SHEET.stack.length) render(); }); } catch (e) {}
-  if (!P().onb && !SHEET.stack.length) onboarding();
+  if (!P().onb && !SHEET.stack.length) onboarding(); else if (!SHEET.stack.length) voltouCheck();
   if (getDoc("ativo") && !SHEET.stack.length) render();
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { if (ui.date !== TODAY() && ui._lastToday && ui.date === ui._lastToday) ui.date = TODAY(); ui._lastToday = TODAY(); render(); } });
   ui._lastToday = TODAY();
 })();
 
 // =================== PERFIS E IA ===================
+function lixeira() { try { const a = JSON.parse(localStorage.getItem("raelfit:lixeira") || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 function perfisCard() {
-  const o = perfis();
+  const o = perfis(), lx = lixeira(), cf = UIc.confirm && String(UIc.confirm).startsWith("perfil:") ? UIc.confirm.slice(7) : null, cfi = cf && o.list.find(x => x.id === cf);
   return `<div class="card stack"><div class="row between"><h2>Perfis neste aparelho</h2><button class="btn sm soft" data-act="newPerfil">${ICON.plus.replace("<svg", '<svg width="15" height="15"')} Novo perfil</button></div>
     <div class="list">${o.list.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.nome || "Sem nome")}</div><div class="s">${x.id === o.cur ? "em uso" : "dados separados"}</div></div>
-      ${x.id === o.cur ? '<span class="pill acc">atual</span>' : `<button class="btn sm" data-act="usePerfil" data-id="${esc(x.id)}">Entrar</button>${x.id !== "main" ? `<button class="iconbtn" data-act="delPerfilAsk" data-id="${esc(x.id)}" aria-label="Apagar perfil">${ICON.trash}</button>` : ""}`}</div>`).join("")}</div>
-    ${UIc.confirm && UIc.confirm.startsWith("perfil:") ? confirmBox("Apagar este perfil e todos os dados dele neste aparelho?", "delPerfil", { id: UIc.confirm.slice(7) }, "Apagar perfil") : ""}
+      ${x.id === o.cur ? '<span class="pill acc">atual</span>' : `<button class="btn sm" data-act="usePerfil" data-id="${esc(x.id)}">Entrar</button>`}<button class="iconbtn" data-act="delPerfilAsk" data-id="${esc(x.id)}" aria-label="Apagar perfil">${ICON.trash}</button></div>`).join("")}</div>
+    ${cfi ? `<div class="confirm"><div class="small"><b>Apagar o perfil "${esc(cfi.nome || "Sem nome")}" deste aparelho?</b><br>Só os dados guardados neste celular saem. Nada é apagado na nuvem, no Supabase nem no Painel. Uma cópia de segurança fica guardada aqui, em "Perfis apagados", e dá para restaurar.${o.list.length === 1 ? " Como é o único perfil, você vai direto para as boas-vindas com um perfil novo." : ""}</div><div class="row wrap-ok"><button class="btn sm danger" data-act="delPerfil" data-id="${esc(cf)}">Apagar do aparelho</button><button class="btn sm soft" data-act="baixaPerfil" data-id="${esc(cf)}">Baixar cópia</button><button class="btn sm ghost" data-act="cancelConfirm">Cancelar</button></div></div>` : ""}
+    ${lx.length ? `<div class="stack"><div class="small"><b>Perfis apagados</b> (cópia neste aparelho)</div><div class="list">${lx.map((x, i) => `<div class="li"><div class="grow"><div class="t">${esc(x.nome || "Sem nome")}</div><div class="s">apagado em ${esc(x.quando || "")}</div></div><button class="btn sm" data-act="restauraPerfil" data-i="${i}">Restaurar</button><button class="iconbtn" data-act="limpaLixo" data-i="${i}" aria-label="Descartar cópia">${ICON.trash}</button></div>`).join("")}</div></div>` : ""}
+    <button class="btn soft block" data-act="onbVer">Rever as boas-vindas (não apaga nada)</button>
     <div class="xs muted">${qi("Cada perfil tem refeições, treinos e metas próprios. Bom para testar ou para dividir o celular.")}</div></div>`;
 }
 ACT.perfilMenu = () => {
@@ -5521,14 +5525,63 @@ function switchPerfilQuiet(id) {
   ST.docs = lsRead(); if (ST.col) mergeRemote();
   ui.date = TODAY(); ui.tab = "hoje"; AI.chat = []; drawSheet(); scrollTo(0, 0);
 }
+function lixoMonta(id) {
+  const it = perfis().list.find(x => x.id === id) || { id, nome: "" }, key = id === "main" ? LS_KEY : LS_KEY + ":" + id;
+  let data = null; try { data = (id === PID() ? JSON.stringify(ST.docs) : localStorage.getItem(key)) || "{}"; } catch (e) {}
+  return { id, nome: it.nome || "", quando: TODAY().split("-").reverse().join("/"), data };
+}
+ACT.baixaPerfil = ds => {
+  const x = lixoMonta(ds.id); if (x.data === null) { toast("Não consegui ler os dados."); return; }
+  try { const bl = new Blob([x.data], { type: "application/json" }), u = URL.createObjectURL(bl), a = document.createElement("a"); a.href = u; a.download = "frangometro-perfil-" + (x.nome || x.id).replace(/[^\w-]+/g, "_") + "-" + TODAY() + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); toast("Cópia baixada"); } catch (e) { toast("Não deu para baixar aqui."); }
+};
 ACT.delPerfilAsk = ds => { UIc.confirm = "perfil:" + ds.id; render(); };
 ACT.delPerfil = ds => {
-  UIc.confirm = null; const o = perfis(); if (ds.id === o.cur || ds.id === "main") return;
-  o.list = o.list.filter(x => x.id !== ds.id); savePerfis(o);
-  try { localStorage.removeItem(LS_KEY + ":" + ds.id); } catch (e) {}
-  if (ST.col) for (const id in ST.remote) if (id.startsWith(ds.id + "__")) ST.col.doc(id).delete().catch(() => {});
-  render(); toast("Perfil apagado");
+  UIc.confirm = null; const o = perfis(); if (!o.list.some(x => x.id === ds.id)) { render(); return; }
+  const x = lixoMonta(ds.id); if (x.data === null) { toast("Não apaguei: não consegui guardar a cópia."); render(); return; }
+  const lx = lixeira(); lx.push(x);
+  try { localStorage.setItem("raelfit:lixeira", JSON.stringify(lx)); } catch (e) { toast("Não apaguei: sem espaço para a cópia de segurança. Baixe a cópia antes."); render(); return; }
+  // apaga SÓ o que está neste aparelho; nada é removido na nuvem/Supabase/Painel
+  const eraCur = ds.id === o.cur;
+  for (const k in ST.timers) clearTimeout(ST.timers[k]);
+  try { localStorage.removeItem(ds.id === "main" ? LS_KEY : LS_KEY + ":" + ds.id); } catch (e) {}
+  o.list = o.list.filter(y => y.id !== ds.id);
+  if (!o.list.length) o.list.push({ id: "p" + uid(), nome: "" });
+  if (eraCur) o.cur = o.list[0].id;
+  savePerfis(o);
+  if (eraCur) {
+    ST.docs = lsRead(); ui.date = TODAY(); ui.tab = "hoje"; AI.chat = []; SHEET.stack = []; drawSheet(); render(); scrollTo(0, 0);
+    toast("Perfil apagado deste aparelho"); if (!P().onb) onboarding();
+  } else { render(); toast("Perfil apagado deste aparelho"); }
 };
+ACT.restauraPerfil = ds => {
+  const lx = lixeira(), x = lx[+ds.i]; if (!x) return;
+  const o = perfis(); let id = x.id; if (o.list.some(y => y.id === id)) id = "p" + uid();
+  try { localStorage.setItem(id === "main" ? LS_KEY : LS_KEY + ":" + id, x.data || "{}"); } catch (e) { toast("Sem espaço para restaurar."); return; }
+  o.list.push({ id, nome: x.nome }); savePerfis(o);
+  lx.splice(+ds.i, 1); try { localStorage.setItem("raelfit:lixeira", JSON.stringify(lx)); } catch (e) {}
+  switchPerfil(id); toast("Perfil restaurado");
+};
+ACT.limpaLixo = ds => { const lx = lixeira(); lx.splice(+ds.i, 1); try { localStorage.setItem("raelfit:lixeira", JSON.stringify(lx)); } catch (e) {} render(); };
+function ultimoRegistro() {
+  let last = null;
+  for (const dt of allDays()) { const d = day(dt); let t = false; try { t = dayT(d).kcal > 0 || !!d.peso || treinosDo(dt).length > 0; } catch (e) {} if (t && (!last || dt > last)) last = dt; }
+  return last;
+}
+function voltouCheck() {
+  try {
+    const p = P(), last = ultimoRegistro(); if (!last || !p.onb) return;
+    const dias = Math.round((new Date(TODAY() + "T12:00:00") - new Date(last + "T12:00:00")) / 864e5);
+    if (dias < 30 || p.voltaVisto === last) return;
+    updP(q => { q.voltaVisto = last; }); voltouSheet(dias);
+  } catch (e) {}
+}
+function voltouSheet(dias) {
+  const p = P(), kg = pesoAtual(p), meta = p.metaPeso, tempo = dias >= 60 ? "uns " + Math.round(dias / 30) + " meses" : dias + " dias";
+  openSheet({ title: "Que bom que você voltou!", body: `<div style="text-align:center">${frRael("feliz", 120)}</div><div class="stack" style="text-align:center"><div>Faz ${tempo} desde o último registro, e tudo bem. O Rael só ficou de olho no galinheiro.</div><div class="small ink2">Seus dados continuam todos aqui. Que tal rever as metas, o peso de hoje e o plano para recomeçar do jeito que faz sentido agora?</div>${kg ? `<div class="card flat small">Peso guardado: <b>${fmt1(kg)} kg</b>${meta ? ` · meta <b>${fmt1(meta)} kg</b>` : ""}</div>` : ""}</div>`, foot: `<button class="btn pri block" data-act="voltouPlano">Rever meu plano e metas</button><button class="btn soft block" data-act="voltouPeso">Registrar meu peso de hoje</button><button class="btn ghost block" data-act="sheetClose">Agora não</button>` });
+}
+ACT.voltouPlano = () => { SHEET.stack = []; onboarding(true); };
+ACT.voltouPeso = () => { closeSheet(); ui.tab = "hoje"; ui.date = TODAY(); render(); setTimeout(() => { const e = document.getElementById("pesoIn"); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); } else toast("Toque no campo de peso na aba Hoje."); }, 250); };
+ACT.onbVer = () => { SHEET.stack = []; onboarding(true); ONB.prev = true; drawSheet(); };
 function iaCard() {
   const via = CAP.via, k = apiKey();
   const st = via === "claude" ? ["good", "Ligada pela conta Claude"] : via === "gemini" ? ["good", "Ligada pelo Gemini (grátis)"] : via === "api" ? ["good", "Ligada pela API do Claude"] : ["", "Modo copiar e colar"];
