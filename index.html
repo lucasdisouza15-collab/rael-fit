@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v44-20261106a"><script>(function(){try{var V="v44-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v45-20261106a"><script>(function(){try{var V="v45-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -4850,6 +4850,101 @@ ACT.saveAtv = () => {
 ACT.delAtv = ds => { updDay(ui.date, d => { d.atv = (d.atv || []).filter(x => x.id !== ds.id); }); render(); };
 
 // =================== EVOLUÇÃO ===================
+// ---------- estatísticas de treino (Evolução) ----------
+const wkIni = s => addDays(s, -((dowOf(s) + 6) % 7));
+const MESES_N = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const wDur = w => { const d = ((w.fim || 0) - (w.inicio || 0)) / 60000; return d > 0 && d < 300 ? d : 0; };
+const wSeries = w => (w.ex || []).reduce((s, x) => s + (x.series || []).filter(z => z.ok && z.tipo !== "aq").length, 0);
+const wReps = w => (w.ex || []).reduce((s, x) => s + (x.series || []).filter(z => z.ok && z.tipo !== "aq").reduce((a, z) => a + num(z.reps), 0), 0);
+const fmtDur = m => m >= 60 ? Math.floor(m / 60) + "h" + String(Math.round(m % 60)).padStart(2, "0") : Math.round(m) + "min";
+function seriesPorGrupo(ws) {
+  const o = {};
+  ws.forEach(w => (w.ex || []).forEach(x => { const g = exById(x.eid).grupo; if (!g) return; const n = (x.series || []).filter(z => z.ok && z.tipo !== "aq").length; if (n) o[g] = (o[g] || 0) + n; }));
+  return o;
+}
+function recordesTreino() {
+  const best = {}, ev = [];
+  workouts().slice().reverse().forEach(w => (w.ex || []).forEach(x => {
+    const e = exById(x.eid); if (e.tipo && e.tipo !== "carga" && e.tipo !== "corpo") return;
+    let top = null; (x.series || []).forEach(z => { if (!z.ok || z.tipo === "aq") return; const v = e1rm(num(z.kg), num(z.reps)); if (v > 0 && (!top || v > top.v)) top = { v, kg: num(z.kg), reps: num(z.reps) }; });
+    if (!top) return;
+    const b = best[x.eid];
+    if (b && top.v > b.v + 0.01) ev.push({ eid: x.eid, nome: e.nome, kg: top.kg, reps: top.reps, data: w.data });
+    if (!b || top.v > b.v) best[x.eid] = { v: top.v, kg: top.kg, reps: top.reps, data: w.data, nome: e.nome };
+  }));
+  return { best, ev };
+}
+// mapa de calor do corpo: regiões simples por grupo muscular, frente e costas
+function mapaCorpo(cont) {
+  const mx = Math.max(1, ...Object.values(cont));
+  const cor = g => { const n = cont[g] || 0; return n ? `color-mix(in srgb, var(--gord) ${Math.round(25 + 75 * n / mx)}%, var(--surface-2))` : "var(--surface-2)"; };
+  const R = (g, x, y, w, h, r = 6) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${cor(g)}" stroke="var(--line)" stroke-width="1"><title>${g}: ${cont[g] || 0} séries</title></rect>`;
+  const base = `<circle cx="60" cy="20" r="14" fill="var(--surface-2)" stroke="var(--line)"/>`;
+  const frente = base + R("Ombros", 24, 38, 22, 16) + R("Ombros", 74, 38, 22, 16) + R("Peito", 46, 38, 28, 24) + R("Bíceps", 14, 56, 14, 28) + R("Bíceps", 92, 56, 14, 28) + R("Antebraço", 10, 86, 14, 32) + R("Antebraço", 96, 86, 14, 32) + R("Abdômen", 46, 64, 28, 36) + R("Quadríceps", 40, 104, 18, 52) + R("Quadríceps", 62, 104, 18, 52) + R("Panturrilha", 40, 160, 16, 40) + R("Panturrilha", 64, 160, 16, 40);
+  const costas = base + R("Ombros", 24, 38, 22, 16) + R("Ombros", 74, 38, 22, 16) + R("Costas", 44, 38, 32, 40) + R("Tríceps", 14, 56, 14, 28) + R("Tríceps", 92, 56, 14, 28) + R("Antebraço", 10, 86, 14, 32) + R("Antebraço", 96, 86, 14, 32) + R("Glúteos", 44, 82, 32, 24) + R("Posteriores", 40, 108, 18, 48) + R("Posteriores", 62, 108, 18, 48) + R("Panturrilha", 40, 160, 16, 40) + R("Panturrilha", 64, 160, 16, 40);
+  const svg = (t, c) => `<div style="text-align:center"><svg viewBox="0 0 120 206" width="120" height="206" role="img" aria-label="${t}">${c}</svg><div class="xs muted">${t}</div></div>`;
+  return `<div class="row" style="justify-content:center;gap:24px">${svg("Frente", frente)}${svg("Costas", costas)}</div>`;
+}
+function treinoStatsCard(per) {
+  const end = TODAY(), all = workouts();
+  if (!all.length) return `<div class="card"><h2>Estatísticas de treino</h2><div class="small ink2">Registre ou importe treinos (Perfil, Importar do Hevy) para ver calendário, sequência, recordes e relatório mensal.</div></div>`;
+  let h = "";
+  // calendário mensal
+  const mes = ui.evoMes || end.slice(0, 7), [ay, am] = mes.split("-").map(Number);
+  const prim = mes + "-01", nDias = new Date(ay, am, 0).getDate(), offs = (dowOf(prim) + 6) % 7;
+  const porDia = {}; all.forEach(w => { (porDia[w.data] = porDia[w.data] || []).push(w); });
+  let cel = "";
+  for (let i = 0; i < offs; i++) cel += `<div></div>`;
+  for (let d = 1; d <= nDias; d++) {
+    const ds = mes + "-" + String(d).padStart(2, "0"), l = porDia[ds], hoje = ds === end;
+    cel += `<div style="min-height:46px;padding:3px;border:1px solid ${hoje ? "var(--accent)" : "var(--line)"};background:${l ? "color-mix(in srgb, var(--prot) 28%, var(--surface))" : "var(--surface)"};font-size:11px;line-height:1.15;overflow:hidden" ${l ? `data-tip="${esc(ddmm(ds) + ": " + l.map(w => w.nome).join(", "))}"` : ""}><span class="muted">${d}</span>${l ? `<div style="font-weight:700;color:var(--ink)">${esc(String(l[0].nome || "Treino").split(/\s+/)[0].slice(0, 6).toUpperCase())}</div>` : ""}</div>`;
+  }
+  const doMes = all.filter(w => w.data.slice(0, 7) === mes), diasT = new Set(doMes.map(w => w.data)).size;
+  const ateAqui = mes === end.slice(0, 7) ? new Date(end + "T12:00:00").getDate() : nDias;
+  h += `<div class="card"><div class="row between"><h2>Calendário de treinos</h2><div class="row" style="gap:6px"><button class="iconbtn" data-act="evoMes" data-d="-1" aria-label="Mês anterior">‹</button><b class="small" style="min-width:104px;text-align:center">${MESES_N[am - 1]} ${ay}</b><button class="iconbtn" data-act="evoMes" data-d="1" aria-label="Próximo mês" ${mes >= end.slice(0, 7) ? "disabled" : ""}>›</button></div></div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px">${DOW.slice(1).concat(DOW[0]).map(d => `<div class="xs muted" style="text-align:center">${d}</div>`).join("")}${cel}</div>
+    <div class="xs muted" style="margin-top:6px">${diasT} dia${diasT === 1 ? "" : "s"} de treino · ${Math.max(0, ateAqui - diasT)} de descanso</div></div>`;
+  // sequência de semanas
+  const sem = new Set(all.map(w => wkIni(w.data))), semAtual = wkIni(end);
+  let atual = 0, c = sem.has(semAtual) ? semAtual : addDays(semAtual, -7);
+  while (sem.has(c)) { atual++; c = addDays(c, -7); }
+  const ord = [...sem].sort(); let melhor = 0, run = 0, prev = null;
+  ord.forEach(s => { run = prev && addDays(prev, 7) === s ? run + 1 : 1; if (run > melhor) melhor = run; prev = s; });
+  const semMes = all.filter(w => w.data >= addDays(end, -27)).length;
+  h += `<div class="grid2"><div class="card stat"><span>Sequência de semanas</span><b>${atual}</b><span>${sem.has(semAtual) ? "esta semana já conta" : "treine esta semana para manter"} · recorde ${melhor}</span></div>
+    <div class="card stat"><span>Treinos no total</span><b>${all.length}</b><span>${fmt1(semMes / 4)} por semana nas últimas 4</span></div></div>`;
+  // gráfico semanal
+  const met = ui.evoMet || "dur";
+  const wk = Array.from({ length: 12 }, (_, i) => { const s = addDays(semAtual, -7 * (11 - i)), e = addDays(s, 6), l = all.filter(w => w.data >= s && w.data <= e); const y = met === "dur" ? l.reduce((a, w) => a + wDur(w), 0) / 60 : met === "vol" ? l.reduce((a, w) => a + volume(w), 0) : l.reduce((a, w) => a + wReps(w), 0); return { x: ddmm(s), y: Math.round(y * 10) / 10, c: "--prot", tip: ddmm(s) + ": " + (met === "dur" ? fmtDur(y * 60) : fmt(y) + (met === "vol" ? " kg" : " repetições")) }; });
+  h += `<div class="card"><div class="row between"><h2>Por semana</h2><div class="seg" style="width:auto">${[["dur", "Duração"], ["vol", "Volume"], ["rep", "Repetições"]].map(([k, n]) => `<button aria-pressed="${met === k}" data-act="evoMet" data-k="${k}">${n}</button>`).join("")}</div></div><div class="xs muted">Últimas 12 semanas${met === "dur" ? " (horas)" : met === "vol" ? " (kg)" : ""}</div>${barChart(wk, { h: 170, label: "Treino por semana" })}</div>`;
+  // séries por grupo + mapa (período do filtro)
+  const ini = addDays(end, -(per - 1)), wsP = all.filter(w => w.data >= ini && w.data <= end), cont = seriesPorGrupo(wsP);
+  const gl = Object.entries(cont).filter(([g]) => g !== "Corpo inteiro" && g !== "Cardio").sort((a, b) => b[1] - a[1]), tot = gl.reduce((s, [, n]) => s + n, 0) || 1, mxg = gl.length ? gl[0][1] : 1;
+  h += `<div class="card"><h2>Séries por grupo muscular</h2><div class="xs muted">Últimos ${per} dias · séries de trabalho (aquecimento não conta)</div>${gl.length ? `<div class="stack" style="gap:6px;margin-top:8px">${gl.map(([g, n]) => `<div class="row" style="gap:8px"><span class="small" style="width:96px">${g}</span><div class="grow" style="background:var(--surface-2);height:12px"><div style="width:${Math.round(100 * n / mxg)}%;height:100%;background:var(--prot)"></div></div><span class="small" style="width:64px;text-align:right">${n} · ${Math.round(100 * n / tot)}%</span></div>`).join("")}</div>` : `<div class="small muted" style="margin-top:6px">Sem séries registradas no período.</div>`}</div>`;
+  const c7 = seriesPorGrupo(all.filter(w => w.data >= addDays(end, -6) && w.data <= end));
+  h += `<div class="card"><h2>Mapa do corpo</h2><div class="xs muted">Últimos 7 dias · quanto mais escuro, mais séries</div><div style="margin-top:8px">${mapaCorpo(c7)}</div></div>`;
+  // principais exercícios
+  const exs = {}; wsP.forEach(w => (w.ex || []).forEach(x => { const o = exs[x.eid] || (exs[x.eid] = { nome: exById(x.eid).nome, n: 0, ses: 0, vol: 0 }); const s = (x.series || []).filter(z => z.ok && z.tipo !== "aq"); if (s.length) { o.n += s.length; o.ses++; o.vol += s.reduce((a, z) => a + num(z.kg) * num(z.reps), 0); } }));
+  const topE = Object.values(exs).filter(o => o.n).sort((a, b) => b.ses - a.ses || b.n - a.n).slice(0, 8);
+  h += `<div class="card"><h2>Principais exercícios</h2><div class="xs muted">Últimos ${per} dias, por nº de treinos em que apareceram</div>${topE.length ? `<div class="list" style="margin-top:6px">${topE.map((o, i) => `<div class="li"><div class="grow"><div class="t">${i + 1}. ${esc(o.nome)}</div><div class="s">${o.ses} treino${o.ses === 1 ? "" : "s"} · ${o.n} séries · ${fmt(o.vol)} kg de volume</div></div></div>`).join("")}</div>` : `<div class="small muted">Nada registrado no período.</div>`}</div>`;
+  // recordes
+  const rc = recordesTreino(), recMes = rc.ev.filter(e => e.data >= addDays(end, -29)), ultimos = rc.ev.slice(-6).reverse();
+  const forca = Object.values(rc.best).sort((a, b) => b.v - a.v).slice(0, 5);
+  h += `<div class="card"><div class="row between"><h2>Recordes</h2><span class="pill acc">${recMes.length} nos últimos 30 dias</span></div>
+    <div class="xs muted">Estimativa de 1 repetição máxima (carga × (1 + repetições ÷ 30))</div>
+    ${ultimos.length ? `<div class="eyebrow" style="margin-top:8px">Recordes batidos recentemente</div><div class="list">${ultimos.map(e => `<div class="li"><div class="grow"><div class="t">${esc(e.nome)}</div><div class="s">${fmt1(e.kg)} kg × ${e.reps} · ${ddmm(e.data)}</div></div></div>`).join("")}</div>` : `<div class="small muted" style="margin-top:6px">Nenhum recorde novo ainda: precisa de ao menos dois treinos do mesmo exercício.</div>`}
+    ${forca.length ? `<div class="eyebrow" style="margin-top:8px">Melhores marcas</div><div class="list">${forca.map(b => `<div class="li"><div class="grow"><div class="t">${esc(b.nome)}</div><div class="s">${fmt1(b.kg)} kg × ${b.reps} · 1RM est. ${fmt1(b.v)} kg · ${ddmm(b.data)}</div></div></div>`).join("")}</div>` : ""}</div>`;
+  // relatório mensal x mês anterior
+  const rel = ms => { const l = all.filter(w => w.data.slice(0, 7) === ms); return { n: l.length, dur: l.reduce((a, w) => a + wDur(w), 0), vol: l.reduce((a, w) => a + volume(w), 0), ser: l.reduce((a, w) => a + wSeries(w), 0), rep: l.reduce((a, w) => a + wReps(w), 0), pr: rc.ev.filter(e => e.data.slice(0, 7) === ms).length }; };
+  const mAt = end.slice(0, 7), mAnt = (() => { const d = new Date(+mAt.slice(0, 4), +mAt.slice(5) - 2, 1); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); })();
+  const a = rel(mAt), b = rel(mAnt);
+  const dl = (x, y, f) => { if (!y) return x ? `<span class="xs muted">novo</span>` : ""; const p = Math.round(100 * (x - y) / y); return `<span class="xs" style="color:var(${p >= 0 ? "--good" : "--bad"})">${p >= 0 ? "+" : ""}${p}%</span>`; };
+  const linhas = [["Treinos", a.n, b.n, fmt], ["Duração", a.dur, b.dur, fmtDur], ["Volume", a.vol, b.vol, v => fmt(v) + " kg"], ["Séries", a.ser, b.ser, fmt], ["Repetições", a.rep, b.rep, fmt], ["Recordes", a.pr, b.pr, fmt]];
+  h += `<div class="card"><h2>Relatório mensal</h2><div class="xs muted">${MESES_N[+mAt.slice(5) - 1]} (até hoje) comparado com ${MESES_N[+mAnt.slice(5) - 1]} inteiro</div><div style="overflow-x:auto;margin-top:6px"><table class="sets small"><thead><tr><th></th><th>Este mês</th><th>Anterior</th><th></th></tr></thead><tbody>${linhas.map(([n, x, y, f]) => `<tr><td>${n}</td><td><b>${f(x)}</b></td><td>${f(y)}</td><td>${dl(x, y)}</td></tr>`).join("")}</tbody></table></div></div>`;
+  return h;
+}
+ACT.evoMes = ds => { const cur = ui.evoMes || TODAY().slice(0, 7), d = new Date(+cur.slice(0, 4), +cur.slice(5) - 1 + +ds.d, 1); let n = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); if (n > TODAY().slice(0, 7)) return; ui.evoMes = n; render(); };
+ACT.evoMet = ds => { ui.evoMet = ds.k; render(); };
 function viewEvo() {
   const p = P(), per = ui.evoPer || 30, end = TODAY(), start = addDays(end, -(per - 1));
   const days = Array.from({ length: per }, (_, i) => addDays(start, i));
@@ -4874,6 +4969,7 @@ function viewEvo() {
   if (reg.length) { const avg = sumT(reg.map(r => r.t)); for (const k in avg) avg[k] /= reg.length; h += `<div class="card"><h2>Macros médios por dia</h2><div style="margin-top:10px">${macroBars(avg, m)}</div></div>`; }
   const wk = Array.from({ length: 8 }, (_, i) => { const s = addDays(end, -((dowOf(end) + 6) % 7) - 7 * (7 - i)), e = addDays(s, 6); const l = workouts().filter(w => w.data >= s && w.data <= e); return { x: ddmm(s), y: l.length, c: "--gord", tip: "Semana de " + ddmm(s) + ": " + l.length + " treinos, " + fmt(l.reduce((a, w) => a + volume(w), 0)) + " kg" }; });
   h += `<div class="card"><h2>Treinos por semana</h2><div class="xs muted">Últimas 8 semanas</div>${barChart(wk, { h: 150, label: "Treinos por semana" })}</div>`;
+  h += treinoStatsCard(per);
   h += medidasCard() + sonoCard();
   h += `<div class="card ai"><div class="ai-badge">${ICON.spark} Análise do coach${qi("A IA lê seus números do período e diz o que está indo bem e o que ajustar.")}</div><div style="margin:4px 0 8px"></div><button class="btn soft block" data-act="aiAnalise">Analisar meus ${per} dias</button></div>`;
   return `<div class="stack">${h}</div>`;
