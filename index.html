@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v56-20261106a"><script>(function(){try{var V="v56-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v57-20261106a"><script>(function(){try{var V="v57-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -373,6 +373,9 @@ details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{displ
 .sec-label{font:900 13px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 2px -4px}
 .humrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}.humb{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 2px 4px;font:inherit;font-size:11px;font-weight:600;color:var(--ink-2);cursor:pointer}.humb svg{width:100%;max-width:46px;height:auto}.humb.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--ink)}
 .onb{display:flex;flex-direction:column;gap:14px;min-height:60vh}
+.stepcard{display:flex;flex-direction:column;gap:12px;animation:stepIn .28s ease-out;margin-top:12px}@keyframes stepIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.stepcard{animation:none}}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:4px}.dots i{width:8px;height:8px;border-radius:999px;background:var(--line);transition:all .25s}.dots i.on{background:var(--accent);width:24px}
+.onb-cnt{text-align:center;font-size:12px;color:var(--muted)}
 .onb-top{display:flex;align-items:center;gap:10px}
 .onb-bar{flex:1;height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden}
 .onb-bar i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .3s}
@@ -5387,7 +5390,7 @@ function onbBody() {
   else if (st === "reg") h = T("Como você prefere registrar as refeições?", "Dá para mudar sempre.") + ONB_REG.map(([k, i, t]) => onbOpt("onbReg", d.reg === k, i, t, `data-v="${k}"`)).join("") + (d.reg === "foto" || d.reg === "misto" ? `<div class="small ink2">A foto só vai para a IA quando você toca em Analisar, e você revisa os gramas antes de salvar. A IA estima, então confira.</div>` : "");
   else if (st.startsWith("t_")) { const [ic, ti, tx] = ONB_TUT[st]; h = `<div style="text-align:center;color:var(--accent)">${ICON[ic].replace("<svg", '<svg width="64" height="64"')}</div>` + T(ti, tx) + `<div class="xs muted" style="text-align:center">${st === "t_perfil" ? "Fim do tutorial." : "Tutorial " + (ps.indexOf(st) - ps.indexOf("t_hoje") + 1) + " de 5"}</div>`; }
   else if (st === "pronto") { const tp = onbTmp(), m = metasCalc(tp, d.peso), pv = metaPrev(tp, d.peso, d.metaPeso); h = `<div style="text-align:center">${frRael("feliz", 110)}</div>` + T("Seu plano está pronto.", "Veja se faz sentido. Dá para mexer em tudo depois.") + `<div class="card"><div class="eyebrow">Por dia</div><div class="num" style="font-size:32px;font-weight:700">${fmt(m.kcal)} kcal</div><div class="small ink2">Proteína ${m.p} g · Carboidrato ${m.c} g · Gordura ${m.g} g · Água ${fmt(m.agua)} ml</div>${m.baixo ? `<div class="pill warn" style="margin-top:6px">Meta travada no mínimo por segurança</div>` : ""}</div>${d.fds > 0 ? `<div class="small ink2">Fim de semana: +${d.fds}% de calorias, e os outros dias ficam um pouco menores.</div>` : ""}${pv ? `<div class="small ink2">${prevTxt(pv)}</div>` : ""}${d.evento && d.evento !== "Nenhum" ? `<div class="small ink2">Evento: ${esc(d.evento === "Outro" && d.eventoNome ? d.eventoNome : d.evento)}${d.eventoData ? " em " + fmtData(d.eventoData) : ""}.</div>` : ""}<div class="small ink2">Desafio: ${d.desafio} dias seguidos lançando comida.</div><div class="disc">Estimativas. Não substituem médico ou nutricionista.</div>`; }
-  return `<div class="onb">${top}${h}</div>`;
+  return `<div class="onb">${top}<div class="card stepcard" id="stp${ONB.i}">${h}</div><div class="onb-cnt">Passo ${ONB.i + 1} de ${ps.length}</div></div>`;
 }
 function onbFoot() {
   const d = ONB.d, st = onbPassos()[ONB.i];
@@ -5459,7 +5462,7 @@ const HUM = [["pessimo", "Péssimo"], ["mal", "Ruim"], ["normal", "Normal"], ["f
 function notaCard(d, td) {
   const cs = dayChecks(d), hv = cs.filter(c => c.humor > 0).map(c => c.humor), md = hv.length ? humMedia(hv) : 0, ult = cs.filter(c => c.humor > 0).slice(-1)[0];
   return `<div class="card flat"><div class="row between"><b>Como você está agora?</b>${hv.length ? `<span class="pill acc">${hv.length} ${hv.length === 1 ? "registro" : "registros"} · média ${fmt1(md)}</span>` : ""}</div><div class="humrow">${HUM.map(([k, n], i) => `<button class="humb${ult && ult.humor === i + 1 ? " on" : ""}" data-act="humor" data-v="${i + 1}" aria-label="${n}">${frRael(k, 46)}<span>${n}</span></button>`).join("")}</div>
-    <div class="xs muted">${ult ? "Agora: " + (HUM_NOMES[ult.humor - 1] || "").toLowerCase() + " · marcado às " + esc(ult.hora) : "Toque no rosto de como você está agora."} O humor muda ao longo do dia: toque de novo quando mudar.</div>
+    ${hv.length ? `<div class="card flat row" style="gap:12px;margin-top:8px;align-items:center"><span class="fr-seq">${fmt1(md)}</span><div class="grow small"><b>Média do dia: ${esc(humNome(md).toLowerCase())}</b><br><span class="xs muted">${hv.length} ${hv.length === 1 ? "registro" : "registros"}${hv.length > 1 ? ", de " + Math.min(...hv) + " a " + Math.max(...hv) : ""}</span></div></div>` : ""}<div class="xs muted">${ult ? "Agora: " + (HUM_NOMES[ult.humor - 1] || "").toLowerCase() + " · marcado às " + esc(ult.hora) + "." : "Toque no rosto de como você está agora."} O humor muda ao longo do dia: toque de novo quando mudar.</div>
     <textarea id="notaDia" placeholder="Anotações: sono, fome, o que deu certo, o que pesou..." style="min-height:56px;margin-top:8px"></textarea>
     <div class="row between" style="margin-top:6px"><div class="xs muted">Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}. Média e variação entram nos relatórios e no coach.</div><button class="btn sm pri" data-act="notaSalva">Salvar</button></div>
     ${cs.length ? `<div class="list" style="margin-top:8px">${cs.map((c, i) => `<div class="li"><span>${frRael(HUM[c.humor - 1] ? HUM[c.humor - 1][0] : "normal", 30)}</span><div class="grow"><div class="t">${esc(c.hora)}${c.humor ? " · " + esc(HUM_NOMES[c.humor - 1] || "") : ""}</div>${c.nota ? `<div class="s">${esc(c.nota)}</div>` : ""}</div><button class="iconbtn" data-act="humApaga" data-i="${i}" aria-label="Remover registro">${ICON.trash}</button></div>`).join("")}</div>` : ""}</div>`;
@@ -5601,10 +5604,30 @@ function voltouCheck() {
     updP(q => { q.voltaVisto = last; }); voltouSheet(dias);
   } catch (e) {}
 }
-function voltouSheet(dias) {
-  const p = P(), kg = pesoAtual(p), meta = p.metaPeso, tempo = dias >= 60 ? "uns " + Math.round(dias / 30) + " meses" : dias + " dias";
-  openSheet({ title: "Que bom que você voltou!", body: `<div style="text-align:center">${frRael("feliz", 120)}</div><div class="stack" style="text-align:center"><div>Faz ${tempo} desde o último registro, e tudo bem. O Rael só ficou de olho no galinheiro.</div><div class="small ink2">Seus dados continuam todos aqui. Que tal rever as metas, o peso de hoje e o plano para recomeçar do jeito que faz sentido agora?</div>${kg ? `<div class="card flat small">Peso guardado: <b>${fmt1(kg)} kg</b>${meta ? ` · meta <b>${fmt1(meta)} kg</b>` : ""}</div>` : ""}</div>`, foot: `<button class="btn pri block" data-act="voltouPlano">Rever meu plano e metas</button><button class="btn soft block" data-act="voltouPeso">Registrar meu peso de hoje</button><button class="btn ghost block" data-act="sheetClose">Agora não</button>` });
+const VOLTA = { i: 0, d: null };
+function voltouCards() {
+  const d = VOLTA.d, p = P(), t = d.dias >= 60 ? "uns " + Math.round(d.dias / 30) + " meses" : d.dias + " dias", ds = d.last.split("-").reverse().slice(0, 2).join("/");
+  return [
+    `<div style="text-align:center">${frRael("feliz", 120)}</div><h1 style="text-align:center">Que bom que você voltou!</h1><div class="sub" style="text-align:center">Faz ${t} desde o último registro (${ds}), e tudo bem. O Rael só ficou de olho no galinheiro. Sem cobrança: bora ver onde você está e recomeçar do jeito que faz sentido agora.</div>`,
+    `<h1>Seus números continuam aqui</h1><div class="list"><div class="li"><div class="grow t">Peso guardado</div><b>${d.kg ? fmt1(d.kg) + " kg" : "sem registro"}</b></div><div class="li"><div class="grow t">Meta de peso</div><b>${d.meta ? fmt1(d.meta) + " kg" : "sem meta"}</b></div><div class="li"><div class="grow t">Último registro</div><b>${esc(ds)}</b></div></div><div class="xs muted">Nada foi apagado. Seu histórico, recordes e treinos seguem salvos.</div>`,
+    `<h1>Por onde recomeçar?</h1><div class="sub">Escolha um caminho. Dá para fazer só um.</div><button class="btn pri block" data-act="voltouPlano">Rever meu plano e metas</button><button class="btn soft block" data-act="voltouPeso">Registrar meu peso de hoje</button><button class="btn soft block" data-act="voltouFim">Só olhar o dia de hoje</button>`
+  ];
 }
+function voltouBody() {
+  const cs = voltouCards(), n = cs.length;
+  return `<div class="dots">${cs.map((_, i) => `<i class="${i === VOLTA.i ? "on" : ""}"></i>`).join("")}</div><div class="card stepcard" id="vlt${VOLTA.i}">${cs[VOLTA.i]}</div><div class="onb-cnt">${VOLTA.i + 1} de ${n}</div>`;
+}
+function voltouFoot() {
+  const n = voltouCards().length, i = VOLTA.i;
+  return (i > 0 ? `<button class="btn ghost" data-act="voltouVolta">Voltar</button>` : `<button class="btn ghost" data-act="sheetClose">Agora não</button>`) + (i < n - 1 ? `<button class="btn pri grow" data-act="voltouProx">Próximo</button>` : `<button class="btn ghost grow" data-act="sheetClose">Agora não</button>`);
+}
+function voltouSheet(dias) {
+  const p = P(); VOLTA.i = 0; VOLTA.d = { dias, last: ultimoRegistro(), kg: pesoAtual(p), meta: p.metaPeso };
+  openSheet({ title: "Que bom que você voltou!", closeAct: "sheetClose", body: voltouBody, foot: voltouFoot });
+}
+ACT.voltouProx = () => { if (VOLTA.i < voltouCards().length - 1) VOLTA.i++; drawSheet(); };
+ACT.voltouVolta = () => { if (VOLTA.i > 0) VOLTA.i--; drawSheet(); };
+ACT.voltouFim = () => closeSheet();
 ACT.voltouPlano = () => { SHEET.stack = []; onboarding(true); };
 ACT.voltouPeso = () => { closeSheet(); ui.tab = "hoje"; ui.date = TODAY(); render(); setTimeout(() => { const e = document.getElementById("pesoIn"); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); } else toast("Toque no campo de peso na aba Hoje."); }, 250); };
 ACT.onbVer = () => { SHEET.stack = []; onboarding(true); ONB.prev = true; drawSheet(); };
