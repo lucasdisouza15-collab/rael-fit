@@ -371,6 +371,7 @@ details.sec .sec-body{padding:0 16px 16px}
 details.sec .sec-body>.card{background:none;clip-path:none;padding:0;border:0}
 details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{display:none}
 .sec-label{font:900 13px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 2px -4px}
+.humrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}.humb{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 2px 4px;font:inherit;font-size:11px;font-weight:600;color:var(--ink-2);cursor:pointer}.humb svg{width:100%;max-width:46px;height:auto}.humb.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--ink)}
 .onb{display:flex;flex-direction:column;gap:14px;min-height:60vh}
 .onb-top{display:flex;align-items:center;gap:10px}
 .onb-bar{flex:1;height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden}
@@ -3153,6 +3154,28 @@ function relRotulo(ini, fim) {
   if (fim === hj) { const n = Math.round((new Date(fim + "T12:00:00") - new Date(ini + "T12:00:00")) / 864e5) + 1; if ([7, 30, 90].includes(n)) return { txt: "dos últimos " + n + " dias", parc: false }; }
   return { txt: "de " + ddmm(ini) + " a " + ddmm(fim), parc: false };
 }
+const humDoDia = dt => { const d = day(dt); return { v: num(d.humor) || 0, nota: String(d.nota || "").trim() }; };
+const HUM_NOMES = ["Péssimo", "Ruim", "Normal", "Bom", "Ótimo"];
+const humNome = v => HUM_NOMES[Math.round(v) - 1] || "";
+const humMedia = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+function humRelatorio(dias, ws, sv, curto, ok) {
+  const hum = dias.map(dt => ({ d: dt, ...humDoDia(dt) })), com = hum.filter(x => x.v > 0), notas = hum.filter(x => x.nota);
+  if (!com.length && !notas.length) return "Nenhum humor registrado no período. Dois toques por dia (o rosto e uma anotação) e o relatório passa a mostrar como o humor anda com sono e treino.";
+  const out = [];
+  if (com.length) {
+    const md = humMedia(com.map(x => x.v)), bons = com.filter(x => x.v >= 4).length, ruins = com.filter(x => x.v <= 2).length;
+    out.push(`Humor registrado em ${com.length} de ${dias.length} dias, média ${fmt1(md)} de 5 (${humNome(md).toLowerCase()}). ${bons} ${bons === 1 ? "dia bom" : "dias bons"} e ${ruins} ${ruins === 1 ? "dia pesado" : "dias pesados"}.`);
+    if (com.length >= 4) { const h = Math.floor(com.length / 2), a = humMedia(com.slice(0, h).map(x => x.v)), b = humMedia(com.slice(h).map(x => x.v)); out.push(b - a >= 0.4 ? "A tendência é de alta: a segunda metade do período foi melhor que a primeira." : a - b >= 0.4 ? "A tendência é de queda: a segunda metade do período foi mais pesada que a primeira." : "A tendência é estável."); }
+    const vd = new Map(com.map(x => [x.d, x.v])), mc = humMedia(curto.map(x => vd.get(x.d)).filter(Boolean)), mo = humMedia(ok.map(x => vd.get(x.d)).filter(Boolean));
+    const nc = curto.filter(x => vd.has(x.d)).length, no = ok.filter(x => vd.has(x.d)).length;
+    if (nc >= 2 && no >= 2) out.push(`Nos dias de sono curto (menos de 6 h) o humor médio foi ${fmt1(mc)}, contra ${fmt1(mo)} nos dias de sono normal.`);
+    const dt = new Set(ws.map(w => w.data)), cT = com.filter(x => dt.has(x.d)), sT = com.filter(x => !dt.has(x.d));
+    if (cT.length >= 2 && sT.length >= 2) { const a = humMedia(cT.map(x => x.v)), b = humMedia(sT.map(x => x.v)); if (Math.abs(a - b) >= 0.3) out.push(`Nos dias com treino o humor médio foi ${fmt1(a)}, contra ${fmt1(b)} nos dias sem treino.`); }
+  }
+  if (notas.length) out.push("Suas anotações mais recentes: " + notas.slice(-3).map(x => `${ddmm(x.d)}: “${x.nota.length > 90 ? x.nota.slice(0, 90) + "…" : x.nota}”`).join("; ") + ".");
+  if (com.length) out.push(humMedia(com.map(x => x.v)) < 3 ? "Foi um período de altos e baixos. Vale pegar mais leve e cuidar do sono e dos treinos, que costumam puxar o humor para cima." : "Humor em dia ajuda a manter tudo o resto.");
+  return out.join(" ");
+}
 function relDados(ini, fim) {
   const p = P(), m = metas(p), hj = TODAY(); if (fim > hj) fim = hj; if (ini > fim) ini = fim; const ym = ini.slice(0, 7), rot = relRotulo(ini, fim);
   const dias = []; for (let d = ini; d <= fim; d = addDays(d, 1)) dias.push(d);
@@ -3167,7 +3190,7 @@ function relDados(ini, fim) {
   const kc = arr => { const r = arr.map(x => dayT(day(x.d)).kcal).filter(k => k > 0); return r.length ? r.reduce((a, b) => a + b, 0) / r.length : 0; };
   const treinoNoDia = arr => arr.length ? arr.filter(x => ws.some(w => w.data === x.d)).length / arr.length : 0;
   const mm = medGet(), meds = mm.campos.map(c => { const a = mm.hist.filter(x => x.data >= ini && x.data <= fim && x.v && x.v[c.id] != null); const pr = medUltimo(c.id, mm.hist, addDays(ini, -1)); if (!a.length) return null; const ult = a[a.length - 1].v[c.id], base = a.length > 1 ? a[0].v[c.id] : (pr ? pr.v : null); return { nome: c.nome, ult, d: base != null ? ult - base : null }; }).filter(Boolean);
-  return { ym, rot, ini, fim, dias: dias.length, m, reg, media, prot, naMeta, ps, pAnt, ws, vol, prs, sv, curto, ok, kcCurto: kc(curto), kcOk: kc(ok), trCurto: treinoNoDia(curto), trOk: treinoNoDia(ok), meds, mediaSono: sv.length ? sv.reduce((s, x) => s + x.h, 0) / sv.length : 0 };
+  return { ym, rot, ini, fim, dias_lista: dias, dias: dias.length, m, reg, media, prot, naMeta, ps, pAnt, ws, vol, prs, sv, curto, ok, kcCurto: kc(curto), kcOk: kc(ok), trCurto: treinoNoDia(curto), trOk: treinoNoDia(ok), meds, mediaSono: sv.length ? sv.reduce((s, x) => s + x.h, 0) / sv.length : 0 };
 }
 function relSecoes(r) {
   const nome = nomeU(), S = [];
@@ -3185,6 +3208,7 @@ function relSecoes(r) {
     tx += r.mediaSono < 6.5 ? " Sono curto segura o resultado: aumenta a fome e atrapalha a recuperação. Esse é o ajuste mais barato do mês." : " Sono em dia ajuda tudo o que está acima.";
     S.push(["Sono", tx]);
   } else S.push(["Sono", "Sem noites registradas. O Rael pergunta toda manhã: responder leva dois segundos e muda o relatório."]);
+  S.push(["Humor", humRelatorio(r.dias_lista, r.ws, r.sv, r.curto, r.ok)]);
   return S;
 }
 const REL = { k: "30", ini: "", fim: "" };
@@ -3835,8 +3859,9 @@ function frNotaDe(td) {
 // Rael Frango: SVG idêntico ao do canvas de identidade aprovado (Main.dc.html). Só os olhos/sobrancelhas mudam com o humor.
 function frRael(humor, tam) {
   const olhosNormal = `<circle cx="80" cy="98" r="9" fill="#FFFFFF" stroke-width="4"/><circle cx="120" cy="98" r="9" fill="#FFFFFF" stroke-width="4"/><circle cx="82" cy="99" r="3.5" fill="#1B1630" stroke="none"/><circle cx="118" cy="99" r="3.5" fill="#1B1630" stroke="none"/>`;
-  const olhos = humor === "dorme" ? `<path d="M71 99q9 7 18 0M111 99q9 7 18 0" fill="none" stroke-width="4"/>` : humor === "feliz" ? `<path d="M71 102q9-10 18 0M111 102q9-10 18 0" fill="none" stroke-width="4"/>` : humor === "foco" ? olhosNormal.replace('cx="82"', 'cx="85"').replace('cx="118"', 'cx="123"') : olhosNormal;
-  const sobr = humor === "dorme" ? "" : `<path d="${humor === "alfa" ? "M64 78L90 93M136 78L110 93" : "M66 83L90 91M134 83L110 91"}" fill="none"/>`;
+  const olhos = humor === "dorme" ? `<path d="M71 99q9 7 18 0M111 99q9 7 18 0" fill="none" stroke-width="4"/>` : (humor === "feliz" || humor === "otimo") ? `<path d="M71 102q9-10 18 0M111 102q9-10 18 0" fill="none" stroke-width="4"/>` : humor === "foco" ? olhosNormal.replace('cx="82"', 'cx="85"').replace('cx="118"', 'cx="123"') : olhosNormal;
+  const sobr = humor === "dorme" ? "" : `<path d="${humor === "alfa" ? "M64 78L90 93M136 78L110 93" : humor === "pessimo" ? "M64 95L90 82M136 95L110 82" : humor === "mal" ? "M66 91L90 84M134 91L110 84" : "M66 83L90 91M134 83L110 91"}" fill="none"/>`;
+  const extra = humor === "pessimo" ? `<path d="M70 110q-6 10 0 14q6-4 0-14z" fill="#8FD3FF" stroke="#1B1630" stroke-width="3" stroke-linejoin="round"/>` : humor === "otimo" ? `<path d="M164 52l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#F2C14E" stroke="#1B1630" stroke-width="3" stroke-linejoin="round"/><path d="M30 60l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="#F2C14E" stroke="#1B1630" stroke-width="2.5" stroke-linejoin="round"/>` : "";
   return `<svg width="${tam || 96}" height="${tam || 96}" viewBox="0 0 200 200" role="img" aria-label="Rael Frango" style="flex:none">
 <path d="M82 164V184M70 186H94M118 164V184M106 186H130" fill="none" stroke="#E08A3A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
 <g stroke="#1B1630" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">
@@ -3852,7 +3877,7 @@ ${olhos}${sobr}
 <path d="M90 110H110L100 127Z" fill="#E8903A" stroke-width="5"/>
 <ellipse cx="100" cy="136" rx="6" ry="8" fill="#D4574A" stroke-width="4"/>
 </g>
-<ellipse cx="64" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/><ellipse cx="136" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/></svg>`;
+<ellipse cx="64" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/><ellipse cx="136" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/>${extra}</svg>`;
 }
 
 // ---- adaptação ao app: dados do próprio aparelho (mesmo formato de sempre) ----
@@ -5023,9 +5048,10 @@ function treinoStatsCard(per) {
   // relatório mensal x mês anterior
   const rel = (de, ate) => { const l = all.filter(w => w.data >= de && w.data <= ate); return { n: l.length, dur: l.reduce((a, w) => a + wDur(w), 0), vol: l.reduce((a, w) => a + volume(w), 0), ser: l.reduce((a, w) => a + wSeries(w), 0), rep: l.reduce((a, w) => a + wReps(w), 0), pr: rc.ev.filter(e => e.data >= de && e.data <= ate).length }; };
   const iniAnt = addDays(ini0, -per), fimAnt = addDays(ini0, -1);
+  const hmM = (de, ate) => { const v = []; for (let d = de; d <= ate; d = addDays(d, 1)) { const x = humDoDia(d).v; if (x > 0) v.push(x); } return humMedia(v); };
   const a = rel(ini0, end), b = rel(iniAnt, fimAnt);
   const dl = (x, y, f) => { if (!y) return x ? `<span class="xs muted">novo</span>` : ""; const p = Math.round(100 * (x - y) / y); return `<span class="xs" style="color:var(${p >= 0 ? "--good" : "--bad"})">${p >= 0 ? "+" : ""}${p}%</span>`; };
-  const linhas = [["Treinos", a.n, b.n, fmt], ["Duração", a.dur, b.dur, fmtDur], ["Volume", a.vol, b.vol, v => fmt(v) + " kg"], ["Séries", a.ser, b.ser, fmt], ["Repetições", a.rep, b.rep, fmt], ["Recordes", a.pr, b.pr, fmt]];
+  const linhas = [["Treinos", a.n, b.n, fmt], ["Duração", a.dur, b.dur, fmtDur], ["Volume", a.vol, b.vol, v => fmt(v) + " kg"], ["Séries", a.ser, b.ser, fmt], ["Repetições", a.rep, b.rep, fmt], ["Recordes", a.pr, b.pr, fmt], ["Humor (média)", hmM(ini0, end), hmM(iniAnt, fimAnt), v => v ? fmt1(v) : "—"]];
   h += `<div class="card"><h2>Relatório do período</h2><div class="xs muted">Últimos ${per} dias (${ddmm(ini0)} a ${ddmm(end)}) comparados com os ${per} dias antes (${ddmm(iniAnt)} a ${ddmm(fimAnt)})</div><div style="overflow-x:auto;margin-top:6px"><table class="sets small"><thead><tr><th></th><th>Período</th><th>Anterior</th><th></th></tr></thead><tbody>${linhas.map(([n, x, y, f]) => `<tr><td>${n}</td><td><b>${f(x)}</b></td><td>${f(y)}</td><td>${dl(x, y)}</td></tr>`).join("")}</tbody></table></div></div>`;
   return h;
 }
@@ -5063,14 +5089,14 @@ function viewEvo() {
 ACT.evoPer = ds => { ui.evoPer = +ds.n; render(); };
 function contexto(per = 14) {
   const p = P(), m = metas(p), end = TODAY();
-  const linhas = Array.from({ length: per }, (_, i) => addDays(end, i - per + 1)).map(dt => { const d = day(dt), t = dayT(d); if (!t.kcal && !d.peso) return null; return `${dt}: comeu ${fmt(t.kcal)} kcal (P ${fmt(t.p)} C ${fmt(t.c)} G ${fmt(t.g)}), gasto ${fmt(gastoDia(dt, p).total)}${d.peso ? ", peso " + d.peso : ""}`; }).filter(Boolean);
+  const linhas = Array.from({ length: per }, (_, i) => addDays(end, i - per + 1)).map(dt => { const d = day(dt), t = dayT(d); const hm = humDoDia(dt); if (!t.kcal && !d.peso && !hm.v && !hm.nota) return null; return `${dt}: comeu ${fmt(t.kcal)} kcal (P ${fmt(t.p)} C ${fmt(t.c)} G ${fmt(t.g)}), gasto ${fmt(gastoDia(dt, p).total)}${d.peso ? ", peso " + d.peso : ""}${hm.v ? ", humor " + humNome(hm.v).toLowerCase() + " (" + hm.v + "/5)" : ""}${hm.nota ? ", anotou: “" + hm.nota.slice(0, 160) + "”" : ""}`; }).filter(Boolean);
   const tr = workouts().filter(w => w.data >= addDays(end, -per)).map(w => `${w.data}: ${w.nome}, ${seriesFeitas(w)} séries, volume ${fmt(volume(w))} kg; ${w.ex.map(x => x.nome + " " + x.series.filter(s => s.tipo !== "aq").map(s => (num(s.kg) ? s.kg + "x" : "") + s.reps).join("/")).join("; ")}`);
   return `Perfil: ${p.sexo === "F" ? "mulher" : "homem"}, ${p.idade} anos, ${p.altura} cm, peso atual ${fmt1(pesoAtual(p))} kg, objetivo ${p.objetivo} peso${p.metaPeso ? " (meta " + p.metaPeso + " kg)" : ""}. Metas: ${m.kcal} kcal, P ${m.p} g, C ${m.c} g, G ${m.g} g.
 Dias registrados:\n${linhas.join("\n") || "nenhum"}\nTreinos:\n${tr.join("\n") || "nenhum"}`;
 }
 ACT.aiAnalise = async () => {
   const per = ui.evoPer || 30;
-  const prompt = `${RAEL_VOZ}\nPapel agora: coach de dieta e musculação falando com o ${nomeU()}. Em português do Brasil, analise os dados abaixo em até 10 linhas: o que está indo bem, o que ajustar na dieta e no treino (cite exercícios e cargas se fizer sentido) e uma meta para a próxima semana. Seja concreto. Não dê conselho médico.\n\n${contexto(per)}`;
+  const prompt = `${RAEL_VOZ}\nPapel agora: coach de dieta e musculação falando com o ${nomeU()}. Em português do Brasil, analise os dados abaixo em até 10 linhas, considerando também o humor e as anotações do dia (relacione com sono e treino quando fizer sentido, sem nada médico): o que está indo bem, o que ajustar na dieta e no treino (cite exercícios e cargas se fizer sentido) e uma meta para a próxima semana. Seja concreto. Não dê conselho médico.\n\n${contexto(per)}`;
   if (!CAP.sample) { openExtAI({ title: "Análise do coach", prompt, textOnly: true }); return; }
   AI.out = "";
   openSheet({ title: "Análise do coach", body: () => `<div class="ai-out" id="aiOut">${AI.out ? esc(AI.out) : '<span class="row small muted"><span class="spin"></span> Lendo seus números…</span>'}</div><div class="disc">Gerado por IA. Não substitui médico ou nutricionista.</div>` });
@@ -5410,12 +5436,13 @@ function jejumCard(p) {
 }
 ACT.jejumIni = () => { const h = num(($("#jejH") || {}).value) || 16; updP(p => { p.jejum = { ini: Date.now(), h }; p.jejumH = h; }); render(); };
 ACT.jejumFim = () => { updP(p => { if (p.jejum && p.jejum.ini) { p.jejumHist = (p.jejumHist || []).concat([{ ini: p.jejum.ini, fim: Date.now(), h: p.jejum.h }]).slice(-30); } p.jejum = null; }); render(); toast("Jejum encerrado"); };
-const HUM = [["😞", "Péssimo"], ["🙁", "Ruim"], ["😐", "Normal"], ["🙂", "Bom"], ["😄", "Ótimo"]];
+const HUM = [["pessimo", "Péssimo"], ["mal", "Ruim"], ["normal", "Normal"], ["feliz", "Bom"], ["otimo", "Ótimo"]];
 function notaCard(d, td) {
-  return `<div class="card flat"><b>Como foi o dia?</b><div class="row" style="gap:6px;margin:8px 0">${HUM.map(([e, n], i) => `<button class="btn sm ${d.humor === i + 1 ? "pri" : "soft"}" data-act="humor" data-v="${i + 1}" aria-label="${n}" style="font-size:18px">${e}</button>`).join("")}</div><textarea id="notaDia" data-on="notaDia" placeholder="Anotações: sono, fome, dor, o que deu certo..." style="min-height:64px">${esc(d.nota || "")}</textarea><div class="xs muted">Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}.</div></div>`;
+  return `<div class="card flat"><b>Como foi o dia?</b><div class="humrow">${HUM.map(([k, n], i) => `<button class="humb${d.humor === i + 1 ? " on" : ""}" data-act="humor" data-v="${i + 1}" aria-label="${n}" aria-pressed="${d.humor === i + 1}">${frRael(k, 46)}<span>${n}</span></button>`).join("")}</div><textarea id="notaDia" data-on="notaDia" placeholder="Anotações: sono, fome, o que deu certo, o que pesou..." style="min-height:64px;margin-top:8px">${esc(d.nota || "")}</textarea><div class="row between" style="margin-top:6px"><div class="xs muted">Fica só no seu aparelho${ST.mode === "nuvem" ? " e na sua conta" : ""}. Entra nos relatórios e no coach.</div><button class="btn sm pri" data-act="notaSalva">Salvar</button></div></div>`;
 }
 ACT.humor = ds => { updDay(ui.date, d => { d.humor = d.humor === num(ds.v) ? 0 : num(ds.v); }); render(); };
-ON.notaDia = el => { updDay(ui.date, d => { d.nota = el.value; }); toast("Anotação salva"); };
+ACT.notaSalva = () => { const el = $("#notaDia"); updDay(ui.date, d => { d.nota = el ? el.value.trim() : ""; }); render(); toast("Anotação salva"); };
+ON.notaDia = el => { updDay(ui.date, d => { d.nota = el.value; }); };
 
 // meta de calorias por refeição e distribuição de macros
 const MEAL_PESO = { cafe: .25, almoco: .35, lanche: .10, jantar: .25, ceia: .05 };
