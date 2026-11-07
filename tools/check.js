@@ -71,4 +71,9 @@ nt = F.frNotaCalc({ ...base, kcal: 1000, p: 75, agua: 1400, refeicoes: 1, treino
 ok('metade do dia é Pintinho (< 40)', nt.score < 40 && nt.nv.n === 'Pintinho');
 
 console.log((total - falhas) + '/' + total + ' testes das contas passaram');
+// ---- Auditoria dos quadros de animação (chão, altura e cabeça iguais entre os quadros) ----
+const cp = require('child_process');
+const fr = cp.spawnSync('python3', [__dirname + '/frames.py', 'check'], { encoding: 'utf8' });
+if (fr.error || /No module named/.test(fr.stderr || '')) console.warn('AVISO: auditoria de quadros não rodou (precisa de python3 + Pillow + scipy)');
+else { process.stdout.write(fr.stdout); if (fr.status !== 0) { console.error('FALHOU auditoria dos quadros de animação'); falhas++; } }
 process.exit(falhas || bad ? 1 : 0);
