@@ -76,4 +76,18 @@ const cp = require('child_process');
 const fr = cp.spawnSync('python3', [__dirname + '/frames.py', 'check'], { encoding: 'utf8' });
 if (fr.error || /No module named/.test(fr.stderr || '')) console.warn('AVISO: auditoria de quadros não rodou (precisa de python3 + Pillow + scipy)');
 else { process.stdout.write(fr.stdout); if (fr.status !== 0) { console.error('FALHOU auditoria dos quadros de animação'); falhas++; } }
+// ---- Progresso das animações: tudo que está 'publicado' precisa de EX_SEQ e arquivos em ex/ ----
+try {
+  const fs = require('fs'), pr = JSON.parse(fs.readFileSync(__dirname + '/animacoes.json', 'utf8'));
+  const feitos = new Set(pr.feitos || []);
+  (pr.fila || []).filter(f => f.estado === 'publicado').forEach(f => { feitos.add(f.id); });
+  let bad2 = 0;
+  feitos.forEach(id => {
+    const m = html.match(new RegExp('"' + id + '"\\s*:\\s*\\{p: "([^"]+)", ordem: \\[([^\\]]+)\\]'));
+    if (!m) { console.error('FALHOU animação sem EX_SEQ: ' + id); bad2++; return; }
+    new Set(m[2].split(',').map(x => x.trim())).forEach(n => { if (!fs.existsSync(__dirname + '/../ex/' + m[1] + '-' + n + '.jpg')) { console.error('FALHOU arquivo faltando: ex/' + m[1] + '-' + n + '.jpg'); bad2++; } });
+  });
+  console.log('animações publicadas conferidas: ' + feitos.size + (bad2 ? ' (' + bad2 + ' erros)' : ' ok'));
+  if (bad2) falhas++;
+} catch (e) { console.error('FALHOU leitura de tools/animacoes.json: ' + e.message); falhas++; }
 process.exit(falhas || bad ? 1 : 0);

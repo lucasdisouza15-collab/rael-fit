@@ -1,0 +1,1087 @@
+{
+ "_leia": "Fonte única do progresso (07/11/2026). estado: fila > pedido > recebido > revisado > publicado. Os GIFs/fotos antigos (free-exercise-db) ficam como fallback até 'publicado' provado.",
+ "feitos": [
+  "burpee",
+  "abducao-elastico"
+ ],
+ "lote_atual": 1,
+ "lotes": {
+  "1": "pedido a enviar"
+ },
+ "fila": [
+  {
+   "set": "Barbell_Bench_Press_-_Medium_Grip",
+   "nomes": [
+    "Supino reto com barra"
+   ],
+   "usos_hevy": 58,
+   "prioridade": 1,
+   "estado": "fila",
+   "lote": 1
+  },
+  {
+   "set": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+   "nomes": [
+    "Supino inclinado com barra"
+   ],
+   "usos_hevy": 57,
+   "prioridade": 1,
+   "estado": "fila",
+   "lote": 1
+  },
+  {
+   "set": "Pushups",
+   "nomes": [
+    "Flexão de braço"
+   ],
+   "usos_hevy": 55,
+   "prioridade": 1,
+   "estado": "fila",
+   "lote": 1
+  },
+  {
+   "set": "Dumbbell_Flyes",
+   "nomes": [
+    "Crucifixo com halteres"
+   ],
+   "usos_hevy": 51,
+   "prioridade": 1,
+   "estado": "fila",
+   "lote": 1
+  },
+  {
+   "set": "Dumbbell_Shoulder_Press",
+   "nomes": [
+    "Desenvolvimento com halteres"
+   ],
+   "usos_hevy": 51,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Triceps_Pushdown",
+   "nomes": [
+    "Tríceps pulley (barra)"
+   ],
+   "usos_hevy": 49,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Side_Lateral_Raise",
+   "nomes": [
+    "Elevação lateral"
+   ],
+   "usos_hevy": 48,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "EZ-Bar_Curl",
+   "nomes": [
+    "Rosca com barra W"
+   ],
+   "usos_hevy": 45,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Wide-Grip_Lat_Pulldown",
+   "nomes": [
+    "Puxada frontal"
+   ],
+   "usos_hevy": 42,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Leverage_Iso_Row",
+   "nomes": [
+    "Remada na máquina"
+   ],
+   "usos_hevy": 38,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "One-Arm_Dumbbell_Row",
+   "nomes": [
+    "Remada unilateral com halter"
+   ],
+   "usos_hevy": 37,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Bent_Over_Barbell_Row",
+   "nomes": [
+    "Remada curvada com barra"
+   ],
+   "usos_hevy": 34,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Flat_Bench_Lying_Leg_Raise",
+   "nomes": [],
+   "usos_hevy": 34,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Hammer_Curls",
+   "nomes": [
+    "Rosca martelo"
+   ],
+   "usos_hevy": 32,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Dumbbell_Lunges",
+   "nomes": [
+    "Afundo com halteres",
+    "Passada (avanço caminhando)"
+   ],
+   "usos_hevy": 25,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Romanian_Deadlift",
+   "nomes": [
+    "Levantamento terra romeno"
+   ],
+   "usos_hevy": 25,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Crunches",
+   "nomes": [
+    "Abdominal supra"
+   ],
+   "usos_hevy": 24,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Dumbbell_One-Arm_Triceps_Extension",
+   "nomes": [],
+   "usos_hevy": 22,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Dumbbell_Squat",
+   "nomes": [],
+   "usos_hevy": 22,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Standing_Calf_Raises",
+   "nomes": [
+    "Panturrilha em pé"
+   ],
+   "usos_hevy": 22,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Barbell_Full_Squat",
+   "nomes": [
+    "Agachamento livre"
+   ],
+   "usos_hevy": 21,
+   "prioridade": 1,
+   "estado": "fila"
+  },
+  {
+   "set": "Cross_Body_Hammer_Curl",
+   "nomes": [],
+   "usos_hevy": 7,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Incline_Dumbbell_Press",
+   "nomes": [
+    "Supino inclinado com halteres"
+   ],
+   "usos_hevy": 7,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Seated_One-arm_Cable_Pulley_Rows",
+   "nomes": [],
+   "usos_hevy": 7,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Triceps_Pushdown_-_Rope_Attachment",
+   "nomes": [
+    "Tríceps corda"
+   ],
+   "usos_hevy": 7,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Lying_Dumbbell_Tricep_Extension",
+   "nomes": [],
+   "usos_hevy": 5,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Single-Arm_Cable_Crossover",
+   "nomes": [],
+   "usos_hevy": 5,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Standing_Dumbbell_Triceps_Extension",
+   "nomes": [
+    "Tríceps francês"
+   ],
+   "usos_hevy": 4,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "T-Bar_Row_with_Handle",
+   "nomes": [
+    "Remada cavalinho (T-bar)"
+   ],
+   "usos_hevy": 4,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Close-Grip_Front_Lat_Pulldown",
+   "nomes": [
+    "Puxada com triângulo"
+   ],
+   "usos_hevy": 3,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Dumbbell_Bicep_Curl",
+   "nomes": [],
+   "usos_hevy": 3,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Dumbbell_Shrug",
+   "nomes": [
+    "Encolhimento com halteres"
+   ],
+   "usos_hevy": 3,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Standing_Dumbbell_Calf_Raise",
+   "nomes": [],
+   "usos_hevy": 3,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Cable_One_Arm_Tricep_Extension",
+   "nomes": [],
+   "usos_hevy": 2,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Seated_Cable_Rows",
+   "nomes": [
+    "Remada baixa sentada"
+   ],
+   "usos_hevy": 2,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Star_Jump",
+   "nomes": [
+    "Polichinelo"
+   ],
+   "usos_hevy": 2,
+   "prioridade": 2,
+   "estado": "fila"
+  },
+  {
+   "set": "Ab_Crunch_Machine",
+   "nomes": [
+    "Abdominal na máquina"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Ab_Roller",
+   "nomes": [
+    "Roda abdominal"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Air_Bike",
+   "nomes": [
+    "Abdominal bicicleta"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Arnold_Dumbbell_Press",
+   "nomes": [
+    "Desenvolvimento Arnold"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Barbell_Curl",
+   "nomes": [
+    "Rosca direta com barra"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Barbell_Deadlift",
+   "nomes": [
+    "Levantamento terra"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Barbell_Hip_Thrust",
+   "nomes": [
+    "Elevação pélvica (hip thrust)",
+    "Elevação pélvica na máquina"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Bench_Dips",
+   "nomes": [
+    "Mergulho no banco"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Bent-Arm_Dumbbell_Pullover",
+   "nomes": [
+    "Pullover com halter"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench",
+   "nomes": [
+    "Crucifixo inverso"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Bicycling_Stationary",
+   "nomes": [
+    "Bicicleta ergométrica"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Bodyweight_Squat",
+   "nomes": [
+    "Agachamento sem peso"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Butt_Lift_Bridge",
+   "nomes": [
+    "Ponte de glúteo"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Butterfly",
+   "nomes": [
+    "Voador (peck deck)"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Cable_Crossover",
+   "nomes": [
+    "Crossover na polia"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Cable_Crunch",
+   "nomes": [
+    "Abdominal na polia"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Calf_Press_On_The_Leg_Press_Machine",
+   "nomes": [
+    "Panturrilha no leg press"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Calf_Raise_On_A_Dumbbell",
+   "nomes": [
+    "Panturrilha no degrau"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Chin-Up",
+   "nomes": [
+    "Barra fixa supinada"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Close-Grip_Barbell_Bench_Press",
+   "nomes": [
+    "Supino fechado"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Concentration_Curls",
+   "nomes": [
+    "Rosca concentrada"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Decline_Barbell_Bench_Press",
+   "nomes": [
+    "Supino declinado com barra"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Dips_-_Chest_Version",
+   "nomes": [
+    "Paralelas (foco peito)"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Dips_-_Triceps_Version",
+   "nomes": [
+    "Paralelas (foco tríceps)"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Dumbbell_Alternate_Bicep_Curl",
+   "nomes": [
+    "Rosca alternada"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Dumbbell_Bench_Press",
+   "nomes": [
+    "Supino reto com halteres"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "EZ-Bar_Skullcrusher",
+   "nomes": [
+    "Tríceps testa"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Elliptical_Trainer",
+   "nomes": [
+    "Elíptico"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Face_Pull",
+   "nomes": [
+    "Face pull"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Farmers_Walk",
+   "nomes": [
+    "Caminhada do fazendeiro"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Freehand_Jump_Squat",
+   "nomes": [],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Front_Barbell_Squat",
+   "nomes": [
+    "Agachamento frontal"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Front_Dumbbell_Raise",
+   "nomes": [
+    "Elevação frontal"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Glute_Kickback",
+   "nomes": [
+    "Glúteo na máquina (4 apoios)"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Goblet_Squat",
+   "nomes": [
+    "Agachamento goblet"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Good_Morning",
+   "nomes": [
+    "Good morning"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Hack_Squat",
+   "nomes": [
+    "Hack machine"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Hanging_Leg_Raise",
+   "nomes": [
+    "Elevação de pernas na barra"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Hyperextensions_Back_Extensions",
+   "nomes": [
+    "Hiperextensão lombar"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Incline_Dumbbell_Curl",
+   "nomes": [
+    "Rosca no banco inclinado"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Incline_Dumbbell_Flyes",
+   "nomes": [],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Inverted_Row",
+   "nomes": [],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Kettlebell_Thruster",
+   "nomes": [
+    "Thruster"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Leg_Extensions",
+   "nomes": [
+    "Cadeira extensora"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Leg_Press",
+   "nomes": [
+    "Leg press 45°",
+    "Leg press horizontal"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Leverage_Shoulder_Press",
+   "nomes": [
+    "Desenvolvimento na máquina"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Lying_Leg_Curls",
+   "nomes": [
+    "Mesa flexora"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Machine_Bench_Press",
+   "nomes": [
+    "Supino na máquina"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Machine_Preacher_Curls",
+   "nomes": [
+    "Rosca Scott"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Mountain_Climbers",
+   "nomes": [
+    "Escalador (mountain climber)"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Natural_Glute_Ham_Raise",
+   "nomes": [
+    "Flexão nórdica"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "One-Arm_Kettlebell_Swings",
+   "nomes": [
+    "Kettlebell swing"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "One-Arm_Long_Bar_Row",
+   "nomes": [],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "One-Legged_Cable_Kickback",
+   "nomes": [
+    "Coice na polia"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Palms-Up_Barbell_Wrist_Curl_Over_A_Bench",
+   "nomes": [
+    "Rosca de punho"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Plank",
+   "nomes": [
+    "Prancha"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Plie_Dumbbell_Squat",
+   "nomes": [
+    "Agachamento sumô"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Power_Clean",
+   "nomes": [
+    "Power clean"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Pullups",
+   "nomes": [
+    "Barra fixa pronada"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Push-Ups_-_Close_Triceps_Position",
+   "nomes": [],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Reverse_Barbell_Curl",
+   "nomes": [
+    "Rosca inversa"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Reverse_Crunch",
+   "nomes": [
+    "Abdominal infra"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Rope_Jumping",
+   "nomes": [
+    "Pular corda"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Rowing_Stationary",
+   "nomes": [
+    "Remo ergômetro"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Running_Treadmill",
+   "nomes": [
+    "Corrida na rua",
+    "Esteira"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Russian_Twist",
+   "nomes": [
+    "Giro russo"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Seated_Calf_Raise",
+   "nomes": [
+    "Panturrilha sentado"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Seated_Leg_Curl",
+   "nomes": [
+    "Cadeira flexora"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Side_Bridge",
+   "nomes": [
+    "Prancha lateral"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Smith_Machine_Bench_Press",
+   "nomes": [
+    "Supino no Smith"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Smith_Machine_Squat",
+   "nomes": [
+    "Agachamento no Smith"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Split_Squat_with_Dumbbells",
+   "nomes": [
+    "Agachamento búlgaro"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Stairmaster",
+   "nomes": [
+    "Escada / stepper"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Standing_Biceps_Cable_Curl",
+   "nomes": [
+    "Rosca na polia"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Standing_Leg_Curl",
+   "nomes": [
+    "Flexora em pé"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Standing_Low-Pulley_Deltoid_Raise",
+   "nomes": [
+    "Elevação lateral na polia"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Standing_Military_Press",
+   "nomes": [
+    "Desenvolvimento com barra"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Stiff-Legged_Barbell_Deadlift",
+   "nomes": [
+    "Stiff com barra"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Stiff-Legged_Dumbbell_Deadlift",
+   "nomes": [
+    "Stiff com halteres"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Straight-Arm_Pulldown",
+   "nomes": [
+    "Pulldown braço estendido"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Superman",
+   "nomes": [],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Thigh_Abductor",
+   "nomes": [
+    "Cadeira abdutora"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Thigh_Adductor",
+   "nomes": [
+    "Cadeira adutora"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Tricep_Dumbbell_Kickback",
+   "nomes": [
+    "Tríceps coice"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Upright_Barbell_Row",
+   "nomes": [
+    "Remada alta"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  },
+  {
+   "set": "Weighted_Sissy_Squat",
+   "nomes": [
+    "Agachamento sissy"
+   ],
+   "usos_hevy": 0,
+   "prioridade": 3,
+   "estado": "fila"
+  }
+ ]
+}
