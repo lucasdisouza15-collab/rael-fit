@@ -49,7 +49,7 @@ def medir(path, seed):
     d[g - 4:g + 5, :] = False
     ys = np.where(d.any(1))[0]
     rc, cy = raio_cabeca(im, seed, g)
-    return dict(chao=g, altura=int(g - ys.min()), cabeca=rc, corpo=int(ys.max() - cy))
+    return dict(chao=g, altura=int(g - ys.min()), cabeca=rc, corpo=int(ys.max() - seed[1]), topo=int(ys.min()))
 
 def check():
     falhas = 0
@@ -58,18 +58,20 @@ def check():
         for q in s['quadros']:
             r = medir(os.path.join(AQUI, '..', 'ex', q['arq']), q['semente'])
             res.append((q['arq'], r))
-        base = np.median([r['cabeca'] for _, r in res])
+        base = np.median([r['cabeca'] for (a, r), q in zip(res, s['quadros']) if not q.get('cabeca_ocluida')])
         em_pe = [r['corpo'] for (a, r), q in zip(res, s['quadros']) if q.get('em_pe')]
         corpo0 = em_pe[0] if em_pe else None  # referência = 1º quadro em pé
         g0 = res[0][1]['chao']
         for arq, r in res:
             ok_g = abs(r['chao'] - g0) <= TOL_CHAO
-            ok_c = abs(r['cabeca'] - base) / base <= TOL_CABECA
+            q0 = next(q for q in s['quadros'] if q['arq'] == arq)
+            ok_c = q0.get('cabeca_ocluida') or abs(r['cabeca'] - base) / base <= TOL_CABECA
+            ok_t = r['topo'] >= 8  # figura inteira dentro da imagem (sem corte no topo)
             q = next(q for q in s['quadros'] if q['arq'] == arq)
             ok_b = True
             if q.get('em_pe') and corpo0:  # quadros em pé/salto: cabeça-até-pé igual (8%)
                 ok_b = abs(r['corpo'] - corpo0) / corpo0 <= TOL_CABECA
-            st = 'ok' if ok_g and ok_c and ok_b else 'FALHOU'
+            st = 'ok' if ok_g and ok_c and ok_b and ok_t else 'FALHOU'
             if st != 'ok' and q.get('pendente') and ok_g and ok_c: st = 'AVISO (pendente: quadro a refazer no Gemini)'
             elif st != 'ok': falhas += 1
             print(f"[{nome}] {arq}: chão {r['chao']} altura {r['altura']} cabeça r={r['cabeca']:.1f} (ref {base:.1f}) corpo {r['corpo']} {st}")
@@ -86,6 +88,8 @@ def build(src):
             gl = chao(np.array(im.convert('L')).astype(int))
             bg = np.median(a[5:40, 5:40].reshape(-1, 3), axis=0).astype(np.uint8)
             cor_linha = tuple(int(v) for v in a[gl, N // 2])
+            ALVO_BG = np.array(M.get('fundo', [247, 247, 242]))  # mesmo fundo em todos os quadros (sem piscar)
+            a = np.clip(a.astype(int) + (ALVO_BG - bg.astype(int)), 0, 255).astype(np.uint8); bg = ALVO_BG.astype(np.uint8)
             a[gl - 4:gl + 5, :] = bg   # apaga a linha original (redesenhada depois)
             sx, sy = q['semente_origem']
             # margem em volta (para girar sem cortar) ; (x, y) passam a ser + PAD
@@ -107,7 +111,7 @@ def build(src):
             sx = int(round(sx)); sy = int(round(sy))
             g = np.array(big0.convert('L')).astype(int)
             r, _ = raio_cabeca_g(g, (sx, sy), glp)
-            sc = ALVO_R / r * q.get('escala_extra', 1.0)
+            sc = q['escala_fixa'] if q.get('escala_fixa') else ALVO_R / r * q.get('escala_extra', 1.0)
             cx = (xs.min() + xs.max()) / 2 + PAD
             w = int(round(big0.size[0] * sc))
             big = big0.resize((w, w), Image.LANCZOS)
