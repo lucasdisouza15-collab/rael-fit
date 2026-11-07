@@ -22,9 +22,9 @@ def chao(im):
     ys = [y for y in range(len(rows)) if rows[y] > im.shape[1] * 0.58]
     return max(ys) if ys else None
 
-def raio_cabeca(im, seed, g):
+def raio_cabeca(im, seed, g, k=None):
     x, y = seed
-    k = im.shape[1] / 1024.0
+    k = k or im.shape[1] / 1024.0
     dark = im < 170
     dark[int(g - 4 * k):, :] = False
     out = ndi.binary_closing(dark, iterations=9)
@@ -32,7 +32,12 @@ def raio_cabeca(im, seed, g):
     fig = ~(lab == lab[0, 0])
     dt = ndi.distance_transform_edt(fig)
     r = int(80 * k)
-    return float(dt[max(0, y - r):y + r, max(0, x - r):x + r].max())
+    w = dt[max(0, y - r):y + r, max(0, x - r):x + r]
+    cy = np.unravel_index(w.argmax(), w.shape)[0] + max(0, y - r)
+    return float(w.max()), int(cy)
+
+def raio_cabeca_g(im, seed, g):
+    return raio_cabeca(im, seed, g, k=1.0)
 
 def medir(path, seed):
     img = Image.open(path).convert('L')
@@ -43,7 +48,8 @@ def medir(path, seed):
     d = im < 120
     d[g - 4:g + 5, :] = False
     ys = np.where(d.any(1))[0]
-    return dict(chao=g, altura=int(g - ys.min()), cabeca=raio_cabeca(im, seed, g))
+    rc, cy = raio_cabeca(im, seed, g)
+    return dict(chao=g, altura=int(g - ys.min()), cabeca=rc, corpo=int(ys.max() - cy))
 
 def check():
     falhas = 0
@@ -53,18 +59,25 @@ def check():
             r = medir(os.path.join(AQUI, '..', 'ex', q['arq']), q['semente'])
             res.append((q['arq'], r))
         base = np.median([r['cabeca'] for _, r in res])
+        em_pe = [r['corpo'] for (a, r), q in zip(res, s['quadros']) if q.get('em_pe')]
+        corpo0 = em_pe[0] if em_pe else None  # referência = 1º quadro em pé
         g0 = res[0][1]['chao']
         for arq, r in res:
             ok_g = abs(r['chao'] - g0) <= TOL_CHAO
             ok_c = abs(r['cabeca'] - base) / base <= TOL_CABECA
-            st = 'ok' if ok_g and ok_c else 'FALHOU'
-            if st != 'ok': falhas += 1
-            print(f"[{nome}] {arq}: chão {r['chao']} altura {r['altura']} cabeça r={r['cabeca']:.1f} (ref {base:.1f}) {st}")
+            q = next(q for q in s['quadros'] if q['arq'] == arq)
+            ok_b = True
+            if q.get('em_pe') and corpo0:  # quadros em pé/salto: cabeça-até-pé igual (8%)
+                ok_b = abs(r['corpo'] - corpo0) / corpo0 <= TOL_CABECA
+            st = 'ok' if ok_g and ok_c and ok_b else 'FALHOU'
+            if st != 'ok' and q.get('pendente') and ok_g and ok_c: st = 'AVISO (pendente: quadro a refazer no Gemini)'
+            elif st != 'ok': falhas += 1
+            print(f"[{nome}] {arq}: chão {r['chao']} altura {r['altura']} cabeça r={r['cabeca']:.1f} (ref {base:.1f}) corpo {r['corpo']} {st}")
     print('quadros fora do padrão:', falhas)
     return falhas
 
 def build(src):
-    ALVO_R = M['alvo_raio_cabeca']; G = M['chao_y']; N = 1024  # alvo e chão na escala 1024
+    ALVO_R = M['alvo_raio_cabeca']; G = M['chao_y']; N = 1024; PAD = 250
     for nome, s in M['sequencias'].items():
         if s.get('so_check'): continue
         for q in s['quadros']:
@@ -74,18 +87,34 @@ def build(src):
             bg = np.median(a[5:40, 5:40].reshape(-1, 3), axis=0).astype(np.uint8)
             cor_linha = tuple(int(v) for v in a[gl, N // 2])
             a[gl - 4:gl + 5, :] = bg   # apaga a linha original (redesenhada depois)
-            r = raio_cabeca(np.array(Image.fromarray(a).convert('L')).astype(int), q['semente_origem'], gl)
-            sc = ALVO_R / r
-            ys, xs = np.where((np.array(Image.fromarray(a).convert('L')) < 120)[:gl - 4])
-            cx = (xs.min() + xs.max()) / 2
-            w = int(round(N * sc))
-            big = Image.fromarray(a).resize((w, w), Image.LANCZOS)
-            canvas = Image.new('RGB', (N, N), tuple(int(v) for v in bg))
-            # ponto (cx, gl) vai para (N/2, G)
-            canvas.paste(big, (int(round(N / 2 - cx * sc)), int(round(G - gl * sc))))
-            ImageDraw.Draw(canvas).line([(58, G), (965, G)], fill=cor_linha, width=3)
             sx, sy = q['semente_origem']
-            q['semente'] = [int(round(((N / 2 + (sx - cx) * sc)) / 2)), int(round((G + (sy - gl) * sc) / 2))]
+            # margem em volta (para girar sem cortar) ; (x, y) passam a ser + PAD
+            big0 = Image.new('RGB', (N + 2 * PAD, N + 2 * PAD), tuple(int(v) for v in bg))
+            big0.paste(Image.fromarray(a), (PAD, PAD))
+            sx += PAD; sy += PAD; glp = gl + PAD
+            L0 = (np.array(Image.fromarray(a).convert('L')) < 120)[:gl - 4]
+            ys, xs = np.where(L0)
+            px, py = xs[ys.argmax()] + PAD, ys.max() + PAD  # ponto mais baixo (pivô do giro)
+            ang = q.get('girar', 0)
+            if ang:  # gira em torno do pé (graus, anti-horário), mantendo a distância do chão
+                big0 = big0.rotate(ang, resample=Image.BICUBIC, center=(px, py), fillcolor=tuple(int(v) for v in bg))
+                import math
+                t = math.radians(ang); dx, dy = sx - px, sy - py
+                sx = px + dx * math.cos(t) + dy * math.sin(t); sy = py - dx * math.sin(t) + dy * math.cos(t)
+                L1 = (np.array(big0.convert('L')) < 120)
+                L1[glp - 4:, :] = False
+                ys, xs = np.where(L1); xs = xs - PAD
+            sx = int(round(sx)); sy = int(round(sy))
+            g = np.array(big0.convert('L')).astype(int)
+            r, _ = raio_cabeca_g(g, (sx, sy), glp)
+            sc = ALVO_R / r * q.get('escala_extra', 1.0)
+            cx = (xs.min() + xs.max()) / 2 + PAD
+            w = int(round(big0.size[0] * sc))
+            big = big0.resize((w, w), Image.LANCZOS)
+            canvas = Image.new('RGB', (N, N), tuple(int(v) for v in bg))
+            canvas.paste(big, (int(round(N / 2 - cx * sc)), int(round(G - glp * sc))))
+            ImageDraw.Draw(canvas).line([(58, G), (965, G)], fill=cor_linha, width=3)
+            q['semente'] = [int(round((N / 2 + (sx - cx) * sc) / 2)), int(round((G + (sy - glp) * sc) / 2))]
             canvas = canvas.resize((512, 512), Image.LANCZOS)
             canvas.save(os.path.join(AQUI, '..', 'ex', q['arq']), quality=88)
             print(q['arq'], 'escala', round(sc, 3))
