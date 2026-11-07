@@ -16,3 +16,7 @@ Cada papel mexe só na sua camada.
 
 ## Entradas
 (vazio — adicionar aqui antes de cada recurso novo)
+
+## Regras do método
+- Antes de abrir PR: `node tools/check.js` (sintaxe dos scripts + testes das contas de kcal/macros e da nota Pintinho/Frango/Galo Alfa). Se mudar uma regra de conta, ajustar o teste na mesma entrega.
+- Paridade: tudo que entra no site (index.html) vai também para a aba Frangômetro do Painel, exceto o que for exclusivo de um dos dois.
