@@ -1,0 +1,77 @@
+{
+ "alvo_raio_cabeca": 50,
+ "chao_y": 967,
+ "sequencias": {
+  "burpee": {
+   "quadros": [
+    {
+     "arq": "Burpee_Gemini-0.jpg",
+     "origem": "burpee-0-de-pe.jpg",
+     "semente_origem": [
+      506,
+      153
+     ],
+     "semente": [
+      264,
+      76
+     ]
+    },
+    {
+     "arq": "Burpee_Gemini-1.jpg",
+     "origem": "burpee-1-agachado.jpg",
+     "semente_origem": [
+      768,
+      278
+     ],
+     "semente": [
+      329,
+      267
+     ]
+    },
+    {
+     "arq": "Burpee_Gemini-2.jpg",
+     "origem": "burpee-2-prancha.jpg",
+     "semente_origem": [
+      890,
+      374
+     ],
+     "semente": [
+      410,
+      303
+     ]
+    },
+    {
+     "arq": "Burpee_Gemini-3.jpg",
+     "origem": "burpee-3-salto.jpg",
+     "semente_origem": [
+      580,
+      254
+     ],
+     "semente": [
+      290,
+      110
+     ]
+    }
+   ]
+  },
+  "abducao-elastico": {
+   "so_check": true,
+   "quadros": [
+    {
+     "arq": "Abducao_Gemini-0.jpg",
+     "semente": [
+      253,
+      68
+     ]
+    },
+    {
+     "arq": "Abducao_Gemini-1.jpg",
+     "semente": [
+      253,
+      68
+     ]
+    }
+   ]
+  }
+ }
+}
