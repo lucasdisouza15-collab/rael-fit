@@ -3585,7 +3585,16 @@ const syncUn = (a, b) => Array.from(new Set([].concat(a || [], b || [])));
 const syncClone = o => JSON.parse(JSON.stringify(o));
 const syncIds = d => { const s = []; syncKs(d).forEach(k => ((d && d.ref && d.ref[k]) || []).forEach(e => e && e.id && s.push(e.id))); return s; };
 const SYNC_LISTAS = ["exCustom", "rotinas", "salvas", "receitas", "alimentos"];
-const SYNC_ESC = ["objetivo", "ajuste", "incremento", "metaPeso", "metMusc", "somarTreino", "sexo", "semana", "planoAlim", "recentes", "refeicoes", "motivos", "evento", "desafio", "comp", "fimSemana", "regPref", "jejumOn", "jejum", "jejumH", "jejumHist"];
+// REGRA PERMANENTE: backup/exportar/importar/sincronizar são GENÉRICOS. Chave nova no perfil ou no dia entra sozinha; só tipos especiais ficam listados aqui.
+// Se criar uma estrutura nova com regra de mescla própria (lista por id, mapa por data...), acrescente-a abaixo e rode o teste (ver README, "Backup").
+const SYNC_PERFIL_ESP = ["_t", "_del", "favs", "med", "sono", "qhist", "onb"].concat(["exCustom", "rotinas", "salvas", "receitas", "alimentos"]);
+const SYNC_DIA_ESP = ["_t", "_del", "ref", "agua", "peso", "del", "atv", "checkins", "humor", "nota", "humorT"];
+const syncPerfilChaves = (...ps) => { const s = new Set(); ps.forEach(p => p && Object.keys(p).forEach(k => { if (!SYNC_PERFIL_ESP.includes(k)) s.add(k); })); return Array.from(s); };
+const syncVazio = (k, v) => { if (v == null || v === "" || v === false) return true; if (Array.isArray(v)) return !v.length; if (typeof v === "object") { const t = JSON.stringify(v); if (t === "{}") return true; } try { if (typeof PERFIL_PADRAO !== "undefined" && PERFIL_PADRAO[k] !== undefined && JSON.stringify(PERFIL_PADRAO[k]) === JSON.stringify(v)) return true; } catch (e) {} return false; };
+const syncChk = c => c && (num(c.humor) > 0 || c.nota);
+const syncChkChave = c => (c.hora || "") + "|" + (num(c.humor) || 0) + "|" + (c.nota || "");
+const syncExtras = d => { const o = {}; Object.keys(d || {}).forEach(k => { if (!SYNC_DIA_ESP.includes(k)) o[k] = d[k]; }); o.checkins = d && d.checkins || null; o.humor = d && d.humor || null; o.nota = d && d.nota || null; o.atv = d && d.atv || null; return JSON.stringify(o); };
+const SYNC_ESC_LEGADO = ["objetivo", "ajuste", "incremento", "metaPeso", "metMusc", "somarTreino", "sexo", "semana", "planoAlim", "recentes", "refeicoes", "motivos", "evento", "desafio", "comp", "fimSemana", "regPref", "jejumOn", "jejum", "jejumH", "jejumHist"];
 const syncKeyOf = (lista, x) => lista === "alimentos" ? (x.key || x.id || x.nome) : x.id;
 
 // --- leitura do que existe deste lado (formato único, igual ao backup do site) ---
@@ -3600,14 +3609,15 @@ function syncSnap() {
       docs["dia-" + date] = { ref, agua: num(d.agua), peso: pesoDoDia(date), del: raw.del || [], _t: raw._t || 0 };
     });
     Object.keys(S.fitTreinos || {}).forEach(id => { const w = S.fitTreinos[id]; if (w && (w._del ? syncT(w) >= Date.parse(limT) : (w.data || "") >= limT)) docs["treino-" + id] = syncClone(Object.assign({ id }, w)); });
-    const p = P(); docs.perfil = { _t: syncT(S.fitP), favs: p.favs || [] }; SYNC_LISTAS.forEach(l => { docs.perfil[l] = syncClone(p[l] || []); }); SYNC_ESC.forEach(k => { if (p[k] != null) docs.perfil[k] = syncClone(p[k]); }); if (p.med) docs.perfil.med = syncClone(p.med);
+    const p = P(); docs.perfil = { _t: syncT(S.fitP), favs: p.favs || [] }; SYNC_LISTAS.forEach(l => { docs.perfil[l] = syncClone(p[l] || []); }); syncPerfilChaves(p).forEach(k => { if (p[k] != null) docs.perfil[k] = syncClone(p[k]); }); if (p.med) docs.perfil.med = syncClone(p.med); if (p.sono) docs.perfil.sono = syncClone(p.sono); if (p.qhist) docs.perfil.qhist = syncClone(p.qhist); if (p.onb) docs.perfil.onb = true;
   } else {
     Object.keys(ST.docs).forEach(k => {
       const d = ST.docs[k]; if (!d) return;
       if (k.startsWith("dia-") && !d._del && k.slice(4) >= lim) docs[k] = syncClone(d);
       else if (k.startsWith("treino-") && (d._del ? syncT(d) >= Date.parse(limT) : (d.data || "") >= limT)) docs[k] = syncClone(d);
+      else if (!/^(dia-|treino-)/.test(k) && k !== "perfil" && k !== "ativo" && !d._del) docs[k] = syncClone(d); // tipo de documento novo: entra sozinho no backup
     });
-    const p = getDoc("perfil") || {}; docs.perfil = { _t: syncT(p), favs: p.favs || [] }; SYNC_LISTAS.forEach(l => { docs.perfil[l] = syncClone(p[l] || []); }); SYNC_ESC.forEach(k => { if (p[k] != null) docs.perfil[k] = syncClone(p[k]); }); if (p.med) docs.perfil.med = syncClone(p.med);
+    const p = getDoc("perfil") || {}; docs.perfil = { _t: syncT(p), favs: p.favs || [] }; SYNC_LISTAS.forEach(l => { docs.perfil[l] = syncClone(p[l] || []); }); syncPerfilChaves(p).forEach(k => { if (p[k] != null) docs.perfil[k] = syncClone(p[k]); }); if (p.med) docs.perfil.med = syncClone(p.med); if (p.sono) docs.perfil.sono = syncClone(p.sono); if (p.qhist) docs.perfil.qhist = syncClone(p.qhist); if (p.onb) docs.perfil.onb = true;
   }
   return docs;
 }
@@ -3625,6 +3635,19 @@ function syncMergeDia(l, r) {
   if (nova) { out.agua = r.agua; if (r.peso != null) out.peso = r.peso; }
   else { if (out.peso == null && r.peso != null) out.peso = r.peso; if (!num(out.agua) && num(r.agua)) out.agua = r.agua; }
   if (r.atv && r.atv.length) { const m = new Map((out.atv || []).map(a => [a.id, a])); r.atv.forEach(a => { if (a && a.id && !m.has(a.id)) m.set(a.id, a); }); out.atv = Array.from(m.values()); }
+  // campos novos do dia entram sozinhos (o mais novo vence; o que só existe de um lado é copiado)
+  Object.keys(r).forEach(k => { if (!SYNC_DIA_ESP.includes(k) && (out[k] == null || nova)) out[k] = syncClone(r[k]); });
+  // humor: UNIÃO dos registros do dia (hora+humor+nota), sem perder nem duplicar; média e nota recalculadas
+  const cm = new Map(); [l, r].forEach(x => (Array.isArray(x.checkins) ? x.checkins : []).forEach(c => { if (syncChk(c)) cm.set(syncChkChave(c), syncClone(c)); }));
+  if (cm.size) {
+    const arr = Array.from(cm.values()).sort((a, b) => String(a.hora).localeCompare(String(b.hora))), hv = arr.filter(c => num(c.humor) > 0).map(c => num(c.humor));
+    out.checkins = arr; out.humor = hv.length ? Math.round(hv.reduce((a, b) => a + b, 0) / hv.length * 10) / 10 : 0;
+    out.nota = arr.filter(c => c.nota).map(c => c.hora + " " + c.nota).join(" | "); out.humorT = Math.max(num(l.humorT), num(r.humorT));
+  } else {
+    // humor/nota antigos (um valor por dia): o mais novo vence; o que só existe de um lado é copiado
+    const pegaR = (nova && (num(r.humor) > 0 || r.nota)) || (!(num(l.humor) > 0) && num(r.humor) > 0) || (!l.nota && r.nota);
+    if (pegaR) { if (r.humor != null) out.humor = r.humor; if (r.nota != null) out.nota = r.nota; if (r.humorT != null) out.humorT = r.humorT; }
+  }
   out.del = del.slice(-300); out._t = Math.max(syncT(l), syncT(r));
   return out;
 }
@@ -3640,7 +3663,15 @@ function syncMergePerfil(l, r) {
     out[lista] = Array.from(m.values());
   });
   out.favs = out.favs.slice(0, 60);
-  SYNC_ESC.forEach(k => { const v = rNova && r[k] != null ? r[k] : (l[k] != null ? l[k] : r[k]); if (v != null) { if (JSON.stringify(v) !== JSON.stringify(l[k])) cont.trocados++; out[k] = v; } });
+  syncPerfilChaves(l, r).forEach(k => { const v = (rNova || syncVazio(k, l[k])) && r[k] != null ? r[k] : (l[k] != null ? l[k] : r[k]); if (v != null) { if (JSON.stringify(v) !== JSON.stringify(l[k])) cont.trocados++; out[k] = v; } });
+  // boas-vindas feitas: vale se qualquer lado fez
+  if (l.onb || r.onb) { if (!l.onb) cont.trocados++; out.onb = true; }
+  // sono (mapa data -> horas) e histórico de perguntas (mapa id -> data): união; no conflito vale o lado mais novo
+  [["sono", rNova], ["qhist", rNova]].forEach(([k, rn]) => {
+    if (!l[k] && !r[k]) return; const a = Object.assign({}, rn ? l[k] : r[k], rn ? r[k] : l[k]), b = k === "sono" ? Object.keys(a).sort() : null;
+    if (b) while (b.length > 400) delete a[b.shift()];
+    if (JSON.stringify(a) !== JSON.stringify(l[k] || {})) cont.trocados++; out[k] = a;
+  });
   if (l.med || r.med) {
     const lm = l.med || {}, rm = r.med || {}, cm = new Map(); (lm.campos || []).forEach(c => cm.set(c.id, c)); (rm.campos || []).forEach(c => { if (!cm.has(c.id)) cm.set(c.id, c); });
     const hm = new Map(); (lm.hist || []).forEach(h => hm.set(h.data, syncClone(h))); (rm.hist || []).forEach(h => { const x = hm.get(h.data); if (!x) hm.set(h.data, syncClone(h)); else x.v = Object.assign({}, h.v, x.v); });
@@ -3649,6 +3680,15 @@ function syncMergePerfil(l, r) {
   }
   return { out, cont };
 }
+// preferências guardadas fora dos docs (chave "frango:*" do navegador, menos avisos push do aparelho): entram sozinhas no backup
+function syncLsPrefs() { const o = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && /^frango:/.test(k) && !/^frango:push/.test(k)) o[k] = localStorage.getItem(k); } } catch (e) {} return o; }
+// pacote completo (backup em arquivo e Copiar tudo): todos os docs, fotos, perfis apagados e preferências
+async function syncPacote() {
+  let fotos = []; try { fotos = (await fotoLista(null)).map(x => ({ id: x.id, w: x.w, t: x.t, d: x.d })).filter(x => x.d); } catch (e) {}
+  const o = { app: "rael-fit", v: 3, origem: syncPainel() ? "painel" : "site", exportado: new Date().toISOString(), docs: syncSnap(), fotos };
+  if (!syncPainel()) { o.lixeira = lixeira(); o.ls = syncLsPrefs(); o.perfil = { id: PID(), nome: nomeU() }; }
+  return o;
+}
 function syncPlano(remoto) {
   const L = syncSnap(), R = remoto, ops = [], c = { diasNovos: 0, diasAlt: 0, entradas: 0, apagadas: 0, treinosNovos: 0, treinosAlt: 0, treinosApagados: 0, perfil: 0 };
   Object.keys(R).forEach(k => {
@@ -3656,12 +3696,14 @@ function syncPlano(remoto) {
     if (k.startsWith("dia-")) {
       if (r._del) return; const l = L[k], out = syncMergeDia(l, r), antes = l ? syncIds(l) : [], dep = syncIds(out);
       const add = dep.filter(i => !antes.includes(i)).length, rem = antes.filter(i => !dep.includes(i)).length;
-      const mud = l ? (add || rem || num(out.agua) !== num(l.agua) || (out.peso != null && out.peso !== l.peso) || JSON.stringify(out.ref) !== JSON.stringify(l.ref)) : (dep.length || num(out.agua) || out.peso != null);
+      const mud = l ? (add || rem || num(out.agua) !== num(l.agua) || (out.peso != null && out.peso !== l.peso) || JSON.stringify(out.ref) !== JSON.stringify(l.ref) || (!syncPainel() && syncExtras(out) !== syncExtras(l))) : (dep.length || num(out.agua) || out.peso != null || (!syncPainel() && syncExtras(out) !== syncExtras({})));
       if (mud || (l && JSON.stringify(out.del) !== JSON.stringify(l.del || []))) { ops.push({ t: "dia", k, v: out }); if (!l) c.diasNovos++; else c.diasAlt++; c.entradas += add; c.apagadas += rem; }
     } else if (k.startsWith("treino-")) {
       const l = L[k];
       if (!l) { ops.push({ t: "treino", k, v: r }); if (r._del) c.treinosApagados++; else c.treinosNovos++; }
       else if (syncT(r) > syncT(l)) { ops.push({ t: "treino", k, v: r }); if (r._del) c.treinosApagados++; else c.treinosAlt++; }
+    } else if (!r._del && !/^(dia-|treino-)/.test(k) && k !== "perfil" && k !== "ativo") {
+      const l = L[k]; if (!l || syncT(r) > syncT(l)) { ops.push({ t: "doc", k, v: r }); c.outros = (c.outros || 0) + 1; }
     } else if (k === "perfil") {
       const m = syncMergePerfil(L.perfil || {}, r); if (m.cont.novos || m.cont.trocados || JSON.stringify(m.out.favs) !== JSON.stringify((L.perfil || {}).favs || [])) { ops.push({ t: "perfil", k, v: m.out }); c.perfil = m.cont.novos + m.cont.trocados; }
     }
@@ -3685,6 +3727,12 @@ function syncAplica(ops) {
       const id = op.k.slice(7);
       if (syncPainel()) { const w = syncClone(op.v); if (!w._del) w.id = id; S.fitTreinos = Object.assign({}, S.fitTreinos || {}, { [id]: w }); sv("fittreinos/" + id, w); }
       else { ST.docs[op.k] = syncClone(op.v); lsWrite(); queueRemote(op.k); }
+    } else if (op.t === "doc") {
+      if (!syncPainel()) { ST.docs[op.k] = syncClone(op.v); lsWrite(); queueRemote(op.k); }
+    } else if (op.t === "lixeira") {
+      try { const lx = lixeira(), ja = new Set(lx.map(x => x.id + "|" + x.quando + "|" + String(x.data || "").length)); op.v.forEach(x => { if (x && x.data && !ja.has(x.id + "|" + x.quando + "|" + String(x.data).length)) lx.push(x); }); localStorage.setItem("raelfit:lixeira", JSON.stringify(lx)); } catch (e) {}
+    } else if (op.t === "ls") {
+      try { Object.keys(op.v).forEach(k => { if (localStorage.getItem(k) == null) localStorage.setItem(k, op.v[k]); }); } catch (e) {}
     } else if (op.t === "perfil") {
       if (syncPainel()) updP(p => { Object.keys(op.v).forEach(k => { if (k !== "_t") p[k] = syncClone(op.v[k]); }); });
       else { const p = Object.assign({}, getDoc("perfil") || {}); Object.keys(op.v).forEach(k => { p[k] = syncClone(op.v[k]); }); ST.docs.perfil = p; lsWrite(); queueRemote("perfil"); }
@@ -3706,8 +3754,7 @@ function syncCard() {
     <div class="row" style="gap:8px"><button class="btn soft grow" data-act="syncCopia">Copiar tudo</button><button class="btn soft grow" data-act="syncCola">Colar e mesclar</button></div></div>`;
 }
 ACT.syncCopia = async () => {
-  let fotos = []; try { fotos = (await fotoLista(null)).map(x => ({ id: x.id, w: x.w, t: x.t, d: x.d })).filter(x => x.d); } catch (e) {}
-  const txt = JSON.stringify({ app: "rael-fit", v: 2, origem: syncPainel() ? "painel" : "site", exportado: new Date().toISOString(), docs: syncSnap(), fotos });
+  const txt = JSON.stringify(await syncPacote());
   try { await navigator.clipboard.writeText(txt); toast("Copiado. Agora cole no outro lado em Colar backup."); return; } catch (e) {}
   openSheet({ title: "Copiar tudo", body: () => `<div class="stack"><div class="small ink2">O celular não deixou copiar sozinho. Toque no texto, selecione tudo e copie. Depois cole no outro lado em Colar backup.</div><textarea id="syncOut" readonly style="min-height:200px;font-size:11px">${esc(txt)}</textarea></div>`, foot: () => `<button class="btn pri block" data-act="syncSel">Selecionar tudo</button>` });
 };
@@ -3724,17 +3771,30 @@ function syncResumoHtml() {
     ${li(`Dias de comida novos: <b>${c.diasNovos}</b>; dias atualizados: <b>${c.diasAlt}</b> (${c.entradas} itens entram, ${c.apagadas} saem por terem sido apagados lá)`)}
     ${li(`Treinos novos: <b>${c.treinosNovos}</b>; atualizados: <b>${c.treinosAlt}</b>; apagados lá: <b>${c.treinosApagados}</b>`)}
     ${li(`Rotinas, exercícios, alimentos, favoritos, medidas e ajustes que entram ou mudam: <b>${c.perfil}</b>`)}
+    ${c.outros ? li(`Outros dados do app que entram ou mudam: <b>${c.outros}</b>`) : ""}${c.lixeira ? li(`Perfis apagados (cópias) que voltam à lista: <b>${c.lixeira}</b>`) : ""}${c.prefs ? li(`Preferências do app: <b>${c.prefs}</b>`) : ""}
     ${SYNC.p.fotos.length ? li(`Fotos de treino que entram: <b>${SYNC.p.fotos.length}</b>`) : ""}</ul>` : ""}
     <div class="xs muted">Vale o registro mais recente de cada item. Rotinas apagadas de um lado podem voltar do outro.</div></div>`;
 }
 ACT.syncResumo = () => syncPrepara(($("#syncIn") || {}).value);
 async function syncPrepara(txt) {
-  const o = syncLe(txt); if (!o) { toast("Isso não parece um backup do Frangômetro."); return; }
-  SYNC.p = syncPlano(o.docs); SYNC.p.fotos = [];
-  try { if ((o.fotos || []).length) { const tem = new Set((await fotoLista(null)).map(x => x.id)); SYNC.p.fotos = o.fotos.filter(x => x && x.id && x.d && !tem.has(x.id)); } } catch (e) {}
-  if (SYNC.p.fotos.length) SYNC.p.ops.push({ t: "fotos" });
-  replaceSheet({ title: "O que vai mudar", body: () => syncResumoHtml(), foot: () => SYNC.p.ops.length ? `<button class="btn" data-act="sheetClose">Cancelar</button><button class="btn pri block" data-act="syncAplica">Mesclar agora</button>` : `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
-};
+  const sp = () => new Promise(r => setTimeout(r, 30));
+  openSheet({ title: "Lendo o backup", body: () => `<div class="row"><span class="spin"></span><span>Lendo e conferindo o arquivo (${Math.round(String(txt || "").length / 1024)} KB). Pode levar alguns segundos, não feche.</span></div>` });
+  try {
+    await sp();
+    const o = syncLe(txt); if (!o) { replaceSheet({ title: "Backup não reconhecido", body: () => `<div class="card small" style="color:var(--bad)">Isso não parece um backup do Frangômetro (precisa ser o arquivo .json gerado em Perfil, Fazer backup). Nada foi alterado.</div>`, foot: () => `<button class="btn pri block" data-act="sheetClose">Fechar</button>` }); return; }
+    await sp();
+    SYNC.p = syncPlano(o.docs); SYNC.p.fotos = []; await sp();
+    try { if ((o.fotos || []).length) { const tem = new Set((await fotoLista(null)).map(x => x.id)); SYNC.p.fotos = o.fotos.filter(x => x && x.id && x.d && !tem.has(x.id)); } } catch (e) {}
+    if (SYNC.p.fotos.length) SYNC.p.ops.push({ t: "fotos" });
+    if (!syncPainel()) {
+      if (Array.isArray(o.lixeira) && o.lixeira.length) { const lx = lixeira(), ja = new Set(lx.map(x => x.id + "|" + x.quando + "|" + String(x.data || "").length)), novos = o.lixeira.filter(x => x && x.data && !ja.has(x.id + "|" + x.quando + "|" + String(x.data).length)); if (novos.length) { SYNC.p.ops.push({ t: "lixeira", v: novos }); SYNC.p.c.lixeira = novos.length; } }
+      if (o.ls && typeof o.ls === "object") { const novos = {}; Object.keys(o.ls).forEach(k => { if (/^frango:/.test(k) && !/^frango:push/.test(k) && localStorage.getItem(k) == null) novos[k] = String(o.ls[k]); }); if (Object.keys(novos).length) { SYNC.p.ops.push({ t: "ls", v: novos }); SYNC.p.c.prefs = Object.keys(novos).length; } }
+    }
+    replaceSheet({ title: "O que vai mudar", body: () => syncResumoHtml(), foot: () => SYNC.p.ops.length ? `<button class="btn" data-act="sheetClose">Cancelar</button><button class="btn pri block" data-act="syncAplica">Mesclar agora</button>` : `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
+  } catch (e) {
+    replaceSheet({ title: "Não consegui ler o backup", body: () => `<div class="card small" style="color:var(--bad)">Deu erro ao ler o arquivo: ${esc(String(e && e.message || e))}. Nada foi alterado. Tente de novo ou use Colar backup.</div>`, foot: () => `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
+  }
+}
 ACT.syncAplica = async () => {
   if (!SYNC.p) return; if (syncPainel() && !podeSalvar()) { toast("Sem permissão para salvar agora."); return; }
   try { const fs = SYNC.p.fotos || []; for (const f of fs) await fotoPut({ id: f.id, w: f.w, t: f.t, d: f.d }); const n = syncAplica(SYNC.p.ops.filter(o => o.t !== "fotos")) + fs.length; SYNC.p.ops = []; SHEET.stack = []; drawSheet(); toast("Mesclado: " + n + " itens atualizados"); } catch (e) { toast("Deu erro na mescla: " + (e && e.message || e)); }
@@ -5274,7 +5334,7 @@ ACT.savePerfil = () => {
 ON.metasAuto = el => { updP(p => { p.metasAuto = el.checked; if (!el.checked) p.metas = Object.assign({}, metasCalc(p)); }); render(); };
 ACT.saveMetas = () => { updP(p => { p.metas = {}; ["kcal", "p", "c", "g", "f", "agua"].forEach(k => { p.metas[k] = num($("#mt_" + k).value); }); }); render(); toast("Metas salvas"); };
 ON.prefs = () => { updP(p => { p.incremento = num($("#prInc").value); p.metMusc = num($("#prMet").value); p.somarTreino = $("#prSomar").checked; const f = num($("#prFds").value); p.fimSemana = f > 0 ? { pct: f } : null; p.jejumOn = $("#prJej").checked; }); render(); toast("Preferências salvas"); };
-function backupJSON() { const docs = {}; for (const k in ST.docs) if (!ST.docs[k]._del) docs[k] = ST.docs[k]; return JSON.stringify({ app: "rael-fit", v: 1, exportado: new Date().toISOString(), docs }); }
+function backupJSON_antigo() { const docs = {}; for (const k in ST.docs) if (!ST.docs[k]._del) docs[k] = ST.docs[k]; return JSON.stringify({ app: "rael-fit", v: 1, exportado: new Date().toISOString(), docs }); }
 // lembrete de backup: só no modo local; depois de 7 dias sem backup aparece na tela inicial (adia por 2 dias)
 const BKK = "frango:bk", BKI = "frango:bkini", BKS = "frango:bksn";
 const bkGet = k => { try { return localStorage.getItem(k) || ""; } catch (_) { return ""; } };
@@ -5295,7 +5355,8 @@ ACT.sbSync = async () => { await sbPull(); await sbFlush(); toast(SB.err ? "Falh
 ACT.sbSai = async () => { await sbSair(); SB.on = false; render(); };
 ACT.exportar = async () => {
   bkSet(BKK, TODAY());
-  const data = backupJSON(), name = "frangometro-" + norm(nomeU()).replace(/[^a-z0-9]+/g, "-") + "-" + TODAY() + ".json";
+  let data; try { data = JSON.stringify(await syncPacote()); } catch (e) { toast("Não consegui montar o backup: " + (e && e.message || e)); return; }
+  const name = "frangometro-" + norm(nomeU()).replace(/[^a-z0-9]+/g, "-") + "-" + TODAY() + ".json";
   if (CAP.dl) { try { await CAP.dl.save({ filename: name, data }); toast("Backup salvo"); return; } catch (e) { if (e && e.code === "not_granted") return; } }
   if (!window.claude) { try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "application/json" })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast("Backup baixado"); return; } catch (e) {} }
   openSheet({ title: "Backup", body: `<div class="small ink2">Copie este texto e guarde (no WhatsApp para você mesmo, por exemplo). Para restaurar, use "Colar backup".</div><textarea id="bkTxt" readonly style="min-height:200px;font-size:12px">${esc(data)}</textarea>`, foot: `<button class="btn pri block" data-act="bkCopy">Copiar backup</button>` });
