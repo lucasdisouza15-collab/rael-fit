@@ -15,7 +15,12 @@ Regra: nenhuma mudança grande sem entrada aqui antes do código. Uma entrada = 
 Cada papel mexe só na sua camada.
 
 ## Entradas
-(vazio — adicionar aqui antes de cada recurso novo)
+### Animações originais de exercício (07/11/2026)
+- Problema: ~122 exercícios usam fotos livres (free-exercise-db); Lucas quer animações originais no estilo do boneco do mapa do corpo, sem desenho de código nem redesenho do Rael.
+- Fluxo (espalhado, 4 exercícios por lote, 2 quadros cada): pedido ao Gemini (Caixa Gemini) > recebe quadros > `tools/frames.py` audita chão/altura/cabeça > normaliza para ex/ > registra em EX_SEQ > PR no site e igual no Painel > marca `publicado` em `tools/animacoes.json`.
+- Fonte única do progresso: `tools/animacoes.json`. Fallback: as fotos antigas ficam até o exercício estar `publicado` e conferido.
+- Aceite de um lote: auditoria 0 fora do padrão; todo `publicado` tem EX_SEQ e arquivos em ex/; `node tools/check.js` verde; prova após publicar (print do site e do Painel). Nada testado em celular.
+- Risco aberto: canal de volta das imagens do Gemini (Drive/Gmail) NÃO CONFIRMADO; o lote 1 testa isso.
 
 ## Regras do método
 - Antes de abrir PR: `node tools/check.js` (sintaxe dos scripts + testes das contas de kcal/macros e da nota Pintinho/Frango/Galo Alfa). Se mudar uma regra de conta, ajustar o teste na mesma entrega.
