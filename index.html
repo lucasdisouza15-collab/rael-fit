@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v58-20261106a"><script>(function(){try{var V="v58-20261106a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v59-20261107a"><script>(function(){try{var V="v59-20261107a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -270,7 +270,8 @@ details.acc summary::-webkit-details-marker{display:none}
 #fr-splash .fr-sp-rael{animation:frSpPulo 1.1s ease-in-out infinite;filter:drop-shadow(0 10px 0 rgba(0,0,0,.18))}
 @keyframes frSpPulo{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 #fr-splash .fr-sp-nome{font:700 40px/1.1 "Big Shoulders Display",system-ui,sans-serif;letter-spacing:-.01em;margin-top:6px}
-#fr-splash .fr-sp-sub{font:500 14px "Barlow",system-ui,sans-serif;opacity:.8}
+#fr-splash .fr-sp-sub{font:600 17px "Barlow",system-ui,sans-serif;opacity:.85;min-height:24px;transition:opacity .22s}
+#fr-splash .fr-sp-toque{font:500 11px "Barlow",system-ui,sans-serif;opacity:.5;margin-top:10px}
 #fr-splash .fr-sp-barra{width:140px;height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;margin-top:14px}
 #fr-splash .fr-sp-barra i{display:block;height:100%;width:100%;background:#F2C14E;border-radius:3px;transform-origin:left;animation:frSpBar 1.6s ease-out forwards}
 @keyframes frSpBar{from{transform:scaleX(.05)}to{transform:scaleX(1)}}
@@ -383,6 +384,7 @@ details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{displ
 .fr-resp2{display:flex;flex-direction:column;gap:8px}.fr-resp2 button{font:700 15px var(--f-body,inherit);text-align:left;border:2px solid var(--ink);background:var(--surface);border-radius:14px;padding:12px 14px;cursor:pointer;color:var(--ink);box-shadow:3px 3px 0 var(--ink)}.fr-resp2 button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}.fr-resp2 button small{display:block;font-weight:500;color:var(--ink-2);margin-top:2px}
 .stepcard{display:flex;flex-direction:column;gap:12px;animation:stepIn .28s ease-out;margin-top:12px}@keyframes stepIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.stepcard{animation:none}}
 .dots{display:flex;gap:6px;justify-content:center;margin-top:4px}.dots i{width:8px;height:8px;border-radius:999px;background:var(--line);transition:all .25s}.dots i.on{background:var(--accent);width:24px}
+.tutl{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}.tutl li{position:relative;padding-left:22px;font-size:14.5px;line-height:1.35}.tutl li::before{content:"";position:absolute;left:2px;top:6px;width:10px;height:12px;background:#FBF3DC;border:2px solid var(--ink);border-radius:50% 50% 50% 50%/60% 60% 40% 40%}.tutg{background:#F6D664;border:2px solid var(--ink);border-radius:12px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:2px}.tutg b{font-family:var(--f-display);font-size:16px}
 .onb-cnt{text-align:center;font-size:12px;color:var(--muted)}
 .onb-top{display:flex;align-items:center;gap:10px}
 .onb-bar{flex:1;height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden}
@@ -1518,7 +1520,7 @@ function mealCfg() {
 function meals() { mealCfg(); return _mcOn; }
 function mealName(k) { const c = mealCfg().find(x => x.k === k) || MEALS_PADRAO.find(x => x.k === k); return c ? c.n : k; }
 function refKeys(...ds) { const s = new Set(MEALS_PADRAO.map(x => x.k)); mealCfg().forEach(x => s.add(x.k)); ds.forEach(d => d && d.ref && Object.keys(d.ref).forEach(k => s.add(k))); return Array.from(s); }
-function mealsDay(d) { const on = meals(), ks = on.map(x => x[0]); return on.concat(refKeys(d).filter(k => !ks.includes(k) && ((d.ref || {})[k] || []).length).map(k => [k, mealName(k)])); }
+function mealsDay(d) { const hd = d.hide || [], on = meals().filter(x => !hd.includes(x[0]) || ((d.ref || {})[x[0]] || []).length), ks = on.map(x => x[0]); return on.concat(refKeys(d).filter(k => !ks.includes(k) && ((d.ref || {})[k] || []).length).map(k => [k, mealName(k)])); }
 function newDay() { return { ref: { cafe: [], almoco: [], lanche: [], jantar: [], ceia: [] }, agua: 0, peso: null, atv: [], nota: "" }; }
 function day(date) { const d = getDoc("dia-" + date); if (!d) return newDay(); const n = newDay(); n.ref = Object.assign(n.ref, d.ref || {}); return Object.assign(n, d, { ref: n.ref }); }
 function saveDay(date, d) { const prev = getDoc("dia-" + date); if (prev && typeof syncIds === "function") { const now = syncIds(d), rem = syncIds(prev).filter(i => !now.includes(i)); if (rem.length) d.del = syncUn(d.del, rem).slice(-300); } putDoc("dia-" + date, d); }
@@ -1788,6 +1790,7 @@ function viewDiario() {
       <button class="btn sm soft" data-act="addFood" data-m="${k}" aria-label="Adicionar em ${nome}">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar</button></div>
       ${list.length ? `<div class="list" style="margin-top:6px">${list.map(e => { const et = entryT(e); return `<div class="li tap" data-act="editEntry" data-m="${k}" data-id="${e.id}"><div class="grow"><div class="t">${esc(e.nome)}</div><div class="s">${esc(qtdLabel(e))} · ${macroTxt(et)}</div></div><div class="kcal-r small">${fmt(et.kcal)}</div></div>`; }).join("")}</div>` : `<div class="xs muted" style="margin-top:4px">Nada lançado.</div>`}</div>`;
   });
+  if ((d.hide || []).length) h += `<button class="btn sm ghost" data-act="mealShowDay">Mostrar refeições ocultas neste dia (${d.hide.length})</button>`;
   h += sugestoesCard(t, m, meta);
   h += `<div class="row wrap-ok"><button class="btn sm" data-act="copyPrevDay">Copiar dia anterior</button><button class="btn sm" data-act="applyPlan">Aplicar plano de ${DOWL[dowOf(ui.date)].toLowerCase()}</button><button class="btn sm" data-act="saveAsPlan">Salvar como plano</button><button class="btn sm ghost" data-act="clearDayAsk">Limpar dia</button></div>`;
   if (UIc.confirm === "clearDay") h += confirmBox("Apagar todas as refeições deste dia?", "clearDay", {}, "Apagar refeições");
@@ -1848,6 +1851,8 @@ ACT.mealMenu = ds => {
   const m = ds.m, d = day(ui.date), has = (d.ref[m] || []).length;
   openSheet({ title: mealName(m), body: () => `<div class="list">
     <div class="li tap" data-act="copyMealPrev" data-m="${m}"><div class="grow t">Copiar ${mealName(m).toLowerCase()} de ontem</div></div>
+    ${has ? "" : `<div class="li tap" data-act="mealHideDay" data-m="${m}"><div class="grow t">Ocultar só neste dia</div><div class="s">some daqui hoje; nada é apagado</div></div>`}
+    <div class="li tap" data-act="mealHideAll" data-m="${m}"><div class="grow t">Ocultar sempre</div><div class="s">some de todos os dias vazios; volta em Perfil &gt; Refeições</div></div>
     ${has ? `<div class="li tap" data-act="saveMealAsk" data-m="${m}"><div class="grow t">Salvar como refeição pronta</div></div>
     <div class="li tap" data-act="moveMeal" data-m="${m}"><div class="grow t">Mover para outra refeição</div></div>
     <div class="li tap" data-act="clearMeal" data-m="${m}"><div class="grow t" style="color:var(--bad)">Limpar refeição</div></div>` : ""}</div>` });
@@ -1857,6 +1862,22 @@ ACT.copyMealPrev = ds => {
   if (!prev.length) { toast("Ontem não tem nada nessa refeição."); return; }
   addEntries(ui.date, ds.m, prev.map(e => Object.assign(clean(e), { id: uid() }))); closeSheet(); toast("Copiado de ontem");
 };
+ACT.mealHideDay = ds => { updDay(ui.date, d => { d.hide = (d.hide || []).concat([ds.m]); }); closeSheet(); toast("Ocultada só neste dia"); };
+ACT.mealHideAll = ds => {
+  const c = mealCfg().map(x => Object.assign({}, x)), i = c.findIndex(x => x.k === ds.m);
+  if (c.filter(x => x.on).length <= 1) { toast("Deixe ao menos uma refeição ativa."); return; }
+  if (i >= 0) { c[i].on = 0; updP(p => { p.refeicoes = c; }); } else { c.push({ k: ds.m, n: mealName(ds.m), h: 12, on: 0 }); updP(p => { p.refeicoes = c; }); }
+  closeSheet(); toast("Ocultada. Dias com itens lançados continuam mostrando.");
+};
+ACT.mealShowDay = () => { updDay(ui.date, d => { d.hide = []; }); render(); };
+ACT.refDel = ds => {
+  const c = mealCfg().map(x => Object.assign({}, x)), x = c[+ds.i]; if (!x) return;
+  const usos = allDays().filter(dt => ((day(dt).ref || {})[x.k] || []).length).length;
+  if (usos) { toast("Tem comida lançada em " + usos + " dia" + (usos > 1 ? "s" : "") + ". Use Ocultar (desmarcar) para não perder nada."); return; }
+  if (c.length <= 1) { toast("Deixe ao menos uma refeição."); return; }
+  UIc.confirm = "refdel:" + ds.i; render();
+};
+ACT.refDelOk = ds => { UIc.confirm = null; refSave(c => { c.splice(+ds.i, 1); }); toast("Refeição excluída da lista"); };
 ACT.clearMeal = ds => { updDay(ui.date, d => { d.ref[ds.m] = []; }); closeSheet(); toast("Refeição limpa"); };
 ACT.moveMeal = ds => {
   const from = ds.m;
@@ -4849,14 +4870,18 @@ FRASES.hoje = [].concat(FR_FRASES.manha, FR_FRASES.tarde, FR_FRASES.noite);
 FRASES.agua = FR2.aguaManha.concat(FR_FRASES.agua);
 FRASES.peso = FR2.pesoReg;
 // Tela de abertura: fundo azul, Rael animado e o nome do app. Aparece ao abrir e some sozinha (toque para pular).
+const FR_SP_FRASES = ["Acordando o Rael…", "Chocando seus números…", "Contando as calorias, uma por uma…", "Alongando as asas antes do treino…", "Procurando o pote de proteína…", "Espanando a balança…", "Treinando o cacarejo motivacional…", "Separando a ração do dia…", "Conferindo se o galinheiro está em ordem…", "Aquecendo o ovo da meta…", "Pedindo licença pro frango do almoço…", "Pintinho que acorda cedo vira galo forte…"];
+const FR_SP_CENAS = ["alongando", "cafeina", "fone", "hidratado", "relogio", "espelho", "meditando"];
 function frSplash(ms) {
   if (window.__frSplashFeito || document.getElementById("fr-splash")) return; window.__frSplashFeito = true;
-  const h = new Date().getHours(), cena = h >= 5 && h < 11 ? "manha" : h >= 18 || h < 5 ? "noite" : "tarde";
+  const h = new Date().getHours(), cena = h >= 5 && h < 10 ? "cafeina" : h >= 22 || h < 5 ? "bocejo" : FR_SP_CENAS[Math.floor(Math.random() * FR_SP_CENAS.length)];
+  let fr = FR_SP_FRASES.slice().sort(() => Math.random() - .5), fi = 0;
   const el = document.createElement("div"); el.id = "fr-splash"; el.setAttribute("role", "status"); el.setAttribute("aria-label", "Abrindo o Frangômetro");
-  el.innerHTML = `<div class="fr-sp-box"><div class="fr-sp-rael">${frRaelCena(cena, 176)}</div><div class="fr-sp-nome">Frangômetro</div><div class="fr-sp-sub">acordando o Rael…</div><div class="fr-sp-barra"><i></i></div></div>`;
+  el.innerHTML = `<div class="fr-sp-box"><div class="fr-sp-rael">${frRaelCenaEx(cena, 190)}</div><div class="fr-sp-nome">Frangômetro</div><div class="fr-sp-sub" id="frSpFrase">${fr[0]}</div><div class="fr-sp-barra"><i></i></div><div class="fr-sp-toque">toque para pular</div></div>`;
   document.body.appendChild(el);
-  const fim = () => { if (!el.parentNode) return; el.classList.add("sai"); setTimeout(() => el.remove(), 420); };
-  el.addEventListener("click", fim); setTimeout(fim, ms || 1700);
+  const tr = setInterval(() => { const e = document.getElementById("frSpFrase"); if (!e) return clearInterval(tr); e.style.opacity = 0; setTimeout(() => { fi = (fi + 1) % fr.length; e.textContent = fr[fi]; e.style.opacity = .85; }, 220); }, 1100);
+  const fim = () => { clearInterval(tr); if (!el.parentNode) return; el.classList.add("sai"); setTimeout(() => el.remove(), 420); };
+  el.addEventListener("click", fim); setTimeout(fim, ms || 2300);
 }
 // =================== GRÁFICOS ===================
 function niceMax(v) { if (v <= 0) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))); const f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; }
@@ -5190,9 +5215,9 @@ ACT.extUse = () => {
 function refeicoesCard() {
   const cf = mealCfg().map(x => Object.assign({}, x)), hrs = Array.from({ length: 24 }, (_, i) => i);
   const linha = (x, i) => `<div class="card flat stack" style="gap:6px"><div class="row" style="gap:8px"><input type="checkbox" data-on="refOn" data-i="${i}" ${x.on ? "checked" : ""} aria-label="Ativa"><input type="text" class="grow" data-on="refNome" data-i="${i}" value="${esc(x.n)}" maxlength="30" aria-label="Nome da refeição">
-    <button class="iconbtn" data-act="refMove" data-i="${i}" data-d="-1" aria-label="Subir" ${i ? "" : "disabled"}>↑</button><button class="iconbtn" data-act="refMove" data-i="${i}" data-d="1" aria-label="Descer" ${i < cf.length - 1 ? "" : "disabled"}>↓</button></div>
+    <button class="iconbtn" data-act="refMove" data-i="${i}" data-d="-1" aria-label="Subir" ${i ? "" : "disabled"}>↑</button><button class="iconbtn" data-act="refMove" data-i="${i}" data-d="1" aria-label="Descer" ${i < cf.length - 1 ? "" : "disabled"}>↓</button><button class="iconbtn" data-act="refDel" data-i="${i}" aria-label="Excluir refeição">${ICON.trash}</button></div>${UIc.confirm === "refdel:" + i ? confirmBox("Excluir \"" + x.n + "\" da lista? Nenhum alimento seu é apagado (só dá para excluir se nunca foi usada).", "refDelOk", { i }, "Excluir") : ""}
     <label class="row small ink2" style="gap:6px">Começa às <select data-on="refHora" data-i="${i}">${hrs.map(h => `<option value="${h}" ${num(x.h) === h ? "selected" : ""}>${h}h</option>`).join("")}</select> (sugere a refeição ao lançar comida)</label></div>`;
-  return `<div class="small ink2">Marque as refeições que você faz, renomeie, mude a ordem ou adicione outras. Desmarcar só esconde: o que já foi lançado não se perde nem sai da soma do dia.</div>${cf.map(linha).join("")}
+  return `<div class="small ink2">Marque as refeições que você faz, renomeie, mude a ordem ou adicione outras. Desmarcar (ou "Ocultar" no menu da refeição) só esconde: o que já foi lançado não se perde nem sai da soma do dia. A lixeira só vale para refeição que nunca foi usada.</div>${cf.map(linha).join("")}
     <div class="row wrap-ok"><button class="btn sm soft" data-act="refAdd">Adicionar refeição</button><button class="btn sm" data-act="refReset">Voltar ao padrão</button></div>`;
 }
 function refSave(fn) { const c = mealCfg().map(x => Object.assign({}, x)); fn(c); updP(p => { p.refeicoes = c; }); UIc.refNovo = 0; render(); }
@@ -5351,7 +5376,7 @@ const ONB = { i: 0, d: {}, ret: false };
 function onbPassos() {
   const s = ["oi", "obj", "dados", "peso", "meta"]; if (onbSanf()) s.push("sanfona");
   s.push("extra"); if (ONB.extra) s.push("motivos", "evento", "desafio", "comp", "fds", "reg");
-  s.push("pronto", "t_hoje", "t_comer", "t_treino", "t_evo", "t_perfil"); return s;
+  s.push("pronto", "t_hoje", "t_comer", "t_meta", "t_treino", "t_evo", "t_perfil"); return s;
 }
 function onbTmp() { const d = ONB.d; return Object.assign(P(), { sexo: d.sexo, idade: d.idade, altura: d.altura, atividade: d.atividade, objetivo: d.objetivo, ajuste: d.ajuste, metaPeso: d.metaPeso }); }
 function onbSanf() { const d = ONB.d; return d.objetivo === "perder" && !d.sanfOk && (num(d.ajuste) >= 750 || (d.peso > 20 && metasCalc(onbTmp(), d.peso).baixo)); }
@@ -5369,11 +5394,12 @@ function onbLe() {
 }
 const onbOpt = (act, on, ico, txt, ex) => `<button class="onb-opt${on ? " on" : ""}" data-act="${act}" ${ex || ""}><span class="ico">${ico}</span><span>${txt}</span><span class="ck">${on ? "✓" : ""}</span></button>`;
 const ONB_TUT = {
-  t_hoje: ["hoje", "Hoje: seu dia num olhar", "O Rael mostra a nota do dia, as calorias e os macros, a água, o peso e o treino. Tem também a sequência, o desafio, o jejum e a nota do dia. Toque em Lançar comida para começar."],
-  t_comer: ["comer", "Comer: o diário por refeição", "Cada refeição tem sua meta de calorias. Busque o alimento, escreva algo como “2 ovos e 1 pão”, tire foto do prato ou use suas receitas (com favoritas e filtro por calorias). Toque numa linha para ajustar a quantidade."],
-  t_treino: ["treino", "Treino: série por série", "Monte sua semana, inicie o treino e marque cada série. O app lembra as cargas da última vez, avisa recorde e mostra como fazer o exercício. Dá para importar o histórico do Hevy."],
-  t_evo: ["evo", "Evolução: para onde você vai", "Peso com a previsão da meta, calorias por dia, calendário de treinos, recordes e relatório do mês. O filtro de 7, 30 ou 90 dias no topo vale para os gráficos."],
-  t_perfil: ["perfil", "Perfil: ajustes e backup", "Metas, refeições do dia, avisos, backup e nuvem ficam aqui. Dá para refazer este plano guiado quando quiser, sem perder seus registros."]
+  t_hoje: ["Seu dia num olhar", "Abriu o app, eu já te digo como o dia tá indo. Sem planilha, sem conta de cabeça.", ["O anel Frango mostra quanto falta (ou passou) das suas calorias, com proteína, carbo e gordura ao lado.", "O balanço do dia cruza o que você gastou (metabolismo, passos, treino) com o que comeu.", "Eu mudo de cena e de fala conforme a hora, o treino, a água e o que você lançou: é o seu termômetro de bom humor.", "Água em copinhos, peso e como você tá se sentindo (pode registrar várias vezes no dia)."], "Em 10 segundos você sabe se o dia está no rumo, e o que falta pra fechar."],
+  t_comer: ["Comer sem sofrer", "Lançar comida tem que ser mais fácil que esquecer de lançar. Por isso tem vários jeitos.", ["Busque o alimento, ou escreva do jeito que fala: “2 ovos e 1 pão”.", "Tire foto do prato: a IA estima e você confere os gramas antes de salvar.", "Receitas, refeições prontas, copiar o dia anterior e aplicar o plano da semana.", "Cada refeição tem a sua meta, e eu sugiro o que falta pra bater proteína sem estourar as calorias.", "Não faz certa refeição? Oculte no menu ⋯: nada é apagado."], "Registrar leva segundos, e as sobras do dia viram sugestão concreta, não culpa."],
+  t_meta: ["Da meta até a data", "Aqui está o truque do Frangômetro: seu peso e seu ritmo viram uma data.", ["Você diz peso, meta e ritmo (leve, padrão, agressivo). Eu calculo suas calorias e macros.", "A previsão da meta aparece em Hoje e em Evolução, e se ajusta conforme o peso real que você registra.", "Fim de semana flexível: libero mais calorias no sábado e domingo e tiro um pouco dos outros dias, mantendo a média.", "O desafio de ovo conta os dias seguidos lançando comida. Falhou um dia? Zera a sequência, não a meta."], "Você enxerga o caminho inteiro, com data, e vê o ganho de cada semana em dia cumprido."],
+  t_treino: ["Treino que lembra de você", "Eu guardo as cargas pra você não ter que lembrar.", ["Monte a semana, inicie o treino e marque série por série. Eu lembro o peso da última vez.", "Bateu recorde? Eu aviso. Não sabe fazer? Tem animação de cada exercício.", "O mapa do corpo é calculado do seu histórico real: séries de trabalho por grupo, sem aquecimento, seguindo o filtro de 7, 30 ou 90 dias.", "Dá para importar o histórico do Hevy e registrar corrida, bike, futebol... tudo entra no gasto."], "Você vê quais músculos estão sendo treinados (e quais estão esquecidos) e a evolução de cada carga."],
+  t_evo: ["Evolução com prova", "Sensação engana. Número não.", ["Peso com previsão da meta, calorias por dia, calendário de treinos e recordes.", "O filtro de 7, 30 ou 90 dias vale para tudo da Evolução.", "O relatório do período é escrito por mim: peso, comida, treino, sono, e o humor cruzado com os dias de treino ou sono curto.", "O coach lê os mesmos dados e responde em cima do que aconteceu de verdade com você."], "Você descobre o que realmente funciona no seu corpo e na sua rotina, e mostra pra si mesmo."],
+  t_perfil: ["Seu galinheiro", "Tudo que é seu fica aqui, e nada se perde sem você mandar.", ["Metas, refeições, avisos e jejum (opcional) no seu ritmo.", "Backup em arquivo e nuvem para trocar de celular sem drama.", "Perfis separados no mesmo aparelho, e dá para rever estas boas-vindas quando quiser.", "Humor e anotações do dia entram nos relatórios e no coach."], "Controle total dos seus dados, e o app se adapta a você, não o contrário."]
 };
 function ovoSvg(st) {
   const L = "#1B1630", crack = [
@@ -5408,7 +5434,7 @@ function onbBody() {
   else if (st === "comp") { const mot = d.motivos.filter(x => !/^Outro/.test(x)).slice(0, 2).map(x => x.toLowerCase()).join(" e "); h = T("Seu compromisso", `Vou usar o Frangômetro para ${mot || "melhorar minha rotina de comida e treino"}${d.desafio ? ", por pelo menos " + d.desafio + " dias seguidos" : ""}.`) + `<button class="onb-hold${d.comp ? " done" : ""}" data-hold="1" aria-label="Segure para se comprometer"><i></i><span>${d.comp ? "Compromisso feito ✓" : "Segure aqui para se comprometer"}</span></button>${d.comp ? "" : `<button class="btn ghost block" data-act="onbCompToque">Prefiro só tocar</button>`}`; }
   else if (st === "fds") h = T("Você come um pouco mais no fim de semana?", "Sem culpa. O app pode liberar mais calorias no sábado e domingo e tirar um pouco dos outros dias, mantendo a média da semana.") + `<div class="onb-duo">${onbOpt("onbFds", d.fds > 0, "👍", "Sim", 'data-v="15"')}${onbOpt("onbFds", d.fds === 0, "👎", "Não", 'data-v="0"')}</div>` + (d.fds > 0 ? `<div class="xs muted">Quanto a mais</div><div class="seg">${[10, 15, 20].map(v => `<button data-act="onbFds" data-v="${v}" aria-pressed="${d.fds === v}">+${v}%</button>`).join("")}</div>` : "");
   else if (st === "reg") h = T("Como você prefere registrar as refeições?", "Dá para mudar sempre.") + ONB_REG.map(([k, i, t]) => onbOpt("onbReg", d.reg === k, i, t, `data-v="${k}"`)).join("") + (d.reg === "foto" || d.reg === "misto" ? `<div class="small ink2">A foto só vai para a IA quando você toca em Analisar, e você revisa os gramas antes de salvar. A IA estima, então confira.</div>` : "");
-  else if (st.startsWith("t_")) { const [ic, ti, tx] = ONB_TUT[st]; h = `<div style="text-align:center;color:var(--accent)">${ICON[ic].replace("<svg", '<svg width="64" height="64"')}</div>` + T(ti, tx) + `<div class="xs muted" style="text-align:center">${st === "t_perfil" ? "Fim do tutorial." : "Tutorial " + (ps.indexOf(st) - ps.indexOf("t_hoje") + 1) + " de 5"}</div>`; }
+  else if (st.startsWith("t_")) { const [ti, tx, bl, ganho] = ONB_TUT[st], n = ps.filter(x => x.startsWith("t_")).length; h = T(ti, tx) + `<ul class="tutl">${bl.map(x => `<li>${x}</li>`).join("")}</ul><div class="tutg"><b>O que você ganha</b>${ganho}</div><div class="xs muted" style="text-align:center">${st === "t_perfil" ? "Fim do tour. Bora!" : "Tour " + (ps.indexOf(st) - ps.indexOf("t_hoje") + 1) + " de " + n}</div>`; }
   else if (st === "pronto") { const tp = onbTmp(), m = metasCalc(tp, d.peso), pv = metaPrev(tp, d.peso, d.metaPeso); h = T("Chocou! Seu plano nasceu.", "Confere aí se faz sentido. Dá pra mexer em tudo depois.") + `<div class="card"><div class="eyebrow">Por dia</div><div class="num" style="font-size:32px;font-weight:700">${fmt(m.kcal)} kcal</div><div class="small ink2">Proteína ${m.p} g · Carboidrato ${m.c} g · Gordura ${m.g} g · Água ${fmt(m.agua)} ml</div>${m.baixo ? `<div class="pill warn" style="margin-top:6px">Meta travada no mínimo por segurança</div>` : ""}</div>${d.fds > 0 ? `<div class="small ink2">Fim de semana: +${d.fds}% de calorias, e os outros dias ficam um pouco menores.</div>` : ""}${pv ? `<div class="small ink2">${prevTxt(pv)}</div>` : ""}${d.evento && d.evento !== "Nenhum" ? `<div class="small ink2">Evento: ${esc(d.evento === "Outro" && d.eventoNome ? d.eventoNome : d.evento)}${d.eventoData ? " em " + fmtData(d.eventoData) : ""}.</div>` : ""}<div class="small ink2">Desafio: ${d.desafio} dias seguidos lançando comida.</div><div class="disc">Estimativas. Não substituem médico ou nutricionista.</div>`; }
   return `<div class="onb">${top}<div class="card stepcard" id="stp${ONB.i}">${h}</div><div class="onb-cnt">${ONB.i >= ess ? "Chocou!" : "Chocando: " + Math.round(ONB.i / ess * 100) + "%"}</div></div>`;
 }
