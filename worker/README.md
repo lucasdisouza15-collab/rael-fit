@@ -16,3 +16,11 @@ Passo a passo (feito uma vez, pelo dono do repositório):
 6. Quando terminar, a URL do Worker será `https://frangometro-avisos.<seu-subdominio>.workers.dev`. Envie essa URL ao Claude, que coloca em `push-config.json`.
 
 No celular: abrir o site, Ajustes > "Ligar avisos". No iPhone é preciso antes "Adicionar à Tela de Início" e abrir o app por esse ícone.
+
+## Conferir a nuvem antes de avisar (opcional, recomendado)
+
+Os lembretes "Sequência em risco" e "Hora do treino" só se calam se souberem que você já registrou. O resumo do dia vem do app aberto no celular, então o que você registra só no Painel não chegava aqui. Se você cadastrar dois segredos no próprio Worker (Cloudflare > Workers > frangometro-avisos > Settings > Variables and Secrets, tipo Secret), ele passa a ler o Supabase antes de avisar:
+
+- `SUPABASE_EMAIL` e `SUPABASE_PASSWORD`: o mesmo login do Frangômetro.
+
+Sem eles, a "Sequência em risco" só dispara se o resumo do aparelho for de hoje; resumo velho (app não aberto hoje) agora silencia o aviso em vez de arriscar um alarme falso.
