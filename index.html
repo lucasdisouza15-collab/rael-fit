@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v60-20261107h"><script>(function(){try{var V="v60-20261107h";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v60-20261108a"><script>(function(){try{var V="v60-20261108a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1572,7 +1572,7 @@ function metasCalc(p = P(), w0) {
 }
 function metas(p = P()) { const c = metasCalc(p); if (p.metasAuto) return c; const m = Object.assign({}, c); for (const k of ["kcal","p","c","g","f","agua"]) if (num(p.metas && p.metas[k])) m[k] = num(p.metas[k]); m.baixo = false; return m; }
 function treinosDo(date) { return workouts().filter(w => w.data === date); }
-function kcalTreino(w, p = P()) { const h = clamp(((w.fim || w.inicio) - w.inicio) / 3600000, 0, 3); return (num(p.metMusc) || MET_MUSCULACAO) * pesoNa(w.data, p) * h; }
+function kcalTreino(w, p = P()) { const h = clamp(((w.fim || w.inicio) - w.inicio) / 3600000, 0, 3); return Math.max(0, (num(p.metMusc) || MET_MUSCULACAO) - 1) * pesoNa(w.data, p) * h; }  /* líquido: o basal x fator do dia já cobre 1 MET (igual ao Painel) */
 function gastoDia(date, p = P()) {
   const d = day(date), w = pesoNa(date, p);
   const base = gastoBase(p, w);
@@ -2704,7 +2704,7 @@ ACT.sessFinish = () => {
     ${prs.length ? `<div class="card"><div class="eyebrow">Recordes novos</div><div class="list">${prs.map(x => `<div class="li"><div class="grow t">${esc(x.nome)}</div><span class="pill good">1RM est. ${fmt1(x.v)} kg</span></div>`).join("")}</div></div>` : ""}
     <button class="btn soft block" data-act="fotoAbrir" data-id="${w.id}">${IC_CAM} Foto do treino</button>
     ${w.rotinaId && (P().rotinas || []).some(x => x.id === w.rotinaId) ? `<button class="btn soft block" data-act="rotAtualizaAsk" data-id="${w.id}">Atualizar a rotina com este treino</button>` : ""}
-    <div class="disc">Gasto calculado por MET (${fmt1(P().metMusc)}) × peso × duração. É uma estimativa.</div>`, foot: `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
+    <div class="disc">Gasto calculado por (MET ${fmt1(P().metMusc)} − 1) × peso × duração, já sem o basal que o dia a dia cobre. É uma estimativa.</div>`, foot: `<button class="btn pri block" data-act="sheetClose">Fechar</button>` });
 };
 
 // ---------- descanso ----------
@@ -5030,7 +5030,7 @@ function viewHoje() {
     <details class="acc" style="margin-top:10px"><summary class="small ink2">Como o gasto é calculado ${ICON.down.replace("<svg", '<svg width="16" height="16"')}</summary><div class="small" style="margin-top:6px">
       <div class="kv"><span class="muted">Metabolismo basal (Mifflin-St Jeor)</span><b>${fmt(tmb(p, pesoNa(ui.date, p)))}</b></div>
       <div class="kv"><span class="muted">× fator do dia a dia (${fmt1(p.atividade)})</span><b>${fmt(g.base)}</b></div>
-      <div class="kv"><span class="muted">+ musculação (MET ${fmt1(p.metMusc)} × peso × duração)</span><b>${fmt(g.tr)}</b></div>
+      <div class="kv"><span class="muted">+ musculação ((MET ${fmt1(p.metMusc)} − 1) × peso × duração)</span><b>${fmt(g.tr)}</b></div>
       <div class="kv"><span class="muted">+ outras atividades (MET)</span><b>${fmt(g.atv)}</b></div>
       <div class="disc" style="margin-top:4px">Tudo é estimativa. O fator do dia a dia não deve contar os treinos, eles entram à parte.</div></div></details>
     ${temComida && saldo >= 300 ? `<div class="xs ink2" style="margin-top:8px">${esc(frase("deficit"))}</div>` : ""}</div>`;
