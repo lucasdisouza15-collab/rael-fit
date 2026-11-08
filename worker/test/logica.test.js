@@ -1,5 +1,5 @@
 import test from "node:test"; import assert from "node:assert/strict";
-import { limpaCfg, local, proximo, motivoPular, monta, FRASES, hm } from "../src/logica.js";
+import { resumoNuvem, aplicaNuvem, limpaCfg, local, proximo, motivoPular, monta, FRASES, hm } from "../src/logica.js";
 const TZ = 180; // Bahia: getTimezoneOffset() = +180
 const ms = (d, h, m = 0) => Date.UTC(2026, 10, d, h, m); // novembro/2026; dia 4 = quarta
 test("local converte com o offset do aparelho", () => {
@@ -30,6 +30,7 @@ test("sequência: só com 3+ dias e sem registro hoje", () => {
   assert.equal(motivoPular("sequencia", e({ seq: 5, refs: 1 }), "2026-11-04", "2026-11-03", 3), "ja-registrou");
   assert.equal(motivoPular("sequencia", e({ seq: 5 }), "2026-11-04", "2026-11-03", 3), null);
   assert.equal(motivoPular("sequencia", e({ seq: 5, dia: "2026-11-01" }), "2026-11-04", "2026-11-03", 3), "sem-sequencia");
+  assert.equal(motivoPular("sequencia", e({ seq: 5, dia: "2026-11-03" }), "2026-11-04", "2026-11-03", 3), "sem-dados-de-hoje");
 });
 test("almoço, água, noite, semana", () => {
   assert.equal(motivoPular("almoco", e({ almoco: true }), "2026-11-04", "2026-11-03", 3), "almoco-feito");
@@ -47,4 +48,27 @@ test("monta: troca {n} e {t}, não repete o último e nunca cita nome", () => {
 test("tom: nenhuma frase tem termos vetados nem gênero fixo", () => {
   const todas = Object.values(FRASES).flat().join(" ").toLowerCase();
   for (const x of ["shape", "guerra", "vergonha", "monstro", "capa de revista", "pronto ", "cansado de você", "gordo", "lucas", "vai doer", "ferro"]) assert.ok(!todas.includes(x), x);
+});
+
+const it = k => ({ base: { kcal: k } });
+test("nuvem: Painel gravou refeição/água/treino hoje -> sequência não dispara", () => {
+  const velho = e({ seq: 4, dia: "2026-11-03", refs: 3 }); // resumo de ontem, aparelho não abriu hoje
+  assert.equal(motivoPular("sequencia", velho, "2026-11-04", "2026-11-03", 3), "sem-dados-de-hoje");
+  for (const rows of [
+    [{ k: "dia-2026-11-04", data: { ref: { cafe: [it(300)] } } }],
+    [{ k: "dia-2026-11-04", data: { agua: 1250, ref: {} } }],
+    [{ k: "treino-pn20261104", data: {} }]]) {
+    const n = aplicaNuvem(velho, "2026-11-04", rows);
+    assert.equal(motivoPular("sequencia", n, "2026-11-04", "2026-11-03", 3), "ja-registrou");
+    assert.equal(n.seq, 4);
+  }
+});
+test("nuvem: dia realmente vazio na nuvem -> sequência dispara", () => {
+  const n = aplicaNuvem(e({ seq: 4, dia: "2026-11-03", refs: 3 }), "2026-11-04", [{ k: "dia-2026-11-03", data: { ref: { cafe: [it(300)] } } }]);
+  assert.equal(motivoPular("sequencia", n, "2026-11-04", "2026-11-03", 3), null);
+  assert.deepEqual(resumoNuvem([], "2026-11-04"), { refs: 0, itens: 0, aguaMl: 0, treinou: false });
+});
+test("nuvem: treino de hoje na nuvem evita lembrete de treino", () => {
+  const n = aplicaNuvem(e({ dia: "2026-11-03" }), "2026-11-04", [{ k: "treino-pn20261104", data: {} }]);
+  assert.equal(motivoPular("treino", n, "2026-11-04", "2026-11-03", 3), "ja-treinou");
 });

@@ -4,7 +4,7 @@
 //  - Lembretes do dia: o site manda config + estado do dia (POST /config); o alarme avalia cada lembrete,
 //    pula o que já foi feito, respeita o máximo de 4 por dia e a janela 07:00–22:30.
 //  - Novidade: o GitHub Actions chama POST /novidade (autenticado) quando um commit traz "[avisar]".
-import { MAX_DIA, JANELA_MIN, TIPOS, limpaCfg, limpaEstado, local, proximo, motivoPular, monta } from "./logica.js";
+import { MAX_DIA, JANELA_MIN, TIPOS, limpaCfg, limpaEstado, local, proximo, motivoPular, monta, aplicaNuvem } from "./logica.js";
 
 const ORIGENS = ["https://lucasdisouza15-collab.github.io"];
 const PUSH_HOSTS = [/^fcm\.googleapis\.com$/, /^web\.push\.apple\.com$/, /\.push\.apple\.com$/, /\.push\.services\.mozilla\.com$/, /\.notify\.windows\.com$/, /^updates\.push\.services\.mozilla\.com$/];
@@ -34,6 +34,21 @@ export async function enviaPush(endpoint, env, urgencia = "high") {
 }
 async function idDoEndpoint(env, ep) { return env.DESCANSO.idFromName(b64u(await crypto.subtle.digest("SHA-256", txt(ep)))); }
 async function tokenAdmin(env) { return hex(await crypto.subtle.digest("SHA-256", txt("admin:" + JSON.parse(env.VAPID_PRIVATE_JWK).d))); }
+
+// Lê da nuvem (Supabase) o que já foi registrado hoje, com o login do Lucas guardado como segredo do Worker.
+// Sem segredo ou com qualquer falha devolve null e o aviso segue a regra antiga (que, no caso da sequência, agora se cala se o resumo for velho).
+export async function nuvemHoje(env, st, hoje) {
+  try {
+    if (!env.SUPABASE_EMAIL || !env.SUPABASE_PASSWORD) return null;
+    const base = env.SUPABASE_URL || "https://dlpujrluawdymwmstqac.supabase.co", key = env.SUPABASE_KEY || "sb_publishable_wSV6Pp8aC0Ni7qlqIy9aIg_rGCDqo_8";
+    const H = tok => ({ apikey: key, "content-type": "application/json", ...(tok ? { Authorization: "Bearer " + tok } : {}) });
+    const a = await fetch(base + "/auth/v1/token?grant_type=password", { method: "POST", headers: H(), body: JSON.stringify({ email: env.SUPABASE_EMAIL, password: env.SUPABASE_PASSWORD }) });
+    if (!a.ok) return null; const tok = (await a.json()).access_token; if (!tok) return null;
+    const ks = "(dia-" + hoje + ",treino-pn" + hoje.replace(/-/g, "") + ")";
+    const r = await fetch(base + "/rest/v1/docs?select=k,data,del&perfil=eq.main&k=in." + encodeURIComponent(ks), { headers: H(tok) });
+    return r.ok ? await r.json() : null;
+  } catch (e) { return null; }
+}
 
 export class Descanso {
   constructor(state, env) { this.state = state; this.env = env; }
@@ -94,8 +109,12 @@ export class Descanso {
           const alvo = +c.h.slice(0, 2) * 60 + +c.h.slice(3);
           if (L.min < alvo || L.min >= alvo + JANELA_MIN) continue;
           h.env[t] = L.dia;                                            // marca antes: nunca manda 2x no mesmo dia
-          if (motivoPular(t, e, L.dia, ontem, L.dow) || h.n >= MAX_DIA) continue;
-          const m = monta(t, e, L.dow, Math.random, h.ult[t] ?? -1); if (!m) continue;
+          let ev = e;
+          if (t === "sequencia" || t === "treino") {                   // confere o que Painel/Strava já gravaram na nuvem hoje
+            const rows = await nuvemHoje(this.env, st, L.dia); if (rows) ev = aplicaNuvem(e, L.dia, rows);
+          }
+          if (motivoPular(t, ev, L.dia, ontem, L.dow) || h.n >= MAX_DIA) continue;
+          const m = monta(t, ev, L.dow, Math.random, h.ult[t] ?? -1); if (!m) continue;
           h.n++; if (m.idx >= 0) h.ult[t] = m.idx;
           await this.empilha({ tipo: t, titulo: m.titulo, corpo: m.corpo, tag: m.tag });
           await this.dispara(endpoint, "normal");

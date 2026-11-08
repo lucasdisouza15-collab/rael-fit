@@ -70,7 +70,8 @@ export function motivoPular(tipo, e, hoje, ontem, dow) {
   }
   if (tipo === "sequencia") {
     if (!e || (e.dia !== hoje && e.dia !== ontem) || e.seq < 3) return "sem-sequencia";
-    if (deHoje && e.refs > 0) return "ja-registrou";
+    if (!deHoje) return "sem-dados-de-hoje"; // resumo velho (ontem): não dá para afirmar que hoje está vazio
+    if (e.refs > 0 || e.registrouNuvem) return "ja-registrou";
     return null;
   }
   if (!deHoje) return null;
@@ -132,4 +133,23 @@ export function monta(tipo, e, dow, rnd = Math.random, ult = -1) {
   let i = Math.floor(rnd() * banco.length); if (banco.length > 1 && i === ult) i = (i + 1) % banco.length;
   const corpo = banco[i].replace("{t}", nomeHoje || "").replace("{n}", String(e && e.seq || ""));
   return { tipo, titulo: TITULOS[tipo], corpo, tag: "rael-" + tipo, idx: banco === FRASES.treinoNome ? -1 : i };
+}
+
+/** Resume o que a nuvem (Supabase) já tem de HOJE. `rows` = linhas da tabela docs: [{k, data}]. */
+export function resumoNuvem(rows, hoje) {
+  const d = (rows || []).find(r => r.k === "dia-" + hoje), tr = (rows || []).some(r => r.k === "treino-pn" + hoje.replace(/-/g, "") && !r.del);
+  const dia = d && !d.del && d.data || {};
+  const itens = Object.values(dia.ref || {}).flat().filter(i => i && i.base && +i.base.kcal > 0).length;
+  const slots = Object.values(dia.ref || {}).filter(v => Array.isArray(v) && v.some(i => i && i.base && +i.base.kcal > 0)).length;
+  return { refs: slots, itens, aguaMl: +dia.agua || 0, treinou: tr };
+}
+/** Atualiza o resumo vindo do aparelho com o que a nuvem sabe de hoje (só acrescenta, nunca apaga registro). */
+export function aplicaNuvem(e, hoje, rows) {
+  const r = resumoNuvem(rows, hoje), base = e || { dia: "", refs: 0, almoco: false, agua: 1, treinou: false, mexeu: false, seq: 0, temPlano: false, plano: [] };
+  const deHoje = base.dia === hoje, alg = r.itens > 0 || r.aguaMl > 0 || r.treinou;
+  return Object.assign({}, base, {
+    dia: hoje, refs: Math.max(deHoje ? base.refs : 0, r.refs), treinou: (deHoje && base.treinou) || r.treinou,
+    mexeu: deHoje && base.mexeu, almoco: deHoje && base.almoco,
+    agua: deHoje ? base.agua : 0, registrouNuvem: alg
+  });
 }
