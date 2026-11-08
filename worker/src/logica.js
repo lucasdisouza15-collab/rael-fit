@@ -137,11 +137,16 @@ export function monta(tipo, e, dow, rnd = Math.random, ult = -1) {
 
 /** Resume o que a nuvem (Supabase) já tem de HOJE. `rows` = linhas da tabela docs: [{k, data}]. */
 export function resumoNuvem(rows, hoje) {
-  const d = (rows || []).find(r => r.k === "dia-" + hoje), tr = (rows || []).some(r => r.k === "treino-pn" + hoje.replace(/-/g, "") && !r.del);
-  const dia = d && !d.del && d.data || {};
-  const itens = Object.values(dia.ref || {}).flat().filter(i => i && i.base && +i.base.kcal > 0).length;
-  const slots = Object.values(dia.ref || {}).filter(v => Array.isArray(v) && v.some(i => i && i.base && +i.base.kcal > 0)).length;
-  return { refs: slots, itens, aguaMl: +dia.agua || 0, treinou: tr };
+  // vale qualquer perfil do dono (o celular usa um perfil extra, o Painel sincroniza em outro): pega o maior de cada medida
+  const tr = (rows || []).some(r => r.k === "treino-pn" + hoje.replace(/-/g, "") && !r.del);
+  let itens = 0, slots = 0, aguaMl = 0;
+  for (const d of (rows || []).filter(r => r.k === "dia-" + hoje && !r.del)) {
+    const dia = d.data || {}, ref = Object.values(dia.ref || {});
+    itens = Math.max(itens, ref.flat().filter(i => i && i.base && +i.base.kcal > 0).length);
+    slots = Math.max(slots, ref.filter(v => Array.isArray(v) && v.some(i => i && i.base && +i.base.kcal > 0)).length);
+    aguaMl = Math.max(aguaMl, +dia.agua || 0);
+  }
+  return { refs: slots, itens, aguaMl, treinou: tr };
 }
 /** Atualiza o resumo vindo do aparelho com o que a nuvem sabe de hoje (só acrescenta, nunca apaga registro). */
 export function aplicaNuvem(e, hoje, rows) {

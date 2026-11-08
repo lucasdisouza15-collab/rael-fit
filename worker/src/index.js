@@ -45,7 +45,7 @@ export async function nuvemHoje(env, st, hoje) {
     const a = await fetch(base + "/auth/v1/token?grant_type=password", { method: "POST", headers: H(), body: JSON.stringify({ email: env.SUPABASE_EMAIL, password: env.SUPABASE_PASSWORD }) });
     if (!a.ok) return null; const tok = (await a.json()).access_token; if (!tok) return null;
     const ks = "(dia-" + hoje + ",treino-pn" + hoje.replace(/-/g, "") + ")";
-    const r = await fetch(base + "/rest/v1/docs?select=k,data,del&perfil=eq.main&k=in." + encodeURIComponent(ks), { headers: H(tok) });
+    const r = await fetch(base + "/rest/v1/docs?select=k,data,del&k=in." + encodeURIComponent(ks), { headers: H(tok) });
     return r.ok ? await r.json() : null;
   } catch (e) { return null; }
 }
