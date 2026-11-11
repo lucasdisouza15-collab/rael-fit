@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v68-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v69-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v68-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v69-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2438,15 +2438,41 @@ function activeBanner() {
 }
 
 // ---------- semana ----------
+/* Semana pela rotação (v69): se o perfil não tem dias escolhidos (p.semana vazio) mas tem rotinas (ex.: vindas do Painel/Hevy),
+   Seg a Sex giram as rotinas na ordem, continuando do último treino feito; a rotina "bônus/opcional" vai ao sábado; domingo folga.
+   Quem escolheu os dias à mão (p.semana com algum dia) continua mandando. */
+function semanaRot(p, ws, feitos, hoje) {
+  const rs = (p.rotinas || []).filter(r => r && r.id && r.nome);
+  const rot = rs.filter(r => !/b[ôo]nus|opcional/i.test(r.nome)), bon = rs.find(r => /b[ôo]nus|opcional/i.test(r.nome));
+  const out = {}; if (!rot.length) return out;
+  const norm = s => String(s || "").trim().toLowerCase();
+  let last = -1;
+  for (const w of ws) { const i = rot.findIndex(r => (w.rotinaId && r.id === w.rotinaId) || (norm(w.nome) && norm(w.nome).startsWith(norm(r.nome)))); if (i >= 0) { last = i; break; } }
+  let k = last + 1; const dw0 = dowOf(hoje);
+  for (const dw of [1, 2, 3, 4, 5]) {
+    const passado = ((dw + 6) % 7) < ((dw0 + 6) % 7);
+    if (passado) continue;
+    if (dw === dw0 && feitos) continue;
+    out[dw] = rot[k % rot.length].id; k++;
+  }
+  if (bon) out[6] = bon.id;
+  return out;
+}
+function semanaEf(p = P()) {
+  const s = p.semana || {};
+  if (Object.values(s).some(Boolean)) return s;
+  const t = TODAY(), ws = workouts();
+  return semanaRot(p, ws, ws.some(w => w.data === t), t);
+}
 function rotinaById(id, p = P()) { return (p.rotinas || []).find(r => r.id === id) || null; }
 function viewSemana() {
   const p = P(), t = TODAY(), dwT = dowOf(t);
   const startWeek = addDays(t, -((dwT + 6) % 7));
-  const doneDates = new Set(workouts().map(w => w.data));
+  const doneDates = new Set(workouts().map(w => w.data)), nomeFeito = {}; workouts().forEach(w => { if (!nomeFeito[w.data] && w.nome) nomeFeito[w.data] = w.nome; });
   let h = `<div class="card"><div class="row between" style="margin-bottom:10px"><h2>Sua semana</h2><span class="xs muted">toque no dia para mudar</span></div><div class="week">${[1, 2, 3, 4, 5, 6, 0].map((dw, i) => {
-    const date = addDays(startWeek, i), rid = (p.semana || {})[dw], r = rid && rotinaById(rid, p);
-    return `<button class="wd ${date === t ? "today" : ""} ${r ? "" : "rest"} ${doneDates.has(date) ? "done" : ""}" data-act="pickDay" data-dw="${dw}"><div class="d">${DOW[dw]}</div><div class="r">${r ? esc(shortName(r.nome)) : "Folga"}</div>${doneDates.has(date) ? `<div class="xs" style="color:var(--good)">${ICON.check.replace("<svg", '<svg width="12" height="12"')}</div>` : ""}</button>`; }).join("")}</div></div>`;
-  const rid = (p.semana || {})[dwT], r = rid && rotinaById(rid, p);
+    const date = addDays(startWeek, i), rid = semanaEf(p)[dw], r = rid && rotinaById(rid, p);
+    return `<button class="wd ${date === t ? "today" : ""} ${r ? "" : "rest"} ${doneDates.has(date) ? "done" : ""}" data-act="pickDay" data-dw="${dw}"><div class="d">${DOW[dw]}</div><div class="r">${r ? esc(shortName(r.nome)) : nomeFeito[date] ? esc(shortName(nomeFeito[date])) : "Folga"}</div>${doneDates.has(date) ? `<div class="xs" style="color:var(--good)">${ICON.check.replace("<svg", '<svg width="12" height="12"')}</div>` : ""}</button>`; }).join("")}</div></div>`;
+  const rid = semanaEf(p)[dwT], r = rid && rotinaById(rid, p);
   if (r) h += `<div class="card"><div class="eyebrow">Hoje, ${DOWL[dwT].toLowerCase()}</div><div class="row" style="margin-top:4px"><div class="grow"><h2>${esc(r.nome)}</h2><div class="small muted">${r.itens.length} exercícios · ${r.itens.reduce((s, x) => s + num(x.series), 0)} séries</div></div><button class="btn pri" data-act="startRoutine" data-id="${r.id}">Começar</button></div><div class="small ink2" style="margin-top:8px">${esc(frase("treino"))}</div><button class="btn soft block" style="margin-top:10px" data-act="startEmpty">+ Iniciar treino vazio</button></div>`;
   else h += `<div class="card"><div class="eyebrow">Hoje, ${DOWL[dwT].toLowerCase()}</div><div class="row" style="margin-top:4px"><div class="grow small ink2">${(p.rotinas || []).length ? "Dia de folga no plano. " + esc(frase("folga")) : "Ainda não tem rotina. Monte a semana abaixo em 10 segundos."}</div><button class="btn" data-act="startEmpty">Iniciar treino vazio</button></div></div>`;
   h += `<div class="card"><h2>Montar a semana${qi("O app cria as rotinas e distribui nos dias. Dá para editar tudo depois.")}</h2><div style="margin:2px 0 10px"></div>
@@ -2461,10 +2487,10 @@ function viewSemana() {
 }
 const shortName = n => n.replace(/^Treino\s+/i, "").replace(/\s*\(.*\)\s*/, "").slice(0, 12);
 ACT.pickDay = ds => {
-  const p = P(), cur = (p.semana || {})[ds.dw];
+  const p = P(), cur = semanaEf(p)[ds.dw];
   openSheet({ title: DOWL[ds.dw], body: `<div class="list"><div class="li tap" data-act="setDay" data-dw="${ds.dw}" data-id=""><div class="grow t">Folga</div>${!cur ? '<span class="pill acc">atual</span>' : ""}</div>${(p.rotinas || []).map(r => `<div class="li tap" data-act="setDay" data-dw="${ds.dw}" data-id="${r.id}"><div class="grow"><div class="t">${esc(r.nome)}</div><div class="s">${r.itens.length} exercícios</div></div>${cur === r.id ? '<span class="pill acc">atual</span>' : ""}</div>`).join("")}</div>${(p.rotinas || []).length ? "" : `<div class="empty">Crie uma rotina na aba Rotinas ou use "Montar a semana".</div>`}` });
 };
-ACT.setDay = ds => { updP(p => { p.semana = p.semana || {}; p.semana[ds.dw] = ds.id || null; }); closeSheet(); };
+ACT.setDay = ds => { updP(p => { if (!Object.values(p.semana || {}).some(Boolean)) p.semana = Object.assign({}, semanaEf(p)); p.semana[ds.dw] = ds.id || null; }); closeSheet(); };
 const SPLITS = {
   2: [["Full body (iniciante) A", 1], ["Full body (iniciante) B", 4]],
   3: { ini: [["Full body (iniciante) A", 1], ["Full body (iniciante) B", 3], ["Full body (iniciante) A", 5]], def: [["Treino A (peito, ombro, tríceps)", 1], ["Treino B (costas, bíceps)", 3], ["Treino C (pernas, abdômen)", 5]] },
@@ -3415,7 +3441,7 @@ function pushCfgSalva(c) { try { localStorage.setItem("frango:push-cfg", JSON.st
 function pushEstado() {
   try {
     const td = TODAY(), d = day(td), p = P(), m = metas(p), x = (p.rotinas || []).length > 0;
-    const plano = [0, 1, 2, 3, 4, 5, 6].map(i => { const rid = (p.semana || {})[i], r = rid && rotinaById(rid, p); return r ? String(r.nome || "Treino") : null; });
+    const plano = [0, 1, 2, 3, 4, 5, 6].map(i => { const rid = semanaEf(p)[i], r = rid && rotinaById(rid, p); return r ? String(r.nome || "Treino") : null; });
     return { dia: td, refs: meals().filter(([k]) => mealT(d, k).kcal > 0).length, almoco: mealT(d, "almoco").kcal > 0,
       agua: m.agua ? Math.min(2, (d.agua || 0) / m.agua) : 1, treinou: treinosDo(td).length > 0, mexeu: frMovTipos(td).length > 0, seq: frSeq(), temPlano: x, plano, resumo: ixResumoPush() };
   } catch (e) { return null; }
@@ -4073,7 +4099,7 @@ const frRegDays = () => allDays().filter(dt => dayT(day(dt)).kcal > 0);
 function frSeq() { const reg = new Set(frRegDays()); let d = TODAY(); if (!reg.has(d)) d = addDays(d, -1); let n = 0; while (reg.has(d)) { n++; d = addDays(d, -1); } return n; }
 function frDiasSem() { const r = frRegDays(); if (!r.length) return 0; const a = new Date(TODAY() + "T12:00:00") - new Date(r[r.length - 1] + "T12:00:00"); return Math.round(a / 864e5); }
 const frPesos = () => allDays().map(dt => ({ data: dt, kg: (getDoc("dia-" + dt) || {}).peso })).filter(x => x.kg);
-function frPlanoDe(date) { const p = P(), rid = (p.semana || {})[dowOf(date)], r = rid && rotinaById(rid, p); return r ? { t: r.nome, folga: false } : (p.rotinas || []).length ? { t: "Folga", folga: true } : null; }
+function frPlanoDe(date) { const p = P(), rid = semanaEf(p)[dowOf(date)], r = rid && rotinaById(rid, p); return r ? { t: r.nome, folga: false } : (p.rotinas || []).length ? { t: "Folga", folga: true } : null; }
 
 function frTopo(tab, td) {
   td = td || TODAY(); const p = P(), d = day(td), t = dayT(d), m = metas(p), meta = metaDoDia(td, p) || m.kcal, rt = frRitmo(td, t.kcal, meta), nota = frNotaDe(td), nv = nota.nv;
@@ -5098,7 +5124,7 @@ function viewHoje() {
     ${exs.length ? `<div class="list" style="margin-top:4px">${exs.map(x => `<div class="li"><div class="grow"><div class="t">${esc(x.n)}</div><div class="s">${x.s}</div></div><span class="kcal-r small">${fmt(x.k)} kcal</span></div>`).join("")}</div>` : `<div class="small muted" style="margin-top:6px">Treino ou atividade (bike, corrida...) registrado aparece aqui, um por um.</div>`}
     <div class="xs ink2" style="margin-top:8px">${exTot > 0 ? `Entra no gasto do dia (${fmt(g.total)} kcal = ${fmt(g.base)} do dia a dia + ${fmt(exTot)} de exercício). ` : ""}${p.somarTreino ? "A meta de hoje sobe junto: " + fmt(metas(p).kcal) + " + " + fmt(exTot) + " = " + fmt(meta) + " kcal." : "A meta de comida não muda (Perfil > Preferências: somar calorias do exercício à meta)."}</div></div>`;
   // treino de hoje
-  const a = getDoc("ativo"), feitos = treinosDo(ui.date), rid = (p.semana || {})[dowOf(ui.date)], r = rid && rotinaById(rid, p);
+  const a = getDoc("ativo"), feitos = treinosDo(ui.date), rid = semanaEf(p)[dowOf(ui.date)], r = rid && rotinaById(rid, p);
   h += `<div class="card"><div class="row between"><h2>Treino</h2>${feitos.length ? `<span class="pill good">${ICON.check.replace("<svg", '<svg width="12" height="12"')} feito</span>` : ""}</div>`;
   if (a) h += `<div class="row" style="margin-top:8px"><div class="grow"><div style="font-weight:700">${esc(a.nome)}</div><div class="xs muted">em andamento · ${seriesFeitas(a)} séries</div></div><button class="btn pri" data-act="openSession">Continuar</button></div>`;
   else if (feitos.length) h += `<div class="list" style="margin-top:4px">${feitos.map(w => `<div class="li tap" data-act="viewWorkout" data-id="${w.id}"><div class="grow"><div class="t">${esc(w.nome)}</div><div class="s">${hhmm((w.fim - w.inicio) / 1000)} · ${fmt(volume(w))} kg · ~${fmt(kcalTreino(w))} kcal</div></div></div>`).join("")}</div>`;
