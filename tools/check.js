@@ -94,6 +94,9 @@ try {
 const ui = cp.spawnSync('node', [__dirname + '/check-ui.js'], { encoding: 'utf8' });
 process.stdout.write(ui.stdout); process.stderr.write(ui.stderr);
 if (ui.status) falhas++;
+const ix = cp.spawnSync('node', [__dirname + '/check-ideias.js'], { encoding: 'utf8' });
+process.stdout.write(ix.stdout); process.stderr.write(ix.stderr);
+if (ix.status) falhas++;
 const wk = cp.spawnSync('node', ['--test', 'test/logica.test.js', 'test/nuvem.test.js'], { cwd: __dirname + '/../worker', encoding: 'utf8' });
 const mw = /# pass (\d+)[\s\S]*# fail (\d+)/.exec(wk.stdout || '');
 console.log('testes do Worker: ' + (mw ? mw[1] + ' ok, ' + mw[2] + ' falhas' : 'não rodaram'));

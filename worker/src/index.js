@@ -4,7 +4,7 @@
 //  - Lembretes do dia: o site manda config + estado do dia (POST /config); o alarme avalia cada lembrete,
 //    pula o que já foi feito, respeita o máximo de 4 por dia e a janela 07:00–22:30.
 //  - Novidade: o GitHub Actions chama POST /novidade (autenticado) quando um commit traz "[avisar]".
-import { MAX_DIA, JANELA_MIN, TIPOS, limpaCfg, limpaEstado, local, proximo, motivoPular, monta, aplicaNuvem } from "./logica.js";
+import { MAX_DIA, JANELA_MIN, TIPOS, limpaCfg, limpaEstado, local, proximo, motivoPular, monta, aplicaNuvem, IA, validaIA, cotaPasso, SISTEMA_IA } from "./logica.js";
 
 const ORIGENS = ["https://lucasdisouza15-collab.github.io"];
 const PUSH_HOSTS = [/^fcm\.googleapis\.com$/, /^web\.push\.apple\.com$/, /\.push\.apple\.com$/, /\.push\.services\.mozilla\.com$/, /\.notify\.windows\.com$/, /^updates\.push\.services\.mozilla\.com$/];
@@ -59,6 +59,10 @@ export class Descanso {
     if (u.pathname === "/agenda") {
       await st.put("endpoint", b.endpoint); await st.put("rest", { at: Date.now() + b.seg * 1000 });
       await this.reagenda(); return new Response("ok");
+    }
+    if (u.pathname === "/ia-cota") {                                // cota diária desta instância (uma por IP): b.dia, b.limite, b.usar
+      const r = cotaPasso(await st.get("cota"), String(b.dia || ""), +b.limite || 0, b.usar !== false); await st.put("cota", r.estado);
+      return new Response(JSON.stringify({ ok: r.ok, restantes: r.restantes }));
     }
     if (u.pathname === "/cancela") { await st.delete("rest"); await this.reagenda(); return new Response("ok"); }
     if (u.pathname === "/config") {
@@ -117,7 +121,7 @@ export class Descanso {
             const rows = await nuvemHoje(this.env, L.dia, await st.get("uid"), await st.get("perfil")); if (rows) ev = aplicaNuvem(e, L.dia, rows);
           }
           if (motivoPular(t, ev, L.dia, ontem, L.dow) || h.n >= MAX_DIA) continue;
-          const m = monta(t, ev, L.dow, Math.random, h.ult[t] ?? -1); if (!m) continue;
+          const m = monta(t, ev, L.dow, Math.random, h.ult[t] ?? -1, L.dia); if (!m) continue;
           h.n++; if (m.idx >= 0) h.ult[t] = m.idx;
           await this.empilha({ tipo: t, titulo: m.titulo, corpo: m.corpo, tag: m.tag });
           await this.dispara(endpoint, "normal");
@@ -138,6 +142,10 @@ export class Registro {
     const subs = (await st.get("subs")) || {};
     if (u.pathname === "/add") { if (b.hash) { subs[b.hash] = 1; await st.put("subs", subs); } return new Response("ok"); }
     if (u.pathname === "/del") { delete subs[b.hash]; await st.put("subs", subs); return new Response("ok"); }
+    if (u.pathname === "/ia-global") {
+      const r = cotaPasso(await st.get("cota"), String(b.dia || ""), IA.globalDia, b.usar !== false); await st.put("cota", r.estado);
+      return new Response(JSON.stringify({ ok: r.ok, restantes: r.restantes }));
+    }
     if (u.pathname === "/novidade") {
       if (b.ver && (await st.get("ultVer")) === b.ver) return new Response(JSON.stringify({ repetido: true }));
       await st.put("ultVer", b.ver || ""); await st.put("texto", b.texto || ""); await st.put("fila", Object.keys(subs));
@@ -155,6 +163,26 @@ export class Registro {
   }
 }
 
+// IA do app para quem não tem chave própria (modo convidado). A chave fica só aqui (segredo ANTHROPIC_API_KEY).
+// Limites: 30 pedidos/dia por IP e 600/dia no total; só texto e 1 imagem pequena; só assuntos do app.
+async function iaRota(req, env) {
+  if (!ORIGENS.includes(req.headers.get("Origin"))) return resp(req, 403, { erro: "origem" });
+  const b = await req.json().catch(() => null); if (!b) return resp(req, 400, { erro: "corpo" });
+  const dia = new Date().toISOString().slice(0, 10), ip = req.headers.get("CF-Connecting-IP") || "sem-ip";
+  const cota = env.DESCANSO.get(env.DESCANSO.idFromName("ia:" + b64u(await crypto.subtle.digest("SHA-256", txt(ip)))));
+  const chama = (obj, rota, o) => obj.fetch("https://do" + rota, { method: "POST", body: JSON.stringify(o) }).then(r => r.json());
+  if (b.ping) { const c = await chama(cota, "/ia-cota", { dia, limite: IA.porIpDia, usar: false }); return resp(req, 200, { ok: true, ligada: !!env.ANTHROPIC_API_KEY, restantes: c.restantes }); }
+  if (!env.ANTHROPIC_API_KEY) return resp(req, 503, { erro: "ia-desligada" });
+  const v = validaIA(b); if (!v.ok) return resp(req, 400, { erro: v.erro });
+  const g = await chama(env.REGISTRO.get(env.REGISTRO.idFromName("ia-global")), "/ia-global", { dia }); if (!g.ok) return resp(req, 429, { erro: "limite-global" });
+  const c = await chama(cota, "/ia-cota", { dia, limite: IA.porIpDia }); if (!c.ok) return resp(req, 429, { erro: "limite-diario" });
+  let r; try { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" }, body: JSON.stringify({ model: IA.modelo, max_tokens: IA.maxTokens, system: SISTEMA_IA, messages: v.messages }) }); }
+  catch (e) { return resp(req, 502, { erro: "rede" }); }
+  const j = await r.json().catch(() => null); if (!r.ok || !j) return resp(req, r.status === 429 ? 429 : 502, { erro: "ia" });
+  const text = (j.content || []).filter(x => x.type === "text").map(x => x.text).join("");
+  return resp(req, 200, { text, truncated: j.stop_reason === "max_tokens", restantes: c.restantes });
+}
+
 export default {
   async fetch(req, env) {
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(req) });
@@ -165,6 +193,7 @@ export default {
       const b = await req.json().catch(() => ({}));
       return env.REGISTRO.get(env.REGISTRO.idFromName("global")).fetch("https://do/novidade", { method: "POST", body: JSON.stringify({ ver: String(b.ver || ""), texto: String(b.texto || "").slice(0, 160) }) });
     }
+    if (u.pathname === "/ia") return iaRota(req, env);
     if (!["/agenda", "/cancela", "/config", "/sair", "/proximo"].includes(u.pathname)) return resp(req, 404, { erro: "rota" });
     if (!ORIGENS.includes(req.headers.get("Origin"))) return resp(req, 403, { erro: "origem" });
     const b = await req.json().catch(() => null), sub = b && b.sub, ep = sub && sub.endpoint;

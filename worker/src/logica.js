@@ -33,7 +33,8 @@ export function limpaEstado(e) {
   return {
     dia: typeof e.dia === "string" ? e.dia.slice(0, 10) : "", refs: n(e.refs), almoco: !!e.almoco, agua: n(e.agua, 1),
     treinou: !!e.treinou, mexeu: !!e.mexeu, seq: n(e.seq), temPlano: !!e.temPlano,
-    plano: Array.isArray(e.plano) ? e.plano.slice(0, 7).map(x => typeof x === "string" ? x.slice(0, 30) : null) : []
+    plano: Array.isArray(e.plano) ? e.plano.slice(0, 7).map(x => typeof x === "string" ? x.slice(0, 30) : null) : [],
+    resumo: typeof e.resumo === "string" ? e.resumo.replace(/[\u0000-\u001f<>]/g, " ").slice(0, 140) : ""
   };
 }
 
@@ -124,9 +125,12 @@ export const TITULOS = {
   sequencia: "Sequência em risco", noite: "Fechar o dia", semana: "Semana do Rael", novidade: "Novidade no Frangômetro"
 };
 
+const diaMais = (dia, n) => new Date(Date.UTC(+dia.slice(0, 4), +dia.slice(5, 7) - 1, +dia.slice(8, 10) + n)).toISOString().slice(0, 10);
+
 /** Monta a notificação. `rnd` é uma função 0..1; `ult` é o último índice usado (para não repetir). */
-export function monta(tipo, e, dow, rnd = Math.random, ult = -1) {
+export function monta(tipo, e, dow, rnd = Math.random, ult = -1, hoje = "") {
   const nomeHoje = e && e.plano && e.plano[dow];
+  if (tipo === "semana" && e && e.resumo && (!hoje || e.dia >= diaMais(hoje, -1))) return { tipo, titulo: TITULOS.semana, corpo: "Sua semana: " + e.resumo, tag: "rael-semana", idx: -1 };
   let banco = FRASES[tipo] || [];
   if (tipo === "treino" && nomeHoje && rnd() < 0.5) banco = FRASES.treinoNome;
   if (!banco.length) return null;
@@ -158,3 +162,36 @@ export function aplicaNuvem(e, hoje, rows) {
     agua: deHoje ? base.agua : 0, registrouNuvem: alg
   });
 }
+
+// ---------- IA do app (modo convidado): validação e cota, sem Cloudflare ----------
+export const IA = { modelo: "claude-haiku-5-5", maxTokens: 3000, porIpDia: 30, globalDia: 600, maxMsgs: 12, maxChars: 12000, maxImgB64: 1500000 };
+const MIDIAS = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+/** Aceita só texto e no máximo 1 imagem pequena; devolve as mensagens limpas ou o motivo da recusa. */
+export function validaIA(b) {
+  const ms = b && b.messages;
+  if (!Array.isArray(ms) || !ms.length || ms.length > IA.maxMsgs) return { ok: false, erro: "mensagens" };
+  const out = []; let chars = 0, imgs = 0;
+  for (const m of ms) {
+    if (!m || (m.role !== "user" && m.role !== "assistant")) return { ok: false, erro: "papel" };
+    if (typeof m.content === "string") { chars += m.content.length; out.push({ role: m.role, content: m.content }); continue; }
+    if (!Array.isArray(m.content) || m.role !== "user") return { ok: false, erro: "conteudo" };
+    const partes = [];
+    for (const c of m.content) {
+      if (c && c.type === "text" && typeof c.text === "string") { chars += c.text.length; partes.push({ type: "text", text: c.text }); }
+      else if (c && c.type === "image" && c.source && c.source.type === "base64" && MIDIAS.includes(c.source.media_type) && typeof c.source.data === "string" && c.source.data.length <= IA.maxImgB64) { if (++imgs > 1) return { ok: false, erro: "imagens" }; partes.push({ type: "image", source: { type: "base64", media_type: c.source.media_type, data: c.source.data } }); }
+      else return { ok: false, erro: "parte" };
+    }
+    out.push({ role: m.role, content: partes });
+  }
+  if (chars > IA.maxChars) return { ok: false, erro: "grande" };
+  if (out[0].role !== "user" || out[out.length - 1].role !== "user") return { ok: false, erro: "ordem" };
+  return { ok: true, messages: out };
+}
+/** Contador diário: `estado` = {dia, n}. Devolve o novo estado, se pode usar e quantos pedidos restam. */
+export function cotaPasso(estado, dia, limite, usar = true) {
+  const e = estado && estado.dia === dia ? { dia, n: estado.n | 0 } : { dia, n: 0 };
+  if (e.n >= limite) return { estado: e, ok: false, restantes: 0 };
+  if (usar) e.n++;
+  return { estado: e, ok: true, restantes: limite - e.n };
+}
+export const SISTEMA_IA = "Você é o Rael, o galo do app Frangômetro. Responda em português do Brasil, curto e direto. Ajude só com alimentação, calorias, treino, hábitos e uso do app. Se pedirem outra coisa, diga com gentileza que só ajuda com isso. Quando o pedido pedir JSON, responda só o JSON.";

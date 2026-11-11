@@ -24,3 +24,15 @@ Os lembretes "Sequência em risco" e "Hora do treino" só se calam se souberem q
 - `SUPABASE_EMAIL` e `SUPABASE_PASSWORD`: o mesmo login do Frangômetro.
 
 Sem eles, a "Sequência em risco" só dispara se o resumo do aparelho for de hoje; resumo velho (app não aberto hoje) agora silencia o aviso em vez de arriscar um alarme falso.
+
+## IA do app sem chave própria (modo convidado)
+
+O Worker tem a rota `POST /ia`: quem não tem chave própria nem conta Claude usa a IA por aqui. A chave fica só no Worker.
+
+- Para ligar: Cloudflare > Workers > frangometro-avisos > Settings > Variables and Secrets > adicionar o segredo `ANTHROPIC_API_KEY` (chave da API do Claude, plano pago por uso). Sem o segredo, a rota responde "desligada" e o app segue no modo copiar e colar (nada quebra).
+- Modelo: `claude-haiku-5-5` (barato). Limites: 30 pedidos por dia por IP e 600 por dia no total (ajuste em `IA` no `src/logica.js`), só texto e no máximo 1 imagem pequena, e só assuntos do app (alimentação, treino, hábitos).
+- O app mostra "Ligada pelo app (limite por dia)" em Perfil > Inteligência artificial quando está ativa.
+
+## Resumo da semana por aviso
+
+O tipo "Resumo da semana" (domingo 19:00) agora vem ligado por padrão e usa o texto que o app manda junto do estado do dia (dias registrados, média, treinos). Se o app não foi aberto nos últimos 2 dias, cai na frase genérica.
