@@ -69,5 +69,18 @@ ok('app registra o sw sempre', /navigator\.serviceWorker\.register\("sw\.js"\)\.
 // 10) lembretes só com dados do dono (regressão B1): o app manda uid e perfil ao Worker
 ok('app manda uid e perfil no /config', /pushPost\("\/config", 0, \{[^}]*uid, perfil/.test(html));
 
+// 11) cadastro (onboarding): visual novo, sem texto cortado e sem desalinho (spec 11/11/2026)
+const onb = html.slice(html.indexOf('function onbBody()'), html.indexOf('function onbFoot()'));
+ok('cadastro: seta de voltar sempre reserva o espaço (barra não pula)', /<span class="iconbtn" aria-hidden="true"><\/span>/.test(onb));
+ok('cadastro: % dentro do topo, sem contador solto', /class="onb-pct"/.test(onb) && !/onb-cnt/.test(onb));
+ok('cadastro: barra de progresso com role=progressbar', /role="progressbar"/.test(onb));
+ok('cadastro: atividade com nome curto + dica (sem texto cortado)', /id="oAtvH"/.test(onb) && /n\.slice\(0, k\)/.test(onb));
+ok('cadastro: Idade e Altura lado a lado, Sexo em linha própria', /<\/select><\/label><div class="grid2"><label class="f">Idade/.test(onb) && /<label class="f">Altura/.test(onb));
+ok('cadastro: peso e meta com "kg" ao lado do número', (onb.match(/class="onb-peso"/g) || []).length === 2);
+ok('cadastro: duas opções de visual (a e b) e padrão definido', /html\[data-onbv="a"\]/.test(html) && /html\[data-onbv="b"\]/.test(html) && /<html[^>]*data-onbv="[ab]"/.test(html));
+ok('cadastro: opção selecionada com marca visível', /\.onb-opt\.on \.ck\{[^}]*border-radius:999px/.test(html));
+ok('cadastro: animação do mascote respeita prefers-reduced-motion', /prefers-reduced-motion:reduce\)\{\.onb \.rfala\.big svg\{animation:none\}/.test(html));
+{ const aSoft = tema['accent-soft'], ink = tema.ink; ok('cadastro: texto sobre opção selecionada (ink/accent-soft) >= 4,5', cr(ink, aSoft) >= 4.5, cr(ink, aSoft).toFixed(2)); ok('cadastro: tinta sobre dourado do botão (B) >= 4,5', cr(ink, '#F2C14E') >= 4.5, cr(ink, '#F2C14E').toFixed(2)); }
+
 console.log(total + ' verificações de UI/PWA, ' + falhas + ' com falha');
 process.exit(falhas ? 1 : 0);
