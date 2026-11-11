@@ -98,4 +98,7 @@ const wk = cp.spawnSync('node', ['--test', 'test/logica.test.js', 'test/nuvem.te
 const mw = /# pass (\d+)[\s\S]*# fail (\d+)/.exec(wk.stdout || '');
 console.log('testes do Worker: ' + (mw ? mw[1] + ' ok, ' + mw[2] + ' falhas' : 'não rodaram'));
 if (wk.status) { falhas++; process.stderr.write(wk.stdout.split('\n').filter(l => /not ok|error/.test(l)).join('\n')); }
+const sy = cp.spawnSync('node', [__dirname + '/check-sync.js'], { encoding: 'utf8' });
+console.log('sync (paginação, 2 aparelhos, intervalo): ' + (sy.status ? 'FALHOU' : 'verde'));
+if (sy.status) { falhas++; process.stderr.write(sy.stdout); }
 process.exit(falhas || bad ? 1 : 0);
