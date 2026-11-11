@@ -26,7 +26,7 @@ ok('tela usa textContent (sem innerHTML)', !/innerHTML/.test(html.slice(a, b)));
 // arquivo de status real
 const st = JSON.parse(fs.readFileSync(raiz + 'app-status.json', 'utf8'));
 ok('app-status.json em teste hoje', st.estado === 'teste');
-ok('faixa de teste no topo do body', /<body><div id="faixa-teste"[^>]*>Versão de teste\. Em breve nas lojas Android e iOS\./.test(html));
+ok('faixa de teste dentro do header fixo (sempre visível)', /<header class="top"><div id="faixa-teste"[^>]*>Versão de teste\. Em breve nas lojas Android e iOS\./.test(html) && /header\.top\{position:sticky/.test(html));
 ok('aviso de copyright', /Todos os direitos reservados/.test(html) && /Todos os direitos reservados/.test(fs.readFileSync(raiz + 'LICENSE', 'utf8')));
 ok('LICENSE não é open source', !/MIT|Apache|GPL/.test(fs.readFileSync(raiz + 'LICENSE', 'utf8')));
 const sw = fs.readFileSync(raiz + 'sw.js', 'utf8');
