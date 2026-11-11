@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v67-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v68-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v67-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v68-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -413,6 +413,50 @@ details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{displ
 input,select,textarea{font-size:16px}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .onb-big:focus-visible{outline:none;border-bottom-color:var(--accent);box-shadow:0 3px 0 0 var(--accent)}
+/*MACIO: estilo arredondado do app inteiro (fase 1, spec em docs/SPEC.md). Só formas e sombras; cores e Rael não mudam. */
+:root{--rad:20px;--rad-m:14px;--sombra:0 6px 20px rgba(39,51,95,.12),0 1px 4px rgba(39,51,95,.08)}
+.card,.ex-card{clip-path:none;border-radius:var(--rad);box-shadow:var(--sombra)}
+.card.flat,details.sec .sec-body>.card{box-shadow:none}
+.fr-bal,.fr-balao{clip-path:none;border-radius:18px;padding-left:14px}
+.fr-balao .fr-resp button,.fr-bal .fr-resp button{border-radius:12px}
+.btn{clip-path:none;border-radius:var(--rad-m)}.btn.sm{border-radius:12px}
+.btn.pri,.card .btn.pri,.sheet .btn.pri{box-shadow:0 4px 12px rgba(39,51,95,.25)}
+.iconbtn,.datenav button{border-radius:12px}
+input[type=text],input[type=number],input[type=search],input[type=date],select,textarea{border-radius:var(--rad-m);border-color:#8C9BC9}
+input[type=file]::file-selector-button{border-radius:10px}
+.chip,.pill,.pill.acc,.fr-chip,.brand .fr-ver{border-radius:999px}
+.seg{border-radius:var(--rad-m)}.seg button{border-radius:11px}
+.bar,.bar>i,#fr-splash .fr-sp-barra,#fr-splash .fr-sp-barra i{border-radius:999px}
+.wd{border-radius:var(--rad-m)}.check{border-radius:8px}
+.sheet:not(.full){border-radius:24px 24px 0 0}
+.toast,.tip{border-radius:var(--rad-m)}.empty{border-radius:16px}.bubble{border-radius:16px}
+.fr-nivel{clip-path:none;border-radius:12px!important}
+/*ONBV: visual "Macio" do cadastro (spec em docs/SPEC.md) */
+.onb{flex:1 0 auto;min-height:0;gap:18px}
+.onb .stepcard{margin-top:auto;margin-bottom:auto}
+.onb-top{gap:8px}.onb-top .iconbtn{width:36px;height:36px}
+.onb-bar{height:12px}.onb-bar i{transition:width .45s cubic-bezier(.3,.7,.2,1)}
+.onb-pct{flex:none;min-width:44px;text-align:right;font:900 15px var(--f-display);letter-spacing:.02em;color:var(--ink-2)}
+.onb .stepcard{gap:16px}
+.onb-hint{font-size:13px;font-weight:500;color:var(--muted);min-height:1.2em}
+.onb-peso{display:flex;align-items:center;justify-content:center;gap:12px}.onb-peso .onb-big{flex:1;min-width:0;min-height:76px;text-align:center}.onb-unit{font:900 22px var(--f-display);color:var(--muted);text-transform:uppercase}
+.onb .rfala.big svg{animation:onbBob 3.2s ease-in-out infinite}
+@keyframes onbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){.onb .rfala.big svg{animation:none}.onb-bar i{transition:none}}
+.onb-opt.on .ck{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:14px}
+/* cadastro: cartão arredondado, sombra suave, botão em pílula */
+.sheet:has(.onb){background:linear-gradient(180deg,#D5DDF2 0%,#C2CDE9 100%)}
+.sheet:has(.onb) .card.stepcard{clip-path:none;border-radius:24px;padding:20px 18px;box-shadow:0 10px 30px rgba(39,51,95,.16),0 2px 6px rgba(39,51,95,.08)}
+.onb .rbal{border:0;border-radius:18px;background:var(--surface-2);padding:12px 14px}
+.onb .rbal::before{border:0;background:var(--surface-2)}
+.onb-opt{border:2px solid #8C9BC9;border-radius:18px;padding:15px 16px;min-height:60px;box-shadow:0 2px 0 rgba(39,51,95,.10);transition:transform .12s,background .15s,border-color .15s}
+.onb-opt:active{transform:scale(.98)}
+.onb-opt.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(39,51,95,.15)}
+.sheet:has(.onb) input[type=text],.sheet:has(.onb) input[type=number],.sheet:has(.onb) select{border:2px solid #8C9BC9;border-radius:14px;min-height:52px;padding:10px 14px}
+.sheet:has(.onb) .sheet-f{background:transparent;border-top:0;padding-top:4px}
+.sheet:has(.onb) .sheet-f .btn.pri{clip-path:none;border-radius:18px;min-height:56px;box-shadow:0 8px 20px rgba(39,51,95,.30);transition:transform .12s}
+.sheet:has(.onb) .sheet-f .btn.pri:active{transform:scale(.98)}
+.sheet:has(.onb) .sheet-f .btn.ghost{clip-path:none;border-radius:18px}
 .bar>i{box-shadow:inset 0 0 0 1px rgba(27,22,48,.55)}
 </style>
 
@@ -1567,6 +1611,8 @@ const SRC_LABEL = { T: "TACO, aprox.", E: "estimativa", M: "meu", R: "receita", 
 
 // ---------- metas e gasto ----------
 const ATIV = [[1.2,"Sedentário (pouco ou nenhum movimento)"],[1.375,"Leve (em pé parte do dia, anda um pouco)"],[1.55,"Moderado (trabalho ativo, anda bastante)"],[1.725,"Alto (trabalho braçal)"],[1.9,"Muito alto (braçal pesado + muito movimento)"]];
+const ativSplit = n => { const k = n.indexOf(" ("); return k > 0 ? [n.slice(0, k), n.charAt(k + 2).toUpperCase() + n.slice(k + 3, -1)] : [n, ""]; };
+const ativSel = (id, atual) => { const a = ATIV.find(([v]) => v === num(atual)); return `<select id="${id}" onchange="document.getElementById('${id}H').textContent=this.options[this.selectedIndex].dataset.h">${ATIV.map(([v, n]) => { const [c, h] = ativSplit(n); return `<option value="${v}" data-h="${esc(h)}" ${num(atual) === v ? "selected" : ""}>${esc(c)}</option>`; }).join("")}</select><span class="onb-hint" id="${id}H">${esc(a ? ativSplit(a[1])[1] : "")}</span>`; };
 function pesoAtual(p = P()) { const ds = allDays(); for (let i = ds.length - 1; i >= 0; i--) { const d = getDoc("dia-" + ds[i]); if (d && d.peso) return d.peso; } return num(p.peso) || 70; }
 function pesoNa(date, p = P()) { const ds = allDays().filter(x => x <= date); for (let i = ds.length - 1; i >= 0; i--) { const d = getDoc("dia-" + ds[i]); if (d && d.peso) return d.peso; } return num(p.peso) || 70; }
 function tmb(p = P(), w = pesoAtual(p)) { const b = 10 * w + 6.25 * num(p.altura) - 5 * num(p.idade) + (p.sexo === "F" ? -161 : 5); return Math.max(800, b); }
@@ -2774,7 +2820,7 @@ function restPop() {
   const o = document.getElementById("restpop"); if (o) o.remove();
   const p = document.createElement("div"); p.id = "restpop"; p.setAttribute("role", "alertdialog"); p.setAttribute("aria-label", "Descanso acabou");
   p.style.cssText = "position:fixed;inset:0;z-index:90;background:rgba(15,20,40,.6);display:flex;align-items:center;justify-content:center;padding:24px";
-  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:0;clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);padding:24px 20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${restRael()}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:10px 0 6px">Descanso acabou!</div><div style="font-size:16px;line-height:1.4;margin-bottom:18px">${esc(REST.frase)}</div><button class="btn" data-act="restSkip" style="width:100%;min-height:56px;font-size:20px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora</button></div>`;
+  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:22px;padding:24px 20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${restRael()}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:10px 0 6px">Descanso acabou!</div><div style="font-size:16px;line-height:1.4;margin-bottom:18px">${esc(REST.frase)}</div><button class="btn" data-act="restSkip" style="width:100%;min-height:56px;font-size:20px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora</button></div>`;
   document.body.appendChild(p);
 }
 function drawRest() {
@@ -3867,7 +3913,7 @@ function recFesta(md, frase) {
   p.style.cssText = "position:fixed;inset:0;z-index:95;background:rgba(15,20,40,.62);display:flex;align-items:center;justify-content:center;padding:24px";
   let rael = ""; try { rael = frRaelCena("comemora", 150); } catch (e) { rael = '<div style="font-size:64px">🐔</div>'; }
   const carga = md.includes('data-med="carga"');
-  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:0;clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);padding:20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${rael}</div><div style="font-size:44px;line-height:1;margin-top:4px;color:#6E85C2">${md.replace(/width="18" height="18"/g, 'width="44" height="44"')}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:8px 0 6px">${carga ? "Recorde de carga!" : "Recorde de volume!"}</div><div style="font-size:15px;line-height:1.4;margin-bottom:16px">${esc(frase)}</div><button class="btn" data-act="festaFecha" style="width:100%;min-height:52px;font-size:18px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora!</button></div>`;
+  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:22px;padding:20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${rael}</div><div style="font-size:44px;line-height:1;margin-top:4px;color:#6E85C2">${md.replace(/width="18" height="18"/g, 'width="44" height="44"')}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:8px 0 6px">${carga ? "Recorde de carga!" : "Recorde de volume!"}</div><div style="font-size:15px;line-height:1.4;margin-bottom:16px">${esc(frase)}</div><button class="btn" data-act="festaFecha" style="width:100%;min-height:52px;font-size:18px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora!</button></div>`;
   document.body.appendChild(p);
   setTimeout(() => { const q = document.getElementById("recfesta"); if (q === p) p.remove(); }, 5500);
 }
@@ -5381,7 +5427,7 @@ function perfilForm(p) {
     <label class="f">Idade<input type="number" inputmode="numeric" id="pfIdade" value="${esc(p.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="pfAlt" value="${esc(p.altura)}"></label>
     <label class="f">Peso atual (kg)<input type="number" inputmode="decimal" step="0.1" id="pfPeso" value="${esc(fmt1(pesoAtual(p)).replace(",", "."))}"></label><label class="f">Meta de peso (kg)<input type="number" inputmode="decimal" step="0.1" id="pfMeta" value="${esc(p.metaPeso || "")}" placeholder="opcional"></label></div>
     <label class="f">Até quando? (opcional, o app mostra o ritmo necessário)<input type="date" id="pfMetaData" value="${esc(p.metaData || "")}"></label>
-    <label class="f">Dia a dia, sem contar os treinos<select id="pfAtv">${ATIV.map(([v, n]) => `<option value="${v}" ${num(p.atividade) === v ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
+    <label class="f">Dia a dia, sem contar os treinos${ativSel("pfAtv", p.atividade)}</label>
     <div class="grid2"><label class="f">Objetivo<select id="pfObj"><option value="perder" ${p.objetivo === "perder" ? "selected" : ""}>Perder gordura</option><option value="manter" ${p.objetivo === "manter" ? "selected" : ""}>Manter</option><option value="ganhar" ${p.objetivo === "ganhar" ? "selected" : ""}>Ganhar massa</option></select></label>
     <label class="f">Ritmo<select id="pfAj">${[[250, "Leve (250 kcal)"], [500, "Padrão (500 kcal)"], [750, "Agressivo (750 kcal)"]].map(([v, n]) => `<option value="${v}" ${num(p.ajuste) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>`;
 }
@@ -5517,7 +5563,7 @@ function ovoSvg(st) {
 }
 function onbBody() {
   const d = ONB.d, ps = onbPassos(), st = ps[ONB.i], nome = d.nome || "você";
-  const ess = Math.max(1, ps.indexOf("pronto")), egg = ONB.i >= ess ? 5 : Math.min(4, Math.floor(ONB.i / ess * 5)), top = `<div class="onb-top">${ONB.i > 0 ? `<button class="iconbtn" data-act="onbVolta" aria-label="Voltar">${ICON.back}</button>` : ""}<div class="onb-egg pop" id="egg${egg}">${ovoSvg(egg)}</div><div class="onb-bar"><i style="width:${Math.round(Math.min(1, ONB.i / ess) * 100)}%"></i></div></div>`;
+  const ess = Math.max(1, ps.indexOf("pronto")), egg = ONB.i >= ess ? 5 : Math.min(4, Math.floor(ONB.i / ess * 5)), top = `<div class="onb-top">${ONB.i > 0 ? `<button class="iconbtn" data-act="onbVolta" aria-label="Voltar">${ICON.back}</button>` : `<span class="iconbtn" aria-hidden="true"></span>`}<div class="onb-egg pop" id="egg${egg}">${ovoSvg(egg)}</div><div class="onb-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(Math.min(1, ONB.i / ess) * 100)}"><i style="width:${Math.round(Math.min(1, ONB.i / ess) * 100)}%"></i></div><span class="onb-pct">${ONB.i >= ess ? "Chocou!" : Math.round(ONB.i / ess * 100) + "%"}</span></div>`;
   let h = "";
   const HM = { oi: "feliz", obj: "alfa", dados: "normal", peso: "foco", meta: "alfa", sanfona: "mal", extra: "feliz", motivos: "normal", evento: "feliz", desafio: "alfa", comp: "normal", fds: "normal", reg: "foco", pronto: "otimo" };
   const T = (t, s, big) => `<div class="rfala${big ? " big" : ""}">${st.startsWith("t_") ? frRael("foco", 64) : frRael(HM[st] || "normal", big ? 120 : 66)}<div class="rbal"><b>${t}</b>${s ? `<div class="sub">${s}</div>` : ""}</div></div>`;
@@ -5525,10 +5571,10 @@ function onbBody() {
   else if (st === "motivos") h = T(ONB.ret ? "O que te trouxe de volta?" : "O que te move?", "Pode marcar mais de uma, ou nenhuma. Eu não julgo (muito).") + ONB_MOTIVOS.map(([i, t]) => onbOpt("onbMulti", d.motivos.includes(t), i, t, `data-k="motivos" data-v="${esc(t)}"`)).join("");
   else if (st === "dif") h = T("O que muda desta vez?", "Pode marcar mais de uma.") + ONB_DIF.map(([i, t]) => onbOpt("onbMulti", d.dif.includes(t), i, t, `data-k="dif" data-v="${esc(t)}"`)).join("");
   else if (st === "obj") h = T("O que a gente vai chocar?", ONB.ret ? "Antes era: " + ({ perder: "perder gordura", manter: "manter o peso", ganhar: "ganhar massa" }[P().objetivo] || "perder gordura") + ". Se continua valendo, é só seguir." : "Escolha o rumo. Dá pra mudar quando quiser.") + ONB_OBJ.map(([k, i, t]) => onbOpt("onbObj", d.objetivo === k, i, t, `data-v="${k}"`)).join("");
-  else if (st === "dados") h = T("Me conta quem é você", "É só pra eu calcular direitinho. Fica no seu aparelho.") + `<label class="f">Como quer ser chamado<input type="text" id="oNome" value="${esc(d.nome)}" maxlength="30" placeholder="Seu nome"></label><div class="grid2"><label class="f">Sexo<select id="oSexo"><option value="M" ${d.sexo !== "F" ? "selected" : ""}>Masculino</option><option value="F" ${d.sexo === "F" ? "selected" : ""}>Feminino</option></select></label><label class="f">Idade<input type="number" inputmode="numeric" id="oIdade" value="${esc(d.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="oAlt" value="${esc(d.altura)}"></label></div><label class="f">Dia a dia, sem contar treinos<select id="oAtv">${ATIV.map(([v, n]) => `<option value="${v}" ${num(d.atividade) === v ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>`;
-  else if (st === "peso") h = T("Hora da balança. Sem drama.", "Pode chutar. Depois a gente acerta junto.") + `<input class="onb-big" type="number" inputmode="decimal" step="0.1" id="oPeso" value="${esc(d.peso)}" aria-label="Peso atual em kg"><div class="xs muted" style="text-align:center">kg</div>`;
+  else if (st === "dados") h = T("Me conta quem é você", "É só pra eu calcular direitinho. Fica no seu aparelho.") + `<label class="f">Como quer ser chamado<input type="text" id="oNome" value="${esc(d.nome)}" maxlength="30" placeholder="Seu nome"></label><label class="f">Sexo<select id="oSexo"><option value="M" ${d.sexo !== "F" ? "selected" : ""}>Masculino</option><option value="F" ${d.sexo === "F" ? "selected" : ""}>Feminino</option></select></label><div class="grid2"><label class="f">Idade<input type="number" inputmode="numeric" id="oIdade" value="${esc(d.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="oAlt" value="${esc(d.altura)}"></label></div><label class="f">Dia a dia, sem contar treinos${ativSel("oAtv", d.atividade)}</label>`;
+  else if (st === "peso") h = T("Hora da balança. Sem drama.", "Pode chutar. Depois a gente acerta junto.") + `<div class="onb-peso"><input class="onb-big" type="number" inputmode="decimal" step="0.1" id="oPeso" value="${esc(d.peso)}" aria-label="Peso atual em kg"><span class="onb-unit">kg</span></div>`;
   else if (st === "meta") {
-    h = T(d.objetivo === "manter" ? "Tem um número em mente?" : "Até onde a gente vai?", d.objetivo === "manter" ? "Opcional. Se não tiver, deixa vazio." : "Um número que dê pra bater, não pra postar.") + `<input class="onb-big" type="number" inputmode="decimal" step="0.1" id="oMeta" data-in="onbCalc" value="${esc(d.metaPeso)}" placeholder="${esc(d.objetivo === "ganhar" ? "ex.: 80" : "ex.: 95")}" aria-label="Meta de peso em kg"><div class="xs muted" style="text-align:center">kg</div>`;
+    h = T(d.objetivo === "manter" ? "Tem um número em mente?" : "Até onde a gente vai?", d.objetivo === "manter" ? "Opcional. Se não tiver, deixa vazio." : "Um número que dê pra bater, não pra postar.") + `<div class="onb-peso"><input class="onb-big" type="number" inputmode="decimal" step="0.1" id="oMeta" data-in="onbCalc" value="${esc(d.metaPeso)}" placeholder="${esc(d.objetivo === "ganhar" ? "ex.: 80" : "ex.: 95")}" aria-label="Meta de peso em kg"><span class="onb-unit">kg</span></div>`;
     if (d.objetivo !== "manter") h += `<div class="xs muted" style="margin-top:6px">Ritmo</div><div class="seg">${[[250, "Leve"], [500, "Padrão"], [750, "Agressivo"]].map(([v, n]) => `<button data-act="onbAj" data-v="${v}" aria-pressed="${num(d.ajuste) === v}">${n}<br><span class="xs">${fmt1(v * 7 / 7700)} kg/sem</span></button>`).join("")}</div>`;
     h += `<div class="small ink2" id="oProj">${prevTxt(metaPrev(onbTmp(), d.peso, d.metaPeso))}</div>`;
   } else if (st === "sanfona") h = T("Calma, galo!", "Ritmo agressivo funciona no começo, mas muita gente não aguenta e volta com sobra. É o efeito sanfona.") + `<svg viewBox="0 0 320 170" width="100%" role="img" aria-label="Gráfico ilustrativo: dieta apertada faz o peso subir e descer; ritmo moderado desce e se mantém"><path d="M10 40 C40 40 50 150 80 150 S110 50 140 50 S170 140 200 140 S230 30 260 30 L310 30" fill="none" stroke="var(--bad,#D64545)" stroke-width="3"/><path d="M10 40 C80 60 120 120 190 135 S270 140 310 138" fill="none" stroke="var(--good,#2E9E6A)" stroke-width="3"/><text x="214" y="22" font-size="11" fill="var(--bad,#D64545)">ritmo apertado</text><text x="214" y="160" font-size="11" fill="var(--good,#2E9E6A)">ritmo moderado</text></svg><div class="xs muted">Ilustração do conceito, não são dados de ninguém.</div><div class="small ink2">Com o ritmo padrão (500 kcal a menos por dia) você come melhor, treina melhor e tem mais chance de manter o resultado.</div><button class="btn pri block" data-act="onbSanfPadrao">Usar o ritmo padrão</button><button class="btn ghost block" data-act="onbSanfSegue">Manter o agressivo mesmo assim</button>`;
@@ -5540,7 +5586,7 @@ function onbBody() {
   else if (st === "reg") h = T("Como você prefere registrar as refeições?", "Dá para mudar sempre.") + ONB_REG.map(([k, i, t]) => onbOpt("onbReg", d.reg === k, i, t, `data-v="${k}"`)).join("") + (d.reg === "foto" || d.reg === "misto" ? `<div class="small ink2">A foto só vai para a IA quando você toca em Analisar, e você revisa os gramas antes de salvar. A IA estima, então confira.</div>` : "");
   else if (st.startsWith("t_")) { const [ti, tx, bl, ganho] = ONB_TUT[st], n = ps.filter(x => x.startsWith("t_")).length; h = T(ti, tx) + `<ul class="tutl">${bl.map(x => `<li>${x}</li>`).join("")}</ul><div class="tutg"><b>O que você ganha</b>${ganho}</div><div class="xs muted" style="text-align:center">${st === "t_perfil" ? "Fim do tour. Bora!" : "Tour " + (ps.indexOf(st) - ps.indexOf("t_hoje") + 1) + " de " + n}</div>`; }
   else if (st === "pronto") { const tp = onbTmp(), m = metasCalc(tp, d.peso), pv = metaPrev(tp, d.peso, d.metaPeso); h = T("Chocou! Seu plano nasceu.", "Confere aí se faz sentido. Dá pra mexer em tudo depois.") + `<div class="card"><div class="eyebrow">Por dia</div><div class="num" style="font-size:32px;font-weight:700">${fmt(m.kcal)} kcal</div><div class="small ink2">Proteína ${m.p} g · Carboidrato ${m.c} g · Gordura ${m.g} g · Água ${fmt(m.agua)} ml</div>${m.baixo ? `<div class="pill warn" style="margin-top:6px">Meta travada no mínimo por segurança</div>` : ""}</div>${d.fds > 0 ? `<div class="small ink2">Fim de semana: +${d.fds}% de calorias, e os outros dias ficam um pouco menores.</div>` : ""}${pv ? `<div class="small ink2">${prevTxt(pv)}</div>` : ""}${d.evento && d.evento !== "Nenhum" ? `<div class="small ink2">Evento: ${esc(d.evento === "Outro" && d.eventoNome ? d.eventoNome : d.evento)}${d.eventoData ? " em " + fmtData(d.eventoData) : ""}.</div>` : ""}<div class="small ink2">Desafio: ${d.desafio} dias seguidos lançando comida.</div><div class="disc">Estimativas. Não substituem médico ou nutricionista.</div>`; }
-  return `<div class="onb">${top}<div class="card stepcard" id="stp${ONB.i}">${h}</div><div class="onb-cnt">${ONB.i >= ess ? "Chocou!" : "Chocando: " + Math.round(ONB.i / ess * 100) + "%"}</div></div>`;
+  return `<div class="onb">${top}<div class="card stepcard" id="stp${ONB.i}">${h}</div></div>`;
 }
 function onbFoot() {
   const d = ONB.d, st = onbPassos()[ONB.i];
