@@ -1,5 +1,10 @@
 # Rael Frango
 
+> **Versão de teste.** Em breve nas lojas Android e iOS. © Lucas de Souza, todos os direitos reservados (ver LICENSE). Não copie nem redistribua.
+
+### Encerrar esta versão quando sair na loja
+Edite `app-status.json` para `{"estado":"migrado","mensagem":"Agora está na loja!","loja":"https://link-da-loja"}`. Em até 5 minutos (ou ao reabrir) o app mostra a tela de encerramento e bloqueia o uso. Para reverter, volte `"estado":"teste"`. Nada é apagado.
+
 App de alimentação e treino (calorias, macros, déficit, rotinas, séries e cargas) feito de presente para o Rael.
 
 Abra no celular: https://lucasdisouza15-collab.github.io/rael-fit/
