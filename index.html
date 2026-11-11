@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-onbv="a"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v68-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v68-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
@@ -413,7 +413,25 @@ details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{displ
 input,select,textarea{font-size:16px}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .onb-big:focus-visible{outline:none;border-bottom-color:var(--accent);box-shadow:0 3px 0 0 var(--accent)}
-/*ONBV: visual do cadastro (spec em docs/SPEC.md). Escolha por <html data-onbv="a|b"> */
+/*MACIO: estilo arredondado do app inteiro (fase 1, spec em docs/SPEC.md). Só formas e sombras; cores e Rael não mudam. */
+:root{--rad:20px;--rad-m:14px;--sombra:0 6px 20px rgba(39,51,95,.12),0 1px 4px rgba(39,51,95,.08)}
+.card,.ex-card{clip-path:none;border-radius:var(--rad);box-shadow:var(--sombra)}
+.card.flat,details.sec .sec-body>.card{box-shadow:none}
+.fr-bal,.fr-balao{clip-path:none;border-radius:18px;padding-left:14px}
+.fr-balao .fr-resp button,.fr-bal .fr-resp button{border-radius:12px}
+.btn{clip-path:none;border-radius:var(--rad-m)}.btn.sm{border-radius:12px}
+.btn.pri,.card .btn.pri,.sheet .btn.pri{box-shadow:0 4px 12px rgba(39,51,95,.25)}
+.iconbtn,.datenav button{border-radius:12px}
+input[type=text],input[type=number],input[type=search],input[type=date],select,textarea{border-radius:var(--rad-m);border-color:#8C9BC9}
+input[type=file]::file-selector-button{border-radius:10px}
+.chip,.pill,.pill.acc,.fr-chip,.brand .fr-ver{border-radius:999px}
+.seg{border-radius:var(--rad-m)}.seg button{border-radius:11px}
+.bar,.bar>i,#fr-splash .fr-sp-barra,#fr-splash .fr-sp-barra i{border-radius:999px}
+.wd{border-radius:var(--rad-m)}.check{border-radius:8px}
+.sheet:not(.full){border-radius:24px 24px 0 0}
+.toast,.tip{border-radius:var(--rad-m)}.empty{border-radius:16px}.bubble{border-radius:16px}
+.fr-nivel{clip-path:none;border-radius:12px!important}
+/*ONBV: visual "Macio" do cadastro (spec em docs/SPEC.md) */
 .onb{flex:1 0 auto;min-height:0;gap:18px}
 .onb .stepcard{margin-top:auto;margin-bottom:auto}
 .onb-top{gap:8px}.onb-top .iconbtn{width:36px;height:36px}
@@ -426,34 +444,19 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px soli
 @keyframes onbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.onb .rfala.big svg{animation:none}.onb-bar i{transition:none}}
 .onb-opt.on .ck{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:14px}
-/* ---- Opção A "Macio": cartão arredondado, sombra suave, botão em pílula ---- */
-html[data-onbv="a"] body{background:linear-gradient(180deg,#D5DDF2 0%,#C2CDE9 100%)}
-html[data-onbv="a"] .sheet:has(.onb) .card.stepcard{clip-path:none;border-radius:24px;padding:20px 18px;box-shadow:0 10px 30px rgba(39,51,95,.16),0 2px 6px rgba(39,51,95,.08)}
-html[data-onbv="a"] .onb .rbal{border:0;border-radius:18px;background:var(--surface-2);padding:12px 14px}
-html[data-onbv="a"] .onb .rbal::before{border:0;background:var(--surface-2)}
-html[data-onbv="a"] .onb-opt{border:2px solid #8C9BC9;border-radius:18px;padding:15px 16px;min-height:60px;box-shadow:0 2px 0 rgba(39,51,95,.10);transition:transform .12s,background .15s,border-color .15s}
-html[data-onbv="a"] .onb-opt:active{transform:scale(.98)}
-html[data-onbv="a"] .onb-opt.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(39,51,95,.15)}
-html[data-onbv="a"] .sheet:has(.onb) input[type=text],html[data-onbv="a"] .sheet:has(.onb) input[type=number],html[data-onbv="a"] .sheet:has(.onb) select{border:2px solid #8C9BC9;border-radius:14px;min-height:52px;padding:10px 14px}
-html[data-onbv="a"] .sheet:has(.onb) .sheet-f{background:transparent;border-top:0;padding-top:4px}
-html[data-onbv="a"] .sheet:has(.onb) .sheet-f .btn.pri{clip-path:none;border-radius:18px;min-height:56px;box-shadow:0 8px 20px rgba(39,51,95,.30);transition:transform .12s}
-html[data-onbv="a"] .sheet:has(.onb) .sheet-f .btn.pri:active{transform:scale(.98)}
-html[data-onbv="a"] .sheet:has(.onb) .sheet-f .btn.ghost{clip-path:none;border-radius:18px}
-/* ---- Opção B "Vivo": borda grossa e sombra dura (mesma família do Painel), botão dourado ---- */
-html[data-onbv="b"] body{background:#C9D3EC}
-html[data-onbv="b"] .sheet:has(.onb) .card.stepcard{clip-path:none;border:3px solid var(--ink);border-radius:20px;padding:18px 16px;box-shadow:5px 5px 0 var(--ink)}
-html[data-onbv="b"] .onb .rbal{border:2.5px solid var(--ink);border-radius:16px;background:#F0DC9A}
-html[data-onbv="b"] .onb .rbal::before{background:#F0DC9A}
-html[data-onbv="b"] .onb-opt{border:2.5px solid var(--ink);border-radius:16px;padding:14px 16px;min-height:60px;box-shadow:3px 3px 0 var(--ink);transition:transform .1s,box-shadow .1s}
-html[data-onbv="b"] .onb-opt:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-html[data-onbv="b"] .onb-opt.on{background:#F2C14E;border-color:var(--ink)}
-html[data-onbv="b"] .onb-opt.on .ck{background:var(--ink);color:#F2C14E}
-html[data-onbv="b"] .sheet:has(.onb) input[type=text],html[data-onbv="b"] .sheet:has(.onb) input[type=number],html[data-onbv="b"] .sheet:has(.onb) select{border:2.5px solid var(--ink);border-radius:14px;min-height:52px;padding:10px 14px}
-html[data-onbv="b"] .onb-bar{border:2px solid var(--ink);background:var(--surface)}html[data-onbv="b"] .onb-bar i{background:#F2C14E}
-html[data-onbv="b"] .sheet:has(.onb) .sheet-f{background:transparent;border-top:0}
-html[data-onbv="b"] .sheet:has(.onb) .sheet-f .btn.pri{clip-path:none;border:3px solid var(--ink);border-radius:16px;min-height:56px;background:#F2C14E;color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
-html[data-onbv="b"] .sheet:has(.onb) .sheet-f .btn.pri:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-html[data-onbv="b"] .sheet:has(.onb) .sheet-f .btn.ghost{clip-path:none;border-radius:16px}
+/* cadastro: cartão arredondado, sombra suave, botão em pílula */
+.sheet:has(.onb){background:linear-gradient(180deg,#D5DDF2 0%,#C2CDE9 100%)}
+.sheet:has(.onb) .card.stepcard{clip-path:none;border-radius:24px;padding:20px 18px;box-shadow:0 10px 30px rgba(39,51,95,.16),0 2px 6px rgba(39,51,95,.08)}
+.onb .rbal{border:0;border-radius:18px;background:var(--surface-2);padding:12px 14px}
+.onb .rbal::before{border:0;background:var(--surface-2)}
+.onb-opt{border:2px solid #8C9BC9;border-radius:18px;padding:15px 16px;min-height:60px;box-shadow:0 2px 0 rgba(39,51,95,.10);transition:transform .12s,background .15s,border-color .15s}
+.onb-opt:active{transform:scale(.98)}
+.onb-opt.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(39,51,95,.15)}
+.sheet:has(.onb) input[type=text],.sheet:has(.onb) input[type=number],.sheet:has(.onb) select{border:2px solid #8C9BC9;border-radius:14px;min-height:52px;padding:10px 14px}
+.sheet:has(.onb) .sheet-f{background:transparent;border-top:0;padding-top:4px}
+.sheet:has(.onb) .sheet-f .btn.pri{clip-path:none;border-radius:18px;min-height:56px;box-shadow:0 8px 20px rgba(39,51,95,.30);transition:transform .12s}
+.sheet:has(.onb) .sheet-f .btn.pri:active{transform:scale(.98)}
+.sheet:has(.onb) .sheet-f .btn.ghost{clip-path:none;border-radius:18px}
 .bar>i{box-shadow:inset 0 0 0 1px rgba(27,22,48,.55)}
 </style>
 
@@ -1608,6 +1611,8 @@ const SRC_LABEL = { T: "TACO, aprox.", E: "estimativa", M: "meu", R: "receita", 
 
 // ---------- metas e gasto ----------
 const ATIV = [[1.2,"Sedentário (pouco ou nenhum movimento)"],[1.375,"Leve (em pé parte do dia, anda um pouco)"],[1.55,"Moderado (trabalho ativo, anda bastante)"],[1.725,"Alto (trabalho braçal)"],[1.9,"Muito alto (braçal pesado + muito movimento)"]];
+const ativSplit = n => { const k = n.indexOf(" ("); return k > 0 ? [n.slice(0, k), n.charAt(k + 2).toUpperCase() + n.slice(k + 3, -1)] : [n, ""]; };
+const ativSel = (id, atual) => { const a = ATIV.find(([v]) => v === num(atual)); return `<select id="${id}" onchange="document.getElementById('${id}H').textContent=this.options[this.selectedIndex].dataset.h">${ATIV.map(([v, n]) => { const [c, h] = ativSplit(n); return `<option value="${v}" data-h="${esc(h)}" ${num(atual) === v ? "selected" : ""}>${esc(c)}</option>`; }).join("")}</select><span class="onb-hint" id="${id}H">${esc(a ? ativSplit(a[1])[1] : "")}</span>`; };
 function pesoAtual(p = P()) { const ds = allDays(); for (let i = ds.length - 1; i >= 0; i--) { const d = getDoc("dia-" + ds[i]); if (d && d.peso) return d.peso; } return num(p.peso) || 70; }
 function pesoNa(date, p = P()) { const ds = allDays().filter(x => x <= date); for (let i = ds.length - 1; i >= 0; i--) { const d = getDoc("dia-" + ds[i]); if (d && d.peso) return d.peso; } return num(p.peso) || 70; }
 function tmb(p = P(), w = pesoAtual(p)) { const b = 10 * w + 6.25 * num(p.altura) - 5 * num(p.idade) + (p.sexo === "F" ? -161 : 5); return Math.max(800, b); }
@@ -2815,7 +2820,7 @@ function restPop() {
   const o = document.getElementById("restpop"); if (o) o.remove();
   const p = document.createElement("div"); p.id = "restpop"; p.setAttribute("role", "alertdialog"); p.setAttribute("aria-label", "Descanso acabou");
   p.style.cssText = "position:fixed;inset:0;z-index:90;background:rgba(15,20,40,.6);display:flex;align-items:center;justify-content:center;padding:24px";
-  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:0;clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);padding:24px 20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${restRael()}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:10px 0 6px">Descanso acabou!</div><div style="font-size:16px;line-height:1.4;margin-bottom:18px">${esc(REST.frase)}</div><button class="btn" data-act="restSkip" style="width:100%;min-height:56px;font-size:20px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora</button></div>`;
+  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:22px;padding:24px 20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${restRael()}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:10px 0 6px">Descanso acabou!</div><div style="font-size:16px;line-height:1.4;margin-bottom:18px">${esc(REST.frase)}</div><button class="btn" data-act="restSkip" style="width:100%;min-height:56px;font-size:20px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora</button></div>`;
   document.body.appendChild(p);
 }
 function drawRest() {
@@ -3908,7 +3913,7 @@ function recFesta(md, frase) {
   p.style.cssText = "position:fixed;inset:0;z-index:95;background:rgba(15,20,40,.62);display:flex;align-items:center;justify-content:center;padding:24px";
   let rael = ""; try { rael = frRaelCena("comemora", 150); } catch (e) { rael = '<div style="font-size:64px">🐔</div>'; }
   const carga = md.includes('data-med="carga"');
-  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:0;clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);padding:20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${rael}</div><div style="font-size:44px;line-height:1;margin-top:4px;color:#6E85C2">${md.replace(/width="18" height="18"/g, 'width="44" height="44"')}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:8px 0 6px">${carga ? "Recorde de carga!" : "Recorde de volume!"}</div><div style="font-size:15px;line-height:1.4;margin-bottom:16px">${esc(frase)}</div><button class="btn" data-act="festaFecha" style="width:100%;min-height:52px;font-size:18px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora!</button></div>`;
+  p.innerHTML = `<div style="background:#FBFAF6;color:#27335F;border-radius:22px;padding:20px;max-width:340px;width:100%;text-align:center"><div style="display:flex;justify-content:center">${rael}</div><div style="font-size:44px;line-height:1;margin-top:4px;color:#6E85C2">${md.replace(/width="18" height="18"/g, 'width="44" height="44"')}</div><div style="font-family:var(--f-display);font-size:30px;font-weight:900;text-transform:uppercase;margin:8px 0 6px">${carga ? "Recorde de carga!" : "Recorde de volume!"}</div><div style="font-size:15px;line-height:1.4;margin-bottom:16px">${esc(frase)}</div><button class="btn" data-act="festaFecha" style="width:100%;min-height:52px;font-size:18px;font-weight:800;background:#27335F;color:#fff;border-radius:0;text-transform:uppercase;letter-spacing:.03em">Bora!</button></div>`;
   document.body.appendChild(p);
   setTimeout(() => { const q = document.getElementById("recfesta"); if (q === p) p.remove(); }, 5500);
 }
@@ -5422,7 +5427,7 @@ function perfilForm(p) {
     <label class="f">Idade<input type="number" inputmode="numeric" id="pfIdade" value="${esc(p.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="pfAlt" value="${esc(p.altura)}"></label>
     <label class="f">Peso atual (kg)<input type="number" inputmode="decimal" step="0.1" id="pfPeso" value="${esc(fmt1(pesoAtual(p)).replace(",", "."))}"></label><label class="f">Meta de peso (kg)<input type="number" inputmode="decimal" step="0.1" id="pfMeta" value="${esc(p.metaPeso || "")}" placeholder="opcional"></label></div>
     <label class="f">Até quando? (opcional, o app mostra o ritmo necessário)<input type="date" id="pfMetaData" value="${esc(p.metaData || "")}"></label>
-    <label class="f">Dia a dia, sem contar os treinos<select id="pfAtv">${ATIV.map(([v, n]) => `<option value="${v}" ${num(p.atividade) === v ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
+    <label class="f">Dia a dia, sem contar os treinos${ativSel("pfAtv", p.atividade)}</label>
     <div class="grid2"><label class="f">Objetivo<select id="pfObj"><option value="perder" ${p.objetivo === "perder" ? "selected" : ""}>Perder gordura</option><option value="manter" ${p.objetivo === "manter" ? "selected" : ""}>Manter</option><option value="ganhar" ${p.objetivo === "ganhar" ? "selected" : ""}>Ganhar massa</option></select></label>
     <label class="f">Ritmo<select id="pfAj">${[[250, "Leve (250 kcal)"], [500, "Padrão (500 kcal)"], [750, "Agressivo (750 kcal)"]].map(([v, n]) => `<option value="${v}" ${num(p.ajuste) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>`;
 }
@@ -5566,7 +5571,7 @@ function onbBody() {
   else if (st === "motivos") h = T(ONB.ret ? "O que te trouxe de volta?" : "O que te move?", "Pode marcar mais de uma, ou nenhuma. Eu não julgo (muito).") + ONB_MOTIVOS.map(([i, t]) => onbOpt("onbMulti", d.motivos.includes(t), i, t, `data-k="motivos" data-v="${esc(t)}"`)).join("");
   else if (st === "dif") h = T("O que muda desta vez?", "Pode marcar mais de uma.") + ONB_DIF.map(([i, t]) => onbOpt("onbMulti", d.dif.includes(t), i, t, `data-k="dif" data-v="${esc(t)}"`)).join("");
   else if (st === "obj") h = T("O que a gente vai chocar?", ONB.ret ? "Antes era: " + ({ perder: "perder gordura", manter: "manter o peso", ganhar: "ganhar massa" }[P().objetivo] || "perder gordura") + ". Se continua valendo, é só seguir." : "Escolha o rumo. Dá pra mudar quando quiser.") + ONB_OBJ.map(([k, i, t]) => onbOpt("onbObj", d.objetivo === k, i, t, `data-v="${k}"`)).join("");
-  else if (st === "dados") h = T("Me conta quem é você", "É só pra eu calcular direitinho. Fica no seu aparelho.") + `<label class="f">Como quer ser chamado<input type="text" id="oNome" value="${esc(d.nome)}" maxlength="30" placeholder="Seu nome"></label><label class="f">Sexo<select id="oSexo"><option value="M" ${d.sexo !== "F" ? "selected" : ""}>Masculino</option><option value="F" ${d.sexo === "F" ? "selected" : ""}>Feminino</option></select></label><div class="grid2"><label class="f">Idade<input type="number" inputmode="numeric" id="oIdade" value="${esc(d.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="oAlt" value="${esc(d.altura)}"></label></div><label class="f">Dia a dia, sem contar treinos<select id="oAtv" onchange="document.getElementById('oAtvH').textContent=this.options[this.selectedIndex].dataset.h">${ATIV.map(([v, n]) => { const k = n.indexOf(" ("); return `<option value="${v}" data-h="${esc(k > 0 ? n.charAt(k + 2).toUpperCase() + n.slice(k + 3, -1) : "")}" ${num(d.atividade) === v ? "selected" : ""}>${esc(k > 0 ? n.slice(0, k) : n)}</option>`; }).join("")}</select><span class="onb-hint" id="oAtvH">${esc((() => { const a = ATIV.find(([v]) => v === num(d.atividade)); const k = a ? a[1].indexOf(" (") : -1; return k > 0 ? a[1].charAt(k + 2).toUpperCase() + a[1].slice(k + 3, -1) : ""; })())}</span></label>`;
+  else if (st === "dados") h = T("Me conta quem é você", "É só pra eu calcular direitinho. Fica no seu aparelho.") + `<label class="f">Como quer ser chamado<input type="text" id="oNome" value="${esc(d.nome)}" maxlength="30" placeholder="Seu nome"></label><label class="f">Sexo<select id="oSexo"><option value="M" ${d.sexo !== "F" ? "selected" : ""}>Masculino</option><option value="F" ${d.sexo === "F" ? "selected" : ""}>Feminino</option></select></label><div class="grid2"><label class="f">Idade<input type="number" inputmode="numeric" id="oIdade" value="${esc(d.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="oAlt" value="${esc(d.altura)}"></label></div><label class="f">Dia a dia, sem contar treinos${ativSel("oAtv", d.atividade)}</label>`;
   else if (st === "peso") h = T("Hora da balança. Sem drama.", "Pode chutar. Depois a gente acerta junto.") + `<div class="onb-peso"><input class="onb-big" type="number" inputmode="decimal" step="0.1" id="oPeso" value="${esc(d.peso)}" aria-label="Peso atual em kg"><span class="onb-unit">kg</span></div>`;
   else if (st === "meta") {
     h = T(d.objetivo === "manter" ? "Tem um número em mente?" : "Até onde a gente vai?", d.objetivo === "manter" ? "Opcional. Se não tiver, deixa vazio." : "Um número que dê pra bater, não pra postar.") + `<div class="onb-peso"><input class="onb-big" type="number" inputmode="decimal" step="0.1" id="oMeta" data-in="onbCalc" value="${esc(d.metaPeso)}" placeholder="${esc(d.objetivo === "ganhar" ? "ex.: 80" : "ex.: 95")}" aria-label="Meta de peso em kg"><span class="onb-unit">kg</span></div>`;
