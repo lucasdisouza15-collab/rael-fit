@@ -88,5 +88,8 @@ ok('semana: nome da rotina quebra linha (sem reticências)', /\.wd \.r\{white-sp
 ok('campo de data com largura própria do Safari neutralizada', /input\[type=date\]\{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;min-height:52px;-webkit-appearance:none/.test(html));
 ok('selects em duas colunas com 15px', /\.grid2 select,\.grid3 select\{font-size:15px/.test(html));
 
+// 13) aviso de humor honesto com a conta do Supabase (v71)
+ok('aviso "Fica só no seu aparelho" some quando há conta Supabase', /SB\.user\) \? " e na sua conta"/.test(html));
+
 console.log(total + ' verificações de UI/PWA, ' + falhas + ' com falha');
 process.exit(falhas ? 1 : 0);
