@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v63-20261111b"><script>(function(){try{var V="v63-20261111b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v64-20261111c"><script>(function(){try{var V="v64-20261111c";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1486,7 +1486,7 @@ function apiKey() { try { return localStorage.getItem(KEY_LS) || CHAVE_PADRAO; }
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
   setTimeout(() => toast && toast("IA ativada neste aparelho"), 800);
 })();
-function useApiKey() { if (CAP.via === "claude") return; const k = apiKey(); if (k) { const cl = /^sk-ant-/.test(k); CAP.sample = cl ? apiSampler(k) : geminiSampler(k); CAP.images = true; CAP.via = cl ? "api" : "gemini"; } else if (IXIA.ligada) { CAP.sample = workerSampler(); CAP.images = true; CAP.via = "worker"; } else if (CAP.via === "api" || CAP.via === "gemini" || CAP.via === "worker") { CAP.sample = null; CAP.images = false; CAP.via = null; } }
+function useApiKey() { if (CAP.via === "claude") return; const k = apiKey(); if (k) { const cl = /^sk-ant-/.test(k); CAP.sample = cl ? apiSampler(k) : geminiSampler(k); CAP.images = true; CAP.via = cl ? "api" : "gemini"; } else if (CAP.via === "api" || CAP.via === "gemini") { CAP.sample = null; CAP.images = false; CAP.via = null; } }
 async function connectCaps() {
   useApiKey();
   if (!window.claude || !window.claude.use) return;
@@ -1708,7 +1708,7 @@ const GEM_LS = "raelfit:gemmodels";
 // descobre os modelos Flash disponíveis para a chave, do mais novo ao mais antigo
 async function geminiModels(key, fresh) {
   if (!fresh) { try { const c = JSON.parse(localStorage.getItem(GEM_LS) || "null"); if (c && c.k === key.slice(-6) && c.list.length && Date.now() - c.t < 7 * 864e5) return c.list; } catch (e) {} }
-  let r; try { r = await fetch(GEM + "models?pageSize=200&key=" + encodeURIComponent(key)); } catch (e) { throw { code: "network", message: String(e) }; }
+  let r; try { r = await fetch(GEM + "models?pageSize=200", { headers: { "x-goog-api-key": key } }); } catch (e) { throw { code: "network", message: String(e) }; }
   if (r.status === 400 || r.status === 401 || r.status === 403) throw { code: "bad_key", message: "" };
   if (!r.ok) throw { code: "upstream_error", message: "" };
   const j = await r.json();
@@ -1739,10 +1739,10 @@ function geminiSampler(key) {
       const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 40000);
       const onAbort = () => ctl.abort(); if (opts.signal) opts.signal.addEventListener("abort", onAbort);
       const b = /^gemini-3/.test(model) && !opts.images ? Object.assign({}, body, { generationConfig: Object.assign({ thinkingConfig: { thinkingLevel: "low" } }, body.generationConfig) }) : body;
-      try { r = await fetch(GEM + "models/" + model + ":generateContent?key=" + encodeURIComponent(key), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b), signal: ctl.signal }); try { j = await r.json(); } catch (e) {} }
+      try { r = await fetch(GEM + "models/" + model + ":generateContent", { method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(b), signal: ctl.signal }); try { j = await r.json(); } catch (e) {} }
       catch (e) { if (opts.signal && opts.signal.aborted) throw { code: "cancelled", message: "" }; last = { code: "network", message: String(e) }; continue; }
       finally { clearTimeout(tm); if (opts.signal) opts.signal.removeEventListener("abort", onAbort); }
-      if (r.status === 400 && b !== body && /thinking/i.test(JSON.stringify(j || ""))) { try { r = await fetch(GEM + "models/" + model + ":generateContent?key=" + encodeURIComponent(key), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: opts.signal }); j = null; try { j = await r.json(); } catch (e) {} } catch (e) { last = { code: "network", message: String(e) }; continue; } }
+      if (r.status === 400 && b !== body && /thinking/i.test(JSON.stringify(j || ""))) { try { r = await fetch(GEM + "models/" + model + ":generateContent", { method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body), signal: opts.signal }); j = null; try { j = await r.json(); } catch (e) {} } catch (e) { last = { code: "network", message: String(e) }; continue; } }
       if (r.status === 404 || r.status === 429 || r.status >= 500) { last = { code: r.status === 429 ? "rate_limited" : "upstream_error", message: "" }; if (r.status === 404) try { localStorage.removeItem(GEM_LS); } catch (e) {} continue; }
       if (!r.ok) { const msg = j && j.error && j.error.message || ""; throw { code: /API key|API_KEY|permission/i.test(msg) || r.status === 403 ? "bad_key" : "invalid_request", message: msg }; }
       if (j.promptFeedback && j.promptFeedback.blockReason) throw { code: "refused", message: "" };
@@ -2148,7 +2148,6 @@ function aiErrMsg(e) {
   if (c === "image_rejected") return "Essa imagem não foi aceita. Tente uma foto JPG ou PNG menor.";
   if (c === "cancelled") return "";
   if (c === "bad_key") return "A chave da API não foi aceita. Confira em Perfil > IA.";
-  if (c === "limite_dia") return "Acabou o limite de IA de hoje neste aparelho. Volte amanhã, use o modo copiar e colar ou cole sua própria chave em Perfil > IA.";
   if (c === "no_credit") return "A conta da API está sem crédito. Coloque crédito em console.anthropic.com ou use outra IA.";
   if (c === "network") return "A IA não respondeu (internet fraca ou Gemini lotado). Tente de novo em instantes.";
   if (c === "refused") return "A IA recusou esse pedido. Tente descrever de outro jeito.";
@@ -5773,7 +5772,7 @@ function ixMetaPrazo(o) {
 }
 /*IX-PURO-FIM*/
 // ---- cola da interface (ideias 1 a 7). Usa só helpers do app; nada aqui apaga dado do usuário. ----
-const IX_SON = "frango:ix-soneca", IX_RES = "frango:ix-resumo", IX_SBOK = "frango:sbok", IX_CONV = "frango:ix-convite", IX_DID = "frango:did";
+const IX_SON = "frango:ix-soneca", IX_RES = "frango:ix-resumo", IX_SBOK = "frango:sbok", IX_CONV = "frango:ix-convite";
 const ixLsGet = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (_) { return d; } };
 const ixLsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
 const ixSoneca = k => (ixLsGet(IX_SON, {})[k] || "") >= TODAY();
@@ -5898,38 +5897,7 @@ function ixMetaHtml(p = P(), compacto) {
   if (m.agressivo && m.status !== "atingida" && m.status !== "vencido") t += " Atenção: esse ritmo passa de 1% do peso por semana, difícil de manter. Considere uma data mais longa.";
   return `<div class="card flat"><div class="row between"><div class="eyebrow">Meta de ${fmt1(p.metaPeso)} kg até ${fmtData(p.metaData)}</div><span class="pill ${rot[0]}">${rot[1]}</span></div><div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${m.pct}" aria-label="Progresso da meta" style="height:8px;border-radius:99px;background:var(--surface-2);margin:8px 0;overflow:hidden"><div style="height:100%;width:${m.pct}%;background:var(--accent)"></div></div><div class="small ink2">${m.pct}% do caminho. ${esc(t)}</div></div>`;
 }
-// 6. Convidado: IA pelo Worker e entrada rápida
-const IXIA = { url: "", ligada: false, rest: null };
-function ixDid() { let v = ""; try { v = localStorage.getItem(IX_DID) || ""; if (!v) { v = uid() + uid(); localStorage.setItem(IX_DID, v); } } catch (_) {} return v || "anon"; }
-function workerSampler() {
-  async function call(input, opts = {}) {
-    let msgs = typeof input === "string" ? [{ role: "user", content: input }] : input.map(m => ({ role: m.role, content: m.content }));
-    msgs = msgs.reduce((a, m) => { const l = a[a.length - 1]; if (l && l.role === m.role) l.content += "\n\n" + m.content; else a.push(Object.assign({}, m)); return a; }, []);
-    const imgs = opts.images ? [].concat(opts.images) : [];
-    if (imgs.length) { const b = imgs[0], last = msgs[msgs.length - 1]; last.content = [{ type: "image", source: { type: "base64", media_type: b.type && /^image\/(jpeg|png|gif|webp)$/.test(b.type) ? b.type : "image/jpeg", data: await blobToB64(b) } }, { type: "text", text: last.content }]; }
-    let r; try { r = await fetch(IXIA.url + "/ia", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ did: ixDid(), messages: msgs }), signal: opts.signal }); }
-    catch (e) { throw { code: e && e.name === "AbortError" ? "cancelled" : "network", message: String(e) }; }
-    let j = null; try { j = await r.json(); } catch (e) {}
-    if (!r.ok) throw { code: r.status === 429 ? (j && j.erro === "limite-diario" ? "limite_dia" : "rate_limited") : r.status === 503 ? "ia_desligada" : r.status >= 500 ? "upstream_error" : "invalid_request", message: j && j.erro || "" };
-    if (j && typeof j.restantes === "number") IXIA.rest = j.restantes;
-    const text = j && j.text || ""; if (!text) throw { code: "empty_completion", message: "" };
-    if (opts.onText) opts.onText({ text, delta: text });
-    return { text, truncated: !!(j && j.truncated) };
-  }
-  const f = (input, opts) => call(input, opts);
-  f.json = async (input, opts) => { const { text } = await call(input, opts); const v = parseLoose(text); if (v == null) throw { code: "invalid_json", message: "", text }; return v; };
-  f.limits = async () => ({ images: { maxCount: 1 } });
-  return f;
-}
-async function ixIaInit() {
-  try {
-    const cfg = await fetch("push-config.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({}));
-    IXIA.url = (cfg && cfg.url || "").replace(/\/$/, ""); if (!IXIA.url) return;
-    const r = await fetch(IXIA.url + "/ia", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ did: ixDid(), ping: true }) }); if (!r.ok) return;
-    const j = await r.json(); IXIA.ligada = !!(j && j.ligada); IXIA.rest = j && j.restantes != null ? j.restantes : null;
-    if (IXIA.ligada) { useApiKey(); if (!SHEET.stack.length) render(); }
-  } catch (e) {}
-}
+// 6. Convidado: entrada rápida (a IA usa a chave Gemini grátis do próprio usuário, em Perfil > Inteligência artificial)
 ACT.onbRapido = () => { onbLe(); ONB.rapido = true; ONB.i = 1; drawSheet(); const b = $(".sheet-b"); if (b) b.scrollTop = 0; };
 function ixConviteHtml() {
   const p = P(), s = ixSB(); if (!p.convidado || !s.cli || s.user || (ixLsGet(IX_CONV, "") >= TODAY()) || frRegDays().length < 3) return "";
@@ -5963,7 +5931,7 @@ function render() {
 (async function init() {
   ST.docs = lsRead();
   render();
-  connectCaps(); ixIaInit();
+  connectCaps();
   await Promise.race([connectCloud(), new Promise(r => setTimeout(r, 2500))]);
   try { sbInit().then(() => { if (!SHEET.stack.length) render(); }); } catch (e) {}
   try { if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}   /* cache offline: registra sempre, não só com avisos ligados */
@@ -6086,10 +6054,10 @@ ACT.voltouPeso = () => { closeSheet(); ui.tab = "hoje"; ui.date = TODAY(); rende
 ACT.onbVer = () => { SHEET.stack = []; onboarding(true); ONB.prev = true; drawSheet(); };
 function iaCard() {
   const via = CAP.via, k = apiKey();
-  const st = via === "claude" ? ["good", "Ligada pela conta Claude"] : via === "gemini" ? ["good", "Ligada pelo Gemini (grátis)"] : via === "api" ? ["good", "Ligada pela API do Claude"] : via === "worker" ? ["good", "Ligada pelo app (limite por dia)"] : ["", "Modo copiar e colar"];
+  const st = via === "claude" ? ["good", "Ligada pela conta Claude"] : via === "gemini" ? ["good", "Ligada pelo Gemini (grátis)"] : via === "api" ? ["good", "Ligada pela API do Claude"] : ["", "Modo copiar e colar"];
   return `<div class="card stack ai"><div class="row between"><h2>Inteligência artificial</h2><span class="pill ${st[0]}">${st[1]}</span></div>
-    <div class="small ink2">${via === "claude" ? "Os botões de IA usam a conta Claude de quem está logado. Nada a configurar." : via === "worker" ? "A IA do app já está ligada, sem você precisar de chave. Tem um limite de pedidos por dia" + (IXIA.rest != null ? " (restam " + IXIA.rest + " hoje)" : "") + ". Para usar sem limite, cole sua própria chave abaixo." : "Cole uma chave grátis do Gemini e a IA calcula direto aqui: refeição por texto e foto, cardápio, treino da semana e coach. Sem chave, os botões montam a pergunta para você colar no ChatGPT, Gemini ou Claude."}</div>
-    ${via === "claude" ? "" : `<ol class="small ink2" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px"><li>Abra o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> e entre com uma conta Google.</li><li>Toque em "Create API key" (criar chave) e copie.</li><li>Cole aqui e salve. Pronto.</li></ol>
+    <div class="small ink2">${via === "claude" ? "Os botões de IA usam a conta Claude de quem está logado. Nada a configurar." : "Ligue a IA grátis com a sua própria chave do Gemini (do Google, sem cartão): ela calcula direto aqui refeição por texto e foto, cardápio, treino da semana e coach, sem custo para ninguém além do seu plano grátis. Sem chave, os botões montam a pergunta para você colar no ChatGPT, Gemini ou Claude."}</div>
+    ${via === "claude" ? "" : `<ol class="small ink2" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px"><li><b>1.</b> Abra o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> e entre com sua conta Google.</li><li><b>2.</b> Toque em "Create API key" (criar chave) e copie o código.</li><li><b>3.</b> Cole aqui embaixo e toque em "Salvar e testar". A chave fica só neste aparelho.</li></ol>
     <label class="f">Chave de IA (Gemini grátis, ou Claude sk-ant-)<input type="password" id="apiKeyIn" autocomplete="off" placeholder="${k ? "chave salva (••••" + esc(k.slice(-4)) + ")" : "cole a chave aqui"}"></label>
     <div class="row wrap-ok"><button class="btn sm pri" data-act="saveKey" ${UIc.keyBusy ? "disabled" : ""}>${UIc.keyBusy ? '<span class="spin"></span> Testando' : "Salvar e testar"}</button>${k ? `<button class="btn sm danger" data-act="delKey">Remover chave</button>` : ""}</div>
     ${UIc.keyMsg ? `<div class="small" style="color:var(${UIc.keyOk ? "--good" : "--bad"})">${esc(UIc.keyMsg)}</div>` : ""}

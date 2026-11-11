@@ -153,5 +153,12 @@ mp = F.ixMetaPrazo(Object.assign({}, base, { alvo: 90, pesoIni: 80, pesoAtual: 8
   }
 }
 
+// ---------- 6b. IA do convidado: só a chave Gemini do próprio usuário (sem Worker de IA, sem chave Anthropic do dono) ----------
+ok('index.html não chama /ia do Worker', !/IXIA|workerSampler|ixIaInit|\/ia"/.test(html));
+ok('chave do Gemini nunca vai na URL (usa cabeçalho)', !/[?&]key=/.test(html) && /x-goog-api-key/.test(html));
+const wsrc = fs.readFileSync(__dirname + '/../worker/src/index.js', 'utf8');
+ok('Worker sem rota de IA nem segredo Anthropic', !/ANTHROPIC|api\.anthropic|\/ia/.test(wsrc));
+ok('passos guiados da chave grátis (3) no cartão de IA', /<b>3\.<\/b> Cole aqui/.test(html));
+
 console.log((total - falhas) + '/' + total + ' testes das ideias 1 a 7 passaram');
 process.exit(falhas ? 1 : 0);

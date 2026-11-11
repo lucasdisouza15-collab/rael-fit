@@ -1,5 +1,5 @@
 import test from "node:test"; import assert from "node:assert/strict";
-import { resumoNuvem, aplicaNuvem, limpaCfg, local, proximo, motivoPular, monta, FRASES, hm, limpaEstado, validaIA, cotaPasso, IA } from "../src/logica.js";
+import { resumoNuvem, aplicaNuvem, limpaCfg, local, proximo, motivoPular, monta, FRASES, hm, limpaEstado } from "../src/logica.js";
 const TZ = 180; // Bahia: getTimezoneOffset() = +180
 const ms = (d, h, m = 0) => Date.UTC(2026, 10, d, h, m); // novembro/2026; dia 4 = quarta
 test("local converte com o offset do aparelho", () => {
@@ -81,27 +81,4 @@ test("resumo semanal: o texto vem do app e é limpo", () => {
 test("resumo semanal: resumo velho (app não aberto há dias) cai na frase genérica", () => {
   const e = limpaEstado({ dia: "2026-11-01", resumo: "5 de 7 dias" });
   const m = monta("semana", e, 0, () => 0.1, -1, "2026-11-08"); assert.ok(!m.corpo.startsWith("Sua semana:"));
-});
-test("IA: aceita texto e uma imagem pequena", () => {
-  assert.ok(validaIA({ messages: [{ role: "user", content: "oi" }] }).ok);
-  const img = { type: "image", source: { type: "base64", media_type: "image/jpeg", data: "AAAA" } };
-  assert.ok(validaIA({ messages: [{ role: "user", content: [img, { type: "text", text: "prato" }] }] }).ok);
-});
-test("IA: recusa o que foge do combinado", () => {
-  const img = { type: "image", source: { type: "base64", media_type: "image/jpeg", data: "AAAA" } };
-  assert.equal(validaIA({ messages: [] }).ok, false);
-  assert.equal(validaIA({ messages: [{ role: "system", content: "x" }] }).ok, false);
-  assert.equal(validaIA({ messages: [{ role: "user", content: "x".repeat(IA.maxChars + 1) }] }).ok, false);
-  assert.equal(validaIA({ messages: [{ role: "user", content: [img, img] }] }).ok, false);
-  assert.equal(validaIA({ messages: [{ role: "user", content: [{ type: "image", source: { type: "url", url: "http://x" } }] }] }).ok, false);
-  assert.equal(validaIA({ messages: [{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: "A".repeat(IA.maxImgB64 + 1) } }] }] }).ok, false);
-  assert.equal(validaIA({ messages: [{ role: "assistant", content: "x" }] }).ok, false);
-  assert.equal(validaIA({ messages: Array.from({ length: IA.maxMsgs + 1 }, () => ({ role: "user", content: "x" })) }).ok, false);
-});
-test("IA: cota diária conta, bloqueia e zera no dia seguinte", () => {
-  let r = cotaPasso(null, "2026-11-11", 2); assert.deepEqual([r.ok, r.restantes], [true, 1]);
-  r = cotaPasso(r.estado, "2026-11-11", 2); assert.deepEqual([r.ok, r.restantes], [true, 0]);
-  r = cotaPasso(r.estado, "2026-11-11", 2); assert.equal(r.ok, false);
-  r = cotaPasso(r.estado, "2026-11-12", 2); assert.deepEqual([r.ok, r.restantes], [true, 1]);
-  const p = cotaPasso({ dia: "2026-11-12", n: 1 }, "2026-11-12", 2, false); assert.equal(p.estado.n, 1); // ping não gasta
 });
