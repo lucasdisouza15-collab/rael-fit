@@ -33,10 +33,17 @@ async function sbSair() { await SB.cli.auth.signOut(); SB.user = null; }
 // Baixa tudo do perfil atual e mescla (mesma regra do mergeRemote: o _t maior vence)
 async function sbPull() {
   if (!SB.cli || !SB.user) return;
+  SB.ultPull = Date.now();
   try {
     const perfil = PID();
-    const { data, error } = await SB.cli.from("docs").select("k,data,t,del").eq("perfil", perfil).limit(5000);
-    if (error) throw error;
+    /* Páginas de 1.000 linhas (o Supabase corta cada consulta nesse limite); ordem por k para a paginação não repetir nem pular */
+    const data = [], PAG = 1000;
+    for (let i = 0; ; i += PAG) {
+      const { data: pg, error } = await SB.cli.from("docs").select("k,data,t,del").eq("perfil", perfil).order("k").range(i, i + PAG - 1);
+      if (error) throw error;
+      data.push(...pg);
+      if (pg.length < PAG || i > 200000) break;
+    }
     const rem = {};
     data.forEach(r => { rem[r.k] = r.del ? { _del: true, _t: r.t } : Object.assign({}, r.data, { _t: r.t }); });
     for (const k in rem) if (!ST.docs[k] || (rem[k]._t || 0) > (ST.docs[k]._t || 0)) ST.docs[k] = rem[k];
@@ -63,5 +70,8 @@ async function sbFlush() {
   if (error) { SB.err = error.message; setTimeout(sbFlush, 30000); return; }
   ks.forEach(k => SB.fila.delete(k)); SB.err = null;
 }
-addEventListener("online", () => { sbPull(); });
-document.addEventListener("visibilitychange", () => { if (!document.hidden) sbPull(); });
+/* Ao voltar para a tela ou reconectar, baixa no máximo 1 vez por minuto (economiza bateria e o plano grátis) */
+SB.ultPull = 0;
+function sbPullLeve() { if (Date.now() - SB.ultPull < 60000) return; SB.ultPull = Date.now(); sbPull(); }
+addEventListener("online", () => { sbFlush(); sbPullLeve(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) sbPullLeve(); });
