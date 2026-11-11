@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v69-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v70-20261111a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v69-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v70-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -413,6 +413,14 @@ details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{displ
 input,select,textarea{font-size:16px}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .onb-big:focus-visible{outline:none;border-bottom-color:var(--accent);box-shadow:0 3px 0 0 var(--accent)}
+/*IOS: campos e nomes sem corte no iPhone (v70). Safari dá largura própria ao input date e não quebra linha em .r */
+.week{gap:4px}.wd{padding-left:1px;padding-right:1px}
+.wd .r{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:normal;word-break:normal;hyphens:none;line-height:1.1;font-size:12px;letter-spacing:-.02em}
+input[type=date]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;min-height:52px;-webkit-appearance:none;appearance:none;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.3em}
+input[type=date]::-webkit-datetime-edit{padding:0}
+label.f{min-width:0;max-width:100%}
+.grid2 select,.grid3 select{font-size:15px;padding-left:12px;text-overflow:ellipsis}
 /*MACIO: estilo arredondado do app inteiro (fase 1, spec em docs/SPEC.md). Só formas e sombras; cores e Rael não mudam. */
 :root{--rad:20px;--rad-m:14px;--sombra:0 6px 20px rgba(39,51,95,.12),0 1px 4px rgba(39,51,95,.08)}
 .card,.ex-card{clip-path:none;border-radius:var(--rad);box-shadow:var(--sombra)}
@@ -2477,9 +2485,9 @@ function viewSemana() {
   else h += `<div class="card"><div class="eyebrow">Hoje, ${DOWL[dwT].toLowerCase()}</div><div class="row" style="margin-top:4px"><div class="grow small ink2">${(p.rotinas || []).length ? "Dia de folga no plano. " + esc(frase("folga")) : "Ainda não tem rotina. Monte a semana abaixo em 10 segundos."}</div><button class="btn" data-act="startEmpty">Iniciar treino vazio</button></div></div>`;
   h += `<div class="card"><h2>Montar a semana${qi("O app cria as rotinas e distribui nos dias. Dá para editar tudo depois.")}</h2><div style="margin:2px 0 10px"></div>
     <div class="grid2"><label class="f">Dias por semana<select id="genDias">${[2, 3, 4, 5, 6].map(n => `<option value="${n}" ${n === 4 ? "selected" : ""}>${n} dias</option>`).join("")}</select></label>
-    <label class="f">Onde treina<select id="genLocal"><option value="academia">Academia completa</option><option value="casa">Em casa com halteres</option><option value="corpo">Só peso corporal</option></select></label>
+    <label class="f">Onde treina<select id="genLocal"><option value="academia">Academia</option><option value="casa">Casa (halteres)</option><option value="corpo">Peso corporal</option></select></label>
     <label class="f">Nível<select id="genNivel"><option value="ini">Iniciante</option><option value="int" selected>Intermediário</option><option value="ava">Avançado</option></select></label>
-    <label class="f">Foco<select id="genFoco"><option value="hip">Ganhar músculo</option><option value="forca">Força</option><option value="def">Definição</option></select></label></div>
+    <label class="f">Foco<select id="genFoco"><option value="hip">Músculo</option><option value="forca">Força</option><option value="def">Definição</option></select></label></div>
     <label class="f" style="margin-top:10px">Observações para a IA (opcional)<input type="text" id="genObs" placeholder="Ex.: dor no ombro, quero foco em perna, 1h por treino"></label>
     <div class="row wrap-ok" style="margin-top:10px"><button class="btn pri" data-act="genWeek">Montar agora</button><button class="btn soft" data-act="aiWeek">${ICON.spark} Montar com IA</button></div>
     ${UIc.confirm === "genWeek" ? confirmBox("Isso troca o plano da semana atual (as rotinas antigas continuam salvas). Continuar?", "genWeekGo", {}, "Montar e trocar") : ""}</div>`;
@@ -5455,7 +5463,7 @@ function perfilForm(p) {
     <label class="f">Até quando? (opcional, o app mostra o ritmo necessário)<input type="date" id="pfMetaData" value="${esc(p.metaData || "")}"></label>
     <label class="f">Dia a dia, sem contar os treinos${ativSel("pfAtv", p.atividade)}</label>
     <div class="grid2"><label class="f">Objetivo<select id="pfObj"><option value="perder" ${p.objetivo === "perder" ? "selected" : ""}>Perder gordura</option><option value="manter" ${p.objetivo === "manter" ? "selected" : ""}>Manter</option><option value="ganhar" ${p.objetivo === "ganhar" ? "selected" : ""}>Ganhar massa</option></select></label>
-    <label class="f">Ritmo<select id="pfAj">${[[250, "Leve (250 kcal)"], [500, "Padrão (500 kcal)"], [750, "Agressivo (750 kcal)"]].map(([v, n]) => `<option value="${v}" ${num(p.ajuste) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>`;
+    <label class="f">Ritmo (kcal/dia)<select id="pfAj">${[[250, "Leve · 250"], [500, "Padrão · 500"], [750, "Agressivo · 750"]].map(([v, n]) => `<option value="${v}" ${num(p.ajuste) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>`;
 }
 function readPerfil(p) {
   p.nome = ($("#pfNome").value || "").trim();
