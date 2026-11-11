@@ -107,4 +107,7 @@ if (wk.status) { falhas++; process.stderr.write(wk.stdout.split('\n').filter(l =
 const sy = cp.spawnSync('node', [__dirname + '/check-sync.js'], { encoding: 'utf8' });
 console.log('sync (paginação, 2 aparelhos, intervalo): ' + (sy.status ? 'FALHOU' : 'verde'));
 if (sy.status) { falhas++; process.stderr.write(sy.stdout); }
+const sm = cp.spawnSync('node', [__dirname + '/check-semana.js'], { encoding: 'utf8' });
+console.log('semana pela rotação: ' + (sm.status ? 'FALHOU' : 'verde'));
+if (sm.status) { falhas++; process.stderr.write(sm.stderr || sm.stdout); }
 process.exit(falhas || bad ? 1 : 0);
