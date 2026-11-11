@@ -83,5 +83,10 @@ ok('cadastro: opção selecionada com marca visível', /\.onb-opt\.on \.ck\{[^}]
 ok('cadastro: animação do mascote respeita prefers-reduced-motion', /prefers-reduced-motion:reduce\)\{\.onb \.rfala\.big svg\{animation:none\}/.test(html));
 { const aSoft = tema['accent-soft'], ink = tema.ink; ok('cadastro: texto sobre opção selecionada (ink/accent-soft) >= 4,5', cr(ink, aSoft) >= 4.5, cr(ink, aSoft).toFixed(2)); ok('cadastro: tinta sobre dourado do botão (B) >= 4,5', cr(ink, '#F2C14E') >= 4.5, cr(ink, '#F2C14E').toFixed(2)); }
 
+// 12) iPhone: nomes e campos sem corte (v70)
+ok('semana: nome da rotina quebra linha (sem reticências)', /\.wd \.r\{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:normal/.test(html));
+ok('campo de data com largura própria do Safari neutralizada', /input\[type=date\]\{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;min-height:52px;-webkit-appearance:none/.test(html));
+ok('selects em duas colunas com 15px', /\.grid2 select,\.grid3 select\{font-size:15px/.test(html));
+
 console.log(total + ' verificações de UI/PWA, ' + falhas + ' com falha');
 process.exit(falhas ? 1 : 0);
