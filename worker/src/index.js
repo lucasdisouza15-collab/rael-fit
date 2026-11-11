@@ -37,15 +37,17 @@ async function tokenAdmin(env) { return hex(await crypto.subtle.digest("SHA-256"
 
 // Lê da nuvem (Supabase) o que já foi registrado hoje, com o login do Lucas guardado como segredo do Worker.
 // Sem segredo ou com qualquer falha devolve null e o aviso segue a regra antiga (que, no caso da sequência, agora se cala se o resumo for velho).
-export async function nuvemHoje(env, st, hoje) {
+export async function nuvemHoje(env, hoje, uid, perfil) {
   try {
     if (!env.SUPABASE_EMAIL || !env.SUPABASE_PASSWORD) return null;
+    if (!uid) return null;                                          // aparelho sem login na nuvem: nunca usar os dados de outra pessoa
     const base = env.SUPABASE_URL || "https://dlpujrluawdymwmstqac.supabase.co", key = env.SUPABASE_KEY || "sb_publishable_wSV6Pp8aC0Ni7qlqIy9aIg_rGCDqo_8";
     const H = tok => ({ apikey: key, "content-type": "application/json", ...(tok ? { Authorization: "Bearer " + tok } : {}) });
     const a = await fetch(base + "/auth/v1/token?grant_type=password", { method: "POST", headers: H(), body: JSON.stringify({ email: env.SUPABASE_EMAIL, password: env.SUPABASE_PASSWORD }) });
-    if (!a.ok) return null; const tok = (await a.json()).access_token; if (!tok) return null;
+    if (!a.ok) return null; const sess = await a.json(), tok = sess.access_token; if (!tok) return null;
+    if (!sess.user || sess.user.id !== uid) return null;            // o login do Worker é do dono: só vale para o aparelho DESSE mesmo usuário
     const ks = "(dia-" + hoje + ",treino-pn" + hoje.replace(/-/g, "") + ")";
-    const r = await fetch(base + "/rest/v1/docs?select=k,data,del&k=in." + encodeURIComponent(ks), { headers: H(tok) });
+    const r = await fetch(base + "/rest/v1/docs?select=k,data,del&perfil=eq." + encodeURIComponent(perfil || "main") + "&k=in." + encodeURIComponent(ks), { headers: H(tok) });
     return r.ok ? await r.json() : null;
   } catch (e) { return null; }
 }
@@ -63,6 +65,7 @@ export class Descanso {
       await st.put("endpoint", b.endpoint);
       await st.put("cfg", limpaCfg(b.cfg)); await st.put("estado", limpaEstado(b.estado));
       await st.put("tz", Math.max(-840, Math.min(840, Math.round(+b.tz || 0))));
+      await st.put("uid", String(b.uid || "").slice(0, 64)); await st.put("perfil", String(b.perfil || "main").slice(0, 40));
       if (!(await st.get("reg"))) { await this.registro("/add", { hash: b.hash }); await st.put("reg", true); }
       await this.reagenda(); return new Response("ok");
     }
@@ -111,7 +114,7 @@ export class Descanso {
           h.env[t] = L.dia;                                            // marca antes: nunca manda 2x no mesmo dia
           let ev = e;
           if (t === "sequencia" || t === "treino") {                   // confere o que Painel/Strava já gravaram na nuvem hoje
-            const rows = await nuvemHoje(this.env, st, L.dia); if (rows) ev = aplicaNuvem(e, L.dia, rows);
+            const rows = await nuvemHoje(this.env, L.dia, await st.get("uid"), await st.get("perfil")); if (rows) ev = aplicaNuvem(e, L.dia, rows);
           }
           if (motivoPular(t, ev, L.dia, ontem, L.dow) || h.n >= MAX_DIA) continue;
           const m = monta(t, ev, L.dow, Math.random, h.ult[t] ?? -1); if (!m) continue;
@@ -169,7 +172,7 @@ export default {
     if (!PUSH_HOSTS.some(r => r.test(host))) return resp(req, 400, { erro: "servico de push nao permitido" });
     const id = await idDoEndpoint(env, ep), hash = b64u(await crypto.subtle.digest("SHA-256", txt(ep)));
     const seg = Math.min(1800, Math.max(5, Math.round(+b.seg || 0)));
-    const r = await env.DESCANSO.get(id).fetch("https://do" + u.pathname, { method: "POST", body: JSON.stringify({ endpoint: ep, seg, cfg: b.cfg, estado: b.estado, tz: b.tz, hash }) });
+    const r = await env.DESCANSO.get(id).fetch("https://do" + u.pathname, { method: "POST", body: JSON.stringify({ endpoint: ep, seg, cfg: b.cfg, estado: b.estado, tz: b.tz, uid: b.uid, perfil: b.perfil, hash }) });
     if (u.pathname === "/proximo") return new Response(await r.text(), { headers: cors(req, { "content-type": "application/json" }) });
     return resp(req, 200, { ok: true });
   }
