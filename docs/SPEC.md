@@ -15,6 +15,15 @@ Regra: nenhuma mudança grande sem entrada aqui antes do código. Uma entrada = 
 Cada papel mexe só na sua camada.
 
 ## Entradas
+### Proteção, versão de teste e interruptor (11/11/2026)
+- Problema: Lucas teme cópia do código e quer deixar claro que é versão de teste até sair nas lojas, e poder inutilizar o site quando migrar. Hoje só amigos usam.
+- Limite real: JS de front-end é sempre visível; nada aqui impede cópia técnica, só dá base legal e controle da nossa versão.
+- Comportamento: (1) LICENSE "todos os direitos reservados", meta copyright e comentário no index.html, aviso no README. (2) Faixa fixa no topo do corpo: "Versão de teste. Em breve nas lojas Android e iOS." (3) `app-status.json` (`estado`: teste|migrado, `mensagem`, `loja` https). O app lê com no-store ao abrir, ao voltar para a aba e a cada 5 min; se `migrado`, cobre a tela com aviso e botão da loja. Falha de rede, arquivo ausente ou inválido = continua funcionando (nunca bloqueia por erro). Link não-https é ignorado.
+- Dados afetados: nenhum; nada é apagado. Reverter = voltar `estado` para `teste`.
+- Aceite: `node tools/check.js` verde (tools/check-status.js, 15 verificações) e prova em navegador com os dois estados.
+- Risco baixo. Limite: quem copiou o código continua com a cópia; o Supabase pode passar a exigir versão nova no futuro. Offline: vale o último status em cache.
+- Paridade: Painel não se aplica (artefato privado do Lucas). Repo privado + Cloudflare Pages fica para antes da divulgação (troca o link dos convidados).
+
 ### Ideias 1 a 7 da análise de funções (11/11/2026)
 Origem: /frangometro/analise-funcoes-2026-11-11.md. Ideia 8 (código de barras) fora. Regra: nenhum dado do usuário é apagado por estas funções.
 Lógica pura em `index.html` entre `/*IX-PURO-INI*/` e `/*IX-PURO-FIM*/`, testada por `tools/check-ideias.js` (roda dentro de `tools/check.js`).
