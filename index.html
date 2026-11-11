@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v61-20261111a"><script>(function(){try{var V="v61-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v62-20261111a"><script>(function(){try{var V="v62-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1486,7 +1486,7 @@ function apiKey() { try { return localStorage.getItem(KEY_LS) || CHAVE_PADRAO; }
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
   setTimeout(() => toast && toast("IA ativada neste aparelho"), 800);
 })();
-function useApiKey() { if (CAP.via === "claude") return; const k = apiKey(); if (k) { const cl = /^sk-ant-/.test(k); CAP.sample = cl ? apiSampler(k) : geminiSampler(k); CAP.images = true; CAP.via = cl ? "api" : "gemini"; } else if (CAP.via === "api" || CAP.via === "gemini") { CAP.sample = null; CAP.images = false; CAP.via = null; } }
+function useApiKey() { if (CAP.via === "claude") return; const k = apiKey(); if (k) { const cl = /^sk-ant-/.test(k); CAP.sample = cl ? apiSampler(k) : geminiSampler(k); CAP.images = true; CAP.via = cl ? "api" : "gemini"; } else if (IXIA.ligada) { CAP.sample = workerSampler(); CAP.images = true; CAP.via = "worker"; } else if (CAP.via === "api" || CAP.via === "gemini" || CAP.via === "worker") { CAP.sample = null; CAP.images = false; CAP.via = null; } }
 async function connectCaps() {
   useApiKey();
   if (!window.claude || !window.claude.use) return;
@@ -1594,7 +1594,7 @@ EX_BASE.forEach(e => { EX_BY[e[0]] = { id: e[0], nome: e[1], grupo: e[2], equip:
 function allEx(p = P()) { return (p.exCustom || []).map(e => Object.assign({ custom: true }, e)).concat(Object.values(EX_BY)); }
 function exById(id, p) { return (p ? allEx(p) : allEx()).find(e => e.id === id) || EX_BY[id] || { id, nome: "Exercício removido", grupo: "", equip: "", tipo: "carga" }; }
 function workouts() {
-  return Object.keys(ST.docs).filter(k => k.startsWith("treino-") && !ST.docs[k]._del).map(k => ST.docs[k]).sort((a, b) => (b.inicio || 0) - (a.inicio || 0));
+  return Object.keys(ST.docs).filter(k => k.startsWith("treino-") && !ST.docs[k]._del && !ST.docs[k].ignorar).map(k => ST.docs[k]).sort((a, b) => (b.inicio || 0) - (a.inicio || 0));
 }
 const e1rm = (kg, reps) => kg > 0 && reps > 0 ? kg * (1 + reps / 30) : 0;
 function lastPerf(eid, beforeTs) {
@@ -1788,7 +1788,7 @@ function viewDiario() {
   const rest = meta - t.kcal;
   let h = `<div class="card"><div class="row between"><div><div class="eyebrow">Consumido</div><div class="num" style="font-size:26px;font-weight:600">${fmt(t.kcal)} <span class="muted small">/ ${fmt(meta)} kcal</span></div></div>
     <div style="text-align:right"><div class="eyebrow">${rest >= 0 ? "Restam" : "Passou"}</div><div class="num" style="font-size:22px;font-weight:600;color:${rest >= 0 ? "var(--ink)" : "var(--bad)"}">${fmt(Math.abs(rest))}</div></div></div>
-    <div style="margin-top:12px">${macroBars(t, m)}</div></div>` + distCard(t, m);
+    <div style="margin-top:12px">${macroBars(t, m)}</div></div>` + ixFavBar() + distCard(t, m);
   mealsDay(d).forEach(([k, nome]) => {
     const list = d.ref[k] || [], mt = mealT(d, k);
     h += `<div class="card"><div class="meal-h"><h3>${nome}</h3><span class="kcal-r small">${fmt(mt.kcal)}${metaRef(ui.date, k, p) ? " / " + fmt(metaRef(ui.date, k, p)) : ""} kcal</span>
@@ -2148,6 +2148,7 @@ function aiErrMsg(e) {
   if (c === "image_rejected") return "Essa imagem não foi aceita. Tente uma foto JPG ou PNG menor.";
   if (c === "cancelled") return "";
   if (c === "bad_key") return "A chave da API não foi aceita. Confira em Perfil > IA.";
+  if (c === "limite_dia") return "Acabou o limite de IA de hoje neste aparelho. Volte amanhã, use o modo copiar e colar ou cole sua própria chave em Perfil > IA.";
   if (c === "no_credit") return "A conta da API está sem crédito. Coloque crédito em console.anthropic.com ou use outra IA.";
   if (c === "network") return "A IA não respondeu (internet fraca ou Gemini lotado). Tente de novo em instantes.";
   if (c === "refused") return "A IA recusou esse pedido. Tente descrever de outro jeito.";
@@ -2700,7 +2701,7 @@ ACT.sessFinish = () => {
   const prs = [];
   ex.forEach(x => { if (x.tipo !== "carga") return; const before = bestOf(x.eid).e1rm; const now = Math.max(...x.series.filter(s => s.tipo !== "aq").map(s => e1rm(s.kg, s.reps)), 0); if (now > before && before > 0) prs.push({ nome: x.nome, v: now }); });
   const rot = rotinaDeTreino({ ex: a.ex.map(x => ({ eid: x.eid, nome: x.nome, item: x.item, series: x.series.map(s => ({ reps: s.reps === "" ? num(s.ph) : s.reps, tipo: s.tipo })) })) }); /* estrutura planejada (com séries não marcadas), usada para atualizar a rotina */
-  const w = { id: a.id, nome: a.nome, rotinaId: a.rotinaId, inicio: a.inicio, fim: Date.now(), data: a.data, ex, prs, rot };
+  const w = { id: a.id, nome: a.nome, rotinaId: a.rotinaId, inicio: a.inicio, fim: Date.now(), data: a.data, ex, prs, rot, origem: "app" };
   putDoc("treino-" + w.id, w); delDoc("ativo"); stopRest(); clearInterval(tickT);
   SHEET.stack = [];
   try { FOTO.prs = prs.length; FOTO.prsW = w.id; } catch (e) {}
@@ -2800,12 +2801,12 @@ function viewHist() {
   const byMonth = {};
   ws.forEach(w => { const k = w.data.slice(0, 7); (byMonth[k] = byMonth[k] || []).push(w); });
   const MES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-  return Object.entries(byMonth).map(([k, list]) => `<div class="sec-title"><h2>${MES[+k.slice(5) - 1]} ${k.slice(0, 4)}</h2><span class="xs muted">${list.length} treinos</span></div><div class="card"><div class="list">${list.map(w => `<div class="li tap" data-act="viewWorkout" data-id="${w.id}"><div class="grow"><div class="t">${esc(w.nome)}</div><div class="s">${DOW[dowOf(w.data)]} ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${seriesFeitas(w)} séries · ${fmt(volume(w))} kg</div></div>${(w.prs || []).length ? `<span class="pill good">${w.prs.length} PR</span>` : ""}</div>`).join("")}</div></div>`).join("");
+  return ixDupHtml() + Object.entries(byMonth).map(([k, list]) => `<div class="sec-title"><h2>${MES[+k.slice(5) - 1]} ${k.slice(0, 4)}</h2><span class="xs muted">${list.length} treinos</span></div><div class="card"><div class="list">${list.map(w => `<div class="li tap" data-act="viewWorkout" data-id="${w.id}"><div class="grow"><div class="t">${esc(w.nome)}</div><div class="s">${DOW[dowOf(w.data)]} ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${seriesFeitas(w)} séries · ${fmt(volume(w))} kg · ${ixOriNome(w)}</div></div>${(w.prs || []).length ? `<span class="pill good">${w.prs.length} PR</span>` : ""}</div>`).join("")}</div></div>`).join("");
 }
 ACT.viewWorkout = ds => {
   const w = getDoc("treino-" + ds.id); if (!w) return;
   UIc.confirm = null;
-  openSheet({ title: w.nome, body: () => `<div class="small muted">${DOWL[dowOf(w.data)]}, ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${fmt(volume(w))} kg de volume · ~${fmt(kcalTreino(w))} kcal</div>
+  openSheet({ title: w.nome, body: () => `<div class="small muted">${DOWL[dowOf(w.data)]}, ${ddmm(w.data)} · ${hhmm((w.fim - w.inicio) / 1000)} · ${fmt(volume(w))} kg de volume · ~${fmt(kcalTreino(w))} kcal · ${ixOriNome(w)}</div>
     ${w.ex.map(x => { const [hk, hr] = setHead(x.tipo), md = medalSets(x, recAt(x.eid, w.inicio)); return `<div class="ex-card"><div style="font-weight:700">${esc(x.nome)}</div><div class="small ink2 tnum" style="margin-top:4px">${x.series.map((s, i) => `${stLbl(x.series, i)}: ${hk ? fmt1(s.kg) + " " + hk + " × " : ""}${s.reps} ${hr}${md[i] ? " " + md[i] : ""}`).join("<br>")}</div></div>`; }).join("")}
     ${fotosHtml(w.id)}`,
     foot: () => UIc.confirm === "delW" ? `<button class="btn" data-act="cancelConfirm">Cancelar</button><button class="btn danger block" data-act="delWorkout" data-id="${w.id}">Apagar este treino</button>` : `<button class="btn danger" data-act="delWorkoutAsk">Apagar</button>${w.rotinaId && (P().rotinas || []).some(x => x.id === w.rotinaId) ? `<button class="btn" data-act="rotAtualizaAsk" data-id="${w.id}">Atualizar rotina</button>` : ""}<button class="btn" data-act="rotinaDoTreino" data-id="${w.id}">Criar rotina</button><button class="btn block" data-act="repeatWorkout" data-id="${w.id}">Repetir este treino</button>` });
@@ -3010,7 +3011,7 @@ function hvImportar(txt) {
   const novos = {}, treinos = {};
   rows.slice(1).forEach(r => {
     const ini = hvData(r[cS]); if (!ini) return; const key = "hv" + ini;
-    const w = treinos[key] || (treinos[key] = { id: key, nome: (cT >= 0 && r[cT]) || "Treino", rotinaId: null, inicio: ini, fim: (cE >= 0 && hvData(r[cE])) || ini + 3600e3, data: iso(new Date(ini)), ex: [], hevy: true, _ix: {} });
+    const w = treinos[key] || (treinos[key] = { id: key, nome: (cT >= 0 && r[cT]) || "Treino", rotinaId: null, inicio: ini, fim: (cE >= 0 && hvData(r[cE])) || ini + 3600e3, data: iso(new Date(ini)), ex: [], hevy: true, origem: "hevy", _ix: {} });
     const nome = (r[cX] || "").trim(); if (!nome) return;
     let x = w._ix[nome]; if (!x) { const eid = hvExId(nome, novos), tipo = ((novos[eid] || exById(eid)).tipo) || "carga"; x = w._ix[nome] = { eid, nome, tipo, item: { series: 0, min: 8, max: 12, desc: 90 }, series: [] }; w.ex.push(x); }
     const lb = cLb >= 0 ? num(r[cLb]) : 0, kg = cKg >= 0 && r[cKg] !== "" ? num(r[cKg]) : lb * 0.4536, reps = num(r[cR]), dur = cD >= 0 ? num(r[cD]) : 0;
@@ -3021,7 +3022,7 @@ function hvImportar(txt) {
   const lista = Object.values(treinos).filter(w => w.ex.some(x => x.series.length));
   if (!lista.length) return { erro: "Li " + (rows.length - 1) + " linhas, mas não achei nenhum treino válido (datas ou exercícios não reconhecidos). Exemplo de data na primeira linha: " + (rows[1][cS] || "vazia") };
   HV_ROT = hvRotinas(lista);
-  const ja = new Set(workouts().map(w => w.id));
+  const ja = new Set(ixTreinosTodos().map(w => w.id));
   const novosW = lista.filter(w => !ja.has(w.id));
   if (Object.keys(novos).length) updP(p => { p.exCustom = (p.exCustom || []).concat(Object.values(novos).filter(e => !(p.exCustom || []).some(c => c.id === e.id)).map(e => ({ id: e.id, nome: e.nome, grupo: e.grupo, equip: e.equip, tipo: e.tipo }))); });
   novosW.forEach(w => { delete w._ix; w.ex.forEach(x => { x.item.series = x.series.filter(z => z.tipo !== "aq").length || x.series.length; x.item.aq = x.series.filter(z => z.tipo === "aq").length; }); putDoc("treino-" + w.id, w); });
@@ -3345,7 +3346,7 @@ const PUSH_TIPOS = [
   ["almoco", "Almoço", "Se o almoço ainda não foi registrado.", "12:30", false],
   ["agua", "Água", "Se a água de hoje está abaixo de 60% da meta.", "15:30", false],
   ["noite", "Fechar o dia", "Se menos de 3 refeições foram registradas.", "21:00", false],
-  ["semana", "Domingo da semana", "Domingo, para olhar a Evolução.", "19:00", false]
+  ["semana", "Resumo da semana", "Domingo, com o resumo da sua semana (dias registrados, média, treinos).", "19:00", true]
 ];
 function pushSuportado() { return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && /^https:/.test(location.protocol); }
 function pushStandalone() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
@@ -3364,7 +3365,7 @@ function pushEstado() {
     const td = TODAY(), d = day(td), p = P(), m = metas(p), x = (p.rotinas || []).length > 0;
     const plano = [0, 1, 2, 3, 4, 5, 6].map(i => { const rid = (p.semana || {})[i], r = rid && rotinaById(rid, p); return r ? String(r.nome || "Treino") : null; });
     return { dia: td, refs: meals().filter(([k]) => mealT(d, k).kcal > 0).length, almoco: mealT(d, "almoco").kcal > 0,
-      agua: m.agua ? Math.min(2, (d.agua || 0) / m.agua) : 1, treinou: treinosDo(td).length > 0, mexeu: frMovTipos(td).length > 0, seq: frSeq(), temPlano: x, plano };
+      agua: m.agua ? Math.min(2, (d.agua || 0) / m.agua) : 1, treinou: treinosDo(td).length > 0, mexeu: frMovTipos(td).length > 0, seq: frSeq(), temPlano: x, plano, resumo: ixResumoPush() };
   } catch (e) { return null; }
 }
 async function pushInit() {
@@ -4057,7 +4058,7 @@ function frMedidorCard() {
     <div style="margin-top:12px">${macroBars(t, m)}</div>
     <button class="btn pri block" style="margin-top:12px" data-act="goComer">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Lançar comida</button>
     <details class="fr-info" style="margin-top:8px;text-align:center"><summary aria-label="Como a nota do dia é calculada" style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--edge,#D5D8DF);font-weight:800;font-size:14px;color:var(--muted,#5A5E6B)">?</summary><div class="xs muted" style="margin-top:8px;text-align:center">Nota do dia: calorias até a meta do dia sem passar (35), proteína (25), atividade (25: qualquer exercício de 20 min ou mais, treino, caminhada, bike ou o que for, ou folga planejada), água (10) e 3 refeições lançadas (5). Dois tipos de exercício no mesmo dia dão +5 de bônus. Cada item sobe conforme você cumpre a meta do dia inteiro, então a nota vai crescendo (e cai se passar da meta); o selo Ritmo só mostra se você está em dia com o horário. Pintinho abaixo de 40, Frango de 40 a 79, Galo Alfa a partir de 80${nota.estourou ? " (e sem passar 10% da meta)" : ""}. Comer a mais não dá pontos.</div></details></div>`
-    + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
+    + (isHoje ? ixHojeTopo() : "") + (isHoje && typeof frStatsCard === "function" ? frStatsCard() : "") + (isHoje && typeof bkBanner === "function" ? bkBanner() : "") + (isHoje && typeof medBanner === "function" ? medBanner() : "")
     + (seq > 0 && isHoje ? `<div class="card flat"><div class="row"><span class="fr-seq">${seq}</span><div class="grow small">${seq === 1 ? "dia" : "dias"} seguidos lançando comida.${seqTxt ? `<div class="fr-fala">${esc(seqTxt)}</div>` : ""}</div></div></div>` : "")
     + (isHoje ? frMetasCard() : "");
 }
@@ -5224,6 +5225,7 @@ function viewEvo() {
     <details class="acc" style="margin-top:6px"><summary class="small ink2">Ver tabela ${ICON.down.replace("<svg", '<svg width="16" height="16"')}</summary><div style="overflow-x:auto;margin-top:6px"><table class="sets small"><thead><tr><th>Dia</th><th>Comido</th><th>Gasto</th><th>Saldo</th><th>P</th><th>C</th><th>G</th></tr></thead><tbody>${reg.slice().reverse().map(r => `<tr><td>${ddmm(r.dt)}</td><td>${fmt(r.t.kcal)}</td><td>${fmt(r.g)}</td><td>${fmt(r.g - r.t.kcal)}</td><td>${fmt(r.t.p)}</td><td>${fmt(r.t.c)}</td><td>${fmt(r.t.g)}</td></tr>`).join("")}</tbody></table></div></details></div>`;
   let pesosG = pesosPer; if (pesosG.length < 2) pesosG = pesos.slice(-2); // poucos registros no período: mostra os 2 últimos
   h += `<div class="card"><div class="row between"><h2>Peso</h2>${p.metaPeso ? `<span class="pill acc">meta ${fmt1(p.metaPeso)} kg</span>` : ""}</div>${pesos.length ? lineChart(pesosG, { unit: "kg", color: "--accent", h: 190, label: "Peso nos últimos " + per + " dias" }) : `<div class="empty" style="margin-top:8px">Registre o peso na aba Hoje (uma vez por semana, em jejum, já basta).</div>`}${metaPrevista(p) ? `<div class="small ink2" style="margin-top:8px">${prevTxt(metaPrevista(p))}</div>` : ""}</div>`;
+  h += ixEvoExtra();
   if (reg.length) { const avg = sumT(reg.map(r => r.t)); for (const k in avg) avg[k] /= reg.length; h += `<div class="card"><h2>Macros médios por dia</h2><div style="margin-top:10px">${macroBars(avg, m)}</div></div>`; }
   const nW = evoSem(per), wk = Array.from({ length: nW }, (_, i) => { const s = addDays(end, -((dowOf(end) + 6) % 7) - 7 * (nW - 1 - i)), e = addDays(s, 6); const l = workouts().filter(w => w.data >= s && w.data <= e); return { x: ddmm(s), y: l.length, c: "--gord", tip: "Semana de " + ddmm(s) + ": " + l.length + " treinos, " + fmt(l.reduce((a, w) => a + volume(w), 0)) + " kg" }; });
   h += `<div class="card"><h2>Treinos por semana</h2><div class="xs muted">Últimas ${nW} semanas</div>${barChart(wk, { h: 150, label: "Treinos por semana" })}</div>`;
@@ -5357,8 +5359,7 @@ function viewPerfil() {
   h += secao("refs", "Refeições do dia", meals().length + " ativas", refeicoesCard(), !!UIc.refNovo);
   h += secao("ia", "Inteligência artificial", via === "claude" ? "Ligada pela conta Claude" : via === "gemini" ? "Ligada pelo Gemini" : via === "api" ? "Ligada pela API do Claude" : "Modo copiar e colar", iaCard(), UIc.keyBusy || !!UIc.keyMsg);
   const nuv = `<div class="card stack">${!SB.cli ? `<div class="small ink2">Nuvem não configurada neste aparelho. Os dados ficam só aqui.</div>` : SB.user ? `<div class="small ink2">Conectado como <b>${esc(SB.user.email)}</b>. ${SB.on ? "Sincronizado com a nuvem." : "Ainda não sincronizou."}${SB.err ? ` <span class="pill warn">${esc(SB.err)}</span>` : ""}</div><button class="btn" data-act="sbSync">Sincronizar agora</button><button class="btn ghost" data-act="sbSai">Sair da nuvem</button>` : `<div class="small ink2">Entre para ter os mesmos dados em todos os aparelhos. Na primeira vez, toque em Criar conta e confirme o e-mail que chegar.</div><label class="f">E-mail<input id="sbEmail" type="email" autocomplete="email"></label><label class="f">Senha (mínimo 6)<input id="sbSenha" type="password" autocomplete="current-password"></label><div class="row wrap-ok"><button class="btn" data-act="sbEntra">Entrar</button><button class="btn soft" data-act="sbCria">Criar conta</button></div>${SB.msg ? `<div class="small">${esc(SB.msg)}</div>` : ""}`}</div>`;
-  h += secao("bk", "Backup e sincronização", bkGet(BKK) ? "Último backup: " + ddmm(bkGet(BKK)) : "Nenhum backup ainda", bk);
-  h += secao("nuvem", "Nuvem (Supabase)", SB.user ? "Conectado" : "Não conectado", nuv);
+  h += secao("dados", "Meus dados", ixDadosAgora().nivel === "ok" ? "Tudo certo" : ixDadosAgora().nivel === "aviso" ? "Faça uma cópia" : "A nuvem falhou", ixDadosCard(bk, nuv), ixDadosAgora().nivel !== "ok");
   h += secao("hevy", "Importar do Hevy", "Treinos por arquivo CSV", hevy);
   h += secao("perfis", "Perfis neste aparelho", po.list.length + (po.list.length === 1 ? " perfil" : " perfis"), perfisCard(), !!(UIc.confirm && String(UIc.confirm).startsWith("perfil:")));
   if (push) h += secao("push", "Avisos com a tela bloqueada", "Descanso, lembretes e novidades", push);
@@ -5373,6 +5374,7 @@ function perfilForm(p) {
   return `<div class="grid2"><label class="f">Nome<input type="text" id="pfNome" value="${esc(p.nome || "")}" placeholder="Seu nome" maxlength="30"></label><label class="f">Sexo<select id="pfSexo"><option value="M" ${p.sexo !== "F" ? "selected" : ""}>Masculino</option><option value="F" ${p.sexo === "F" ? "selected" : ""}>Feminino</option></select></label>
     <label class="f">Idade<input type="number" inputmode="numeric" id="pfIdade" value="${esc(p.idade)}"></label><label class="f">Altura (cm)<input type="number" inputmode="numeric" id="pfAlt" value="${esc(p.altura)}"></label>
     <label class="f">Peso atual (kg)<input type="number" inputmode="decimal" step="0.1" id="pfPeso" value="${esc(fmt1(pesoAtual(p)).replace(",", "."))}"></label><label class="f">Meta de peso (kg)<input type="number" inputmode="decimal" step="0.1" id="pfMeta" value="${esc(p.metaPeso || "")}" placeholder="opcional"></label></div>
+    <label class="f">Até quando? (opcional, o app mostra o ritmo necessário)<input type="date" id="pfMetaData" value="${esc(p.metaData || "")}"></label>
     <label class="f">Dia a dia, sem contar os treinos<select id="pfAtv">${ATIV.map(([v, n]) => `<option value="${v}" ${num(p.atividade) === v ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
     <div class="grid2"><label class="f">Objetivo<select id="pfObj"><option value="perder" ${p.objetivo === "perder" ? "selected" : ""}>Perder gordura</option><option value="manter" ${p.objetivo === "manter" ? "selected" : ""}>Manter</option><option value="ganhar" ${p.objetivo === "ganhar" ? "selected" : ""}>Ganhar massa</option></select></label>
     <label class="f">Ritmo<select id="pfAj">${[[250, "Leve (250 kcal)"], [500, "Padrão (500 kcal)"], [750, "Agressivo (750 kcal)"]].map(([v, n]) => `<option value="${v}" ${num(p.ajuste) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>`;
@@ -5380,7 +5382,9 @@ function perfilForm(p) {
 function readPerfil(p) {
   p.nome = ($("#pfNome").value || "").trim();
   const o = perfis(), it = o.list.find(x => x.id === PID()); if (it) { it.nome = p.nome; savePerfis(o); } p.sexo = $("#pfSexo").value; p.idade = clamp(num($("#pfIdade").value) || 30, 12, 100); p.altura = clamp(num($("#pfAlt").value) || 175, 120, 230);
-  const peso = num($("#pfPeso").value); p.metaPeso = num($("#pfMeta").value) || null; p.atividade = num($("#pfAtv").value); p.objetivo = $("#pfObj").value; p.ajuste = num($("#pfAj").value);
+  const peso = num($("#pfPeso").value), mp0 = p.metaPeso || null, md0 = p.metaData || null; p.metaPeso = num($("#pfMeta").value) || null; p.atividade = num($("#pfAtv").value); p.objetivo = $("#pfObj").value; p.ajuste = num($("#pfAj").value);
+  const md = ($("#pfMetaData") && $("#pfMetaData").value) || null; p.metaData = p.metaPeso ? md : null;
+  if (p.metaPeso !== mp0 || p.metaData !== md0) { p.metaIni = TODAY(); p.metaPeso0 = r1(peso || pesoAtual(p)); }
   return peso;
 }
 ACT.savePerfil = () => {
@@ -5467,6 +5471,7 @@ const ONB_DES = [[7, "🐣", "7 dias: aquecimento"], [14, "🐥", "14 dias: pega
 const ONB_REG = [["foto", "📸", "Tirando foto do prato (a IA estima)"], ["manual", "✍️", "Escrevendo o que comi"], ["misto", "⚡", "Um pouco de cada"]];
 const ONB = { i: 0, d: {}, ret: false };
 function onbPassos() {
+  if (ONB.rapido) { const r = ["oi", "obj", "dados", "peso"]; if (onbSanf()) r.push("sanfona"); r.push("pronto"); return r; }
   const s = ["oi", "obj", "dados", "peso", "meta"]; if (onbSanf()) s.push("sanfona");
   s.push("extra"); if (ONB.extra) s.push("motivos", "evento", "desafio", "comp", "fds", "reg");
   s.push("pronto", "t_hoje", "t_comer", "t_meta", "t_treino", "t_evo", "t_perfil"); return s;
@@ -5474,7 +5479,7 @@ function onbPassos() {
 function onbTmp() { const d = ONB.d; return Object.assign(P(), { sexo: d.sexo, idade: d.idade, altura: d.altura, atividade: d.atividade, objetivo: d.objetivo, ajuste: d.ajuste, metaPeso: d.metaPeso }); }
 function onbSanf() { const d = ONB.d; return d.objetivo === "perder" && !d.sanfOk && (num(d.ajuste) >= 750 || (d.peso > 20 && metasCalc(onbTmp(), d.peso).baixo)); }
 function onbIni(ret) {
-  const p = P(); ONB.ret = !!ret; ONB.prev = false; ONB.extra = false; ONB.i = 0;
+  const p = P(); ONB.ret = !!ret; ONB.prev = false; ONB.rapido = false; ONB.extra = false; ONB.i = 0;
   ONB.d = { motivos: (p.motivos || []).slice(), dif: [], objetivo: p.objetivo || "perder", nome: p.nome || "", sexo: p.sexo || "M", idade: p.idade, altura: p.altura, atividade: p.atividade, peso: r1(pesoAtual(p)), metaPeso: p.metaPeso || "", ajuste: p.ajuste || 500, evento: p.evento && p.evento.tipo || "", eventoData: p.evento && p.evento.data || "", eventoNome: p.evento && p.evento.nome || "", desafio: (p.desafio && p.desafio.dias) || 14, comp: false, fds: p.fimSemana ? num(p.fimSemana.pct) : undefined, reg: p.regPref || "", sanfOk: false };
 }
 function onbLe() {
@@ -5536,7 +5541,7 @@ function onbFoot() {
   if (st === "sanfona" || st === "extra") return "";
   const pend = (st === "evento" && !d.evento) || (st === "fds" && d.fds === undefined) || (st === "reg" && !d.reg);
   if (st.startsWith("t_")) return `<button class="btn pri block" data-act="${st === "t_perfil" ? "onbDone" : "onbProx"}">${st === "t_perfil" ? "Bora" : "Próximo"}</button>${st === "t_perfil" ? "" : `<button class="btn ghost block" data-act="onbDone" style="margin-top:6px">Pular tutorial</button>`}`;
-  return `<button class="btn pri block" data-act="${st === "pronto" ? "onbFim" : "onbProx"}" ${pend ? "disabled" : ""}>${st === "oi" ? "Bora chocar" : st === "pronto" ? (ONB.prev ? "Fechar (nada é alterado)" : "Salvar e ver como funciona") : "Próximo"}</button>`;
+  return `<button class="btn pri block" data-act="${st === "pronto" ? "onbFim" : "onbProx"}" ${pend ? "disabled" : ""}>${st === "oi" ? "Bora chocar" : st === "pronto" ? (ONB.prev ? "Fechar (nada é alterado)" : ONB.rapido ? "Salvar e começar" : "Salvar e ver como funciona") : "Próximo"}</button>${st === "oi" && !ONB.ret && !ONB.prev ? `<button class="btn ghost block" style="margin-top:6px" data-act="onbRapido">Só quero experimentar (3 perguntas, sem conta)</button>` : ""}`;
 }
 function onboarding(ret) { onbIni(ret); openSheet({ title: "Frangômetro", full: true, closeAct: ret ? "sheetClose" : "onbSkip", body: onbBody, foot: onbFoot }); }
 ACT.onbRefaz = () => { SHEET.stack = []; onboarding(true); };
@@ -5570,7 +5575,7 @@ ACT.onbFim = () => {
   });
   const o = perfis(), it = o.list.find(x => x.id === PID()); if (it && d.nome) { it.nome = d.nome; savePerfis(o); }
   if (peso > 20 && (Math.abs(peso - pesoAtual()) >= 0.05 || !day(TODAY()).peso)) updDay(TODAY(), x => { x.peso = r1(peso); });
-  render(); toast("Plano salvo"); ACT.onbProx();
+  render(); toast("Plano salvo"); if (ONB.rapido) { updP(p => { p.convidado = true; }); ONB.rapido = false; closeSheet(); } else ACT.onbProx();
 };
 ACT.onbDone = () => { closeSheet(); };
 
@@ -5641,6 +5646,291 @@ ACT.tab = ds => { ui.tab = ds.k; UIc.confirm = null; render(); scrollTo(0, 0); }
 ACT.dPrev = () => { ui.date = addDays(ui.date, -1); render(); };
 ACT.dNext = () => { ui.date = addDays(ui.date, 1); render(); };
 ACT.dToday = () => { ui.date = TODAY(); render(); };
+// ==================== IDEIAS 1 a 7 (docs/SPEC.md, 11/11/2026) ====================
+/*IX-PURO-INI*/
+// ---- 1. Meus dados ----
+function ixHa(t, agora) {
+  const s = Math.max(0, ((agora == null ? Date.now() : agora) - t) / 1000);
+  if (s < 60) return "agora há pouco";
+  if (s < 3600) return "há " + Math.floor(s / 60) + " min";
+  if (s < 86400) return "há " + Math.floor(s / 3600) + " h";
+  const d = Math.floor(s / 86400); return "há " + d + (d === 1 ? " dia" : " dias");
+}
+function ixDadosEstado(o) {
+  const n = o.nuvem || {};
+  if (!o.temDados) return { nivel: "ok", msg: "Ainda não há nada para guardar." };
+  if (n.user) {
+    if (n.err) return { nivel: "ruim", msg: "A nuvem falhou na última tentativa. Seus dados continuam neste aparelho; toque em Guardar na nuvem para tentar de novo." };
+    return { nivel: "ok", msg: "Guardado na nuvem" + (n.ultOk ? " · " + ixHa(n.ultOk) : "") + "." };
+  }
+  if (!o.ultBackup) return { nivel: "aviso", msg: "Você ainda não fez nenhuma cópia. Se o navegador limpar os dados, tudo some." };
+  const dias = Math.round((new Date(o.hoje + "T12:00:00") - new Date(o.ultBackup + "T12:00:00")) / 864e5);
+  if (dias >= 7) return { nivel: "aviso", msg: "Sua última cópia foi há " + dias + " dias. Vale baixar uma nova." };
+  return { nivel: "ok", msg: "Última cópia: " + (dias <= 0 ? "hoje" : "há " + dias + (dias === 1 ? " dia" : " dias")) + "." };
+}
+// ---- 2. Estagnação ----
+const ixE1 = (kg, reps) => kg > 0 && reps > 0 ? kg * (1 + reps / 30) : 0;
+function ixEstagnacaoCarga(ws, eid) {
+  const sess = [];
+  for (const w of ws) {
+    if (w.ignorar) continue;
+    const ex = (w.ex || []).find(x => x.eid === eid); if (!ex || (ex.tipo && ex.tipo !== "carga")) continue;
+    const ok = (ex.series || []).filter(s => s.ok && s.tipo !== "aq" && num(s.kg) > 0); if (!ok.length) continue;
+    sess.push({ nome: ex.nome, kg: Math.max(...ok.map(s => num(s.kg))), e1: Math.max(...ok.map(s => ixE1(num(s.kg), num(s.reps)))) });
+    if (sess.length === 3) break;
+  }
+  if (sess.length < 3) return null;
+  const [novo, meio, velho] = sess;
+  if (novo.kg > velho.kg || meio.kg > velho.kg || novo.e1 > velho.e1 * 1.02 || meio.e1 > velho.e1 * 1.02) return null;
+  return { eid, nome: novo.nome, kg: novo.kg, n: 3 };
+}
+function ixEstagnacaoPeso(pesos, hoje, objetivo, metaPeso) {
+  if (objetivo === "manter") return null;
+  const j = (pesos || []).filter(p => p.data >= addDays(hoje, -21) && p.data <= hoje && num(p.kg) > 0); if (j.length < 2) return null;
+  const span = Math.round((new Date(j[j.length - 1].data + "T12:00:00") - new Date(j[0].data + "T12:00:00")) / 864e5); if (span < 14) return null;
+  const kgs = j.map(p => num(p.kg)); if (Math.max(...kgs) - Math.min(...kgs) >= 0.3) return null;
+  const ult = kgs[kgs.length - 1]; if (num(metaPeso) && Math.abs(ult - num(metaPeso)) <= 0.5) return null;
+  return { dias: span, kg: ult };
+}
+// ---- 3. Resumo semanal ----
+function ixSemanaRef(hoje) {
+  const dow = dowOf(hoje);
+  if (dow === 0) return { ini: addDays(hoje, -6), fim: hoje, passada: false };
+  if (dow === 1 || dow === 2) { const fim = addDays(hoje, -dow); return { ini: addDays(fim, -6), fim, passada: true }; }
+  return null;
+}
+function ixResumoSemana(c) {
+  const reg = (c.dias || []).filter(x => num(x.kcal) > 0), diasReg = reg.length;
+  const kcalMedia = diasReg ? Math.round(reg.reduce((s, x) => s + num(x.kcal), 0) / diasReg) : 0;
+  const dPeso = c.pesoIni != null && c.pesoFim != null ? r1(c.pesoFim - c.pesoIni) : null, treinos = c.treinos || 0, meta = num(c.metaKcal);
+  let conquista;
+  if (num(c.seq) >= 7) conquista = c.seq + " dias seguidos registrando.";
+  else if (diasReg === 7) conquista = "Você registrou os 7 dias da semana.";
+  else if (treinos >= 3) conquista = treinos + " treinos na semana.";
+  else if (dPeso != null && ((c.objetivo === "perder" && dPeso < 0) || (c.objetivo === "ganhar" && dPeso > 0))) conquista = "O peso andou na direção certa (" + (dPeso > 0 ? "+" : "") + String(dPeso).replace(".", ",") + " kg).";
+  else if (diasReg >= 5) conquista = diasReg + " dias registrados.";
+  else if (treinos > 0 || diasReg > 0) conquista = "Você manteve o app vivo, e isso conta.";
+  else conquista = "Semana nova pela frente: o primeiro registro é o mais difícil.";
+  let ajuste;
+  if (diasReg < 4) ajuste = "Tente registrar pelo menos duas refeições por dia na próxima semana.";
+  else if (meta && kcalMedia > meta * 1.1) ajuste = "A média ficou " + Math.round(kcalMedia - meta) + " kcal acima da meta; olhe os dias mais pesados e escolha um para ajustar.";
+  else if (meta && kcalMedia < meta * 0.8) ajuste = "A média ficou bem abaixo da meta; comer pouco demais atrapalha treino e sono.";
+  else if (treinos === 0) ajuste = "Que tal marcar um treino cedo na semana que vem?";
+  else ajuste = "Mantenha o ritmo. Só mexa no plano se o peso travar.";
+  const curto = (diasReg + " de 7 dias registrados · " + (diasReg ? kcalMedia + " kcal em média · " : "") + treinos + (treinos === 1 ? " treino" : " treinos") + ". " + conquista).slice(0, 140);
+  return { diasReg, kcalMedia, treinos, dPeso, conquista, ajuste, curto };
+}
+// ---- 4. Origem e duplicidade de treino ----
+function ixOrigem(w) {
+  if (w.origem && /^(hevy|strava|painel|app)$/.test(w.origem)) return w.origem;
+  if (w.hevy) return "hevy";
+  if (/^pn/.test(String(w.id || ""))) return "painel";
+  return "app";
+}
+function ixParecidos(a, b) {
+  if (a.id === b.id || a.ignorar || b.ignorar || a.data !== b.data || ixOrigem(a) === ixOrigem(b)) return false;
+  const dur = w => Math.max(0, ((w.fim || w.inicio) - w.inicio) / 60000), da = dur(a), db = dur(b), dif = Math.abs(a.inicio - b.inicio) / 60000;
+  if (dif <= 90 && (!da || !db || Math.abs(da - db) <= 0.35 * Math.max(da, db))) return true;
+  if (dif <= 300) {
+    const ea = new Set((a.ex || []).map(x => x.eid)), eb = new Set((b.ex || []).map(x => x.eid)), uni = new Set([...ea, ...eb]);
+    if (!uni.size) return false;
+    const inter = [...ea].filter(x => eb.has(x)).length, vol = w => (w.ex || []).reduce((s, x) => s + (x.series || []).filter(z => z.ok).reduce((t, z) => t + num(z.kg) * num(z.reps), 0), 0), va = vol(a), vb = vol(b);
+    if (inter / uni.size >= 0.6 && va > 0 && vb > 0 && Math.abs(va - vb) <= 0.15 * Math.max(va, vb)) return true;
+  }
+  return false;
+}
+// ---- 5. Favoritos por refeição ----
+function ixTopPorRefeicao(dias, meal, n, hoje) {
+  const ini = addDays(hoje, -60), g = {};
+  (dias || []).filter(d => d.dt >= ini && d.dt < hoje).forEach(d => ((d.ref || {})[meal] || []).forEach(e => {
+    if (!e || !e.base || !(num(e.base.kcal) > 0)) return;
+    const k = e.key || norm(e.nome), x = g[k] || (g[k] = { key: k, nome: e.nome, count: 0, dt: "", e: null });
+    x.count++; if (d.dt >= x.dt) { x.dt = d.dt; x.e = e; x.qtd = e.qtd; x.modo = e.modo; }
+  }));
+  return Object.values(g).filter(x => x.count >= 2).sort((a, b) => b.count - a.count || (a.dt < b.dt ? 1 : -1)).slice(0, n);
+}
+// ---- 7. Metas com prazo ----
+function ixMetaPrazo(o) {
+  const alvo = num(o.alvo), atual = num(o.pesoAtual); if (!alvo || !o.dataAlvo || !atual) return null;
+  const falta = r1(alvo - atual), dias = Math.round((new Date(o.dataAlvo + "T12:00:00") - new Date(o.hoje + "T12:00:00")) / 864e5);
+  const ini = num(o.pesoIni), pct = ini && ini !== alvo ? Math.round(clamp((ini - atual) / (ini - alvo), 0, 1) * 100) : 0;
+  const j = (o.pesos || []).filter(p => p.data >= addDays(o.hoje, -28) && p.data <= o.hoje && num(p.kg) > 0);
+  let real = null;
+  if (j.length >= 2) { const span = Math.round((new Date(j[j.length - 1].data + "T12:00:00") - new Date(j[0].data + "T12:00:00")) / 864e5); if (span >= 7) real = (num(j[j.length - 1].kg) - num(j[0].kg)) / (span / 7); }
+  const res = { falta, dias, pct, realKgSem: real, needKgSem: null, status: "", agressivo: false, dataProj: null };
+  if (Math.abs(falta) < 0.3) { res.status = "atingida"; res.pct = 100; return res; }
+  if (dias <= 0) { res.status = "vencido"; return res; }
+  const need = falta / (dias / 7); res.needKgSem = need; res.agressivo = Math.abs(need) > 0.01 * atual;
+  if (real == null) res.status = "sem-ritmo";
+  else if (Math.sign(real) !== Math.sign(need) || real === 0) res.status = "atrasado";
+  else { const ratio = real / need; res.status = ratio >= 1.1 ? "adiantado" : ratio >= 0.8 ? "no-ritmo" : "atrasado"; if (res.status !== "atrasado" || ratio > 0) res.dataProj = addDays(o.hoje, Math.ceil(Math.abs(falta) / Math.abs(real) * 7)); }
+  return res;
+}
+/*IX-PURO-FIM*/
+// ---- cola da interface (ideias 1 a 7). Usa só helpers do app; nada aqui apaga dado do usuário. ----
+const IX_SON = "frango:ix-soneca", IX_RES = "frango:ix-resumo", IX_SBOK = "frango:sbok", IX_CONV = "frango:ix-convite", IX_DID = "frango:did";
+const ixLsGet = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (_) { return d; } };
+const ixLsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
+const ixSoneca = k => (ixLsGet(IX_SON, {})[k] || "") >= TODAY();
+ACT.ixSoneca = ds => { const o = ixLsGet(IX_SON, {}); o[ds.k] = addDays(TODAY(), 7); ixLsSet(IX_SON, o); render(); toast("Ok, só volto a avisar daqui a 7 dias."); };
+const ixSB = () => typeof SB !== "undefined" ? SB : {};
+// 1. Meus dados
+function ixMarcaNuvem() { const s = ixSB(); if (s.user && !s.err) bkSet(IX_SBOK, String(Date.now())); }
+(function () { ["sbPull", "sbFlush"].forEach(n => { try { const o = window[n]; if (typeof o !== "function") return; window[n] = async function () { const r = await o.apply(this, arguments); try { ixMarcaNuvem(); } catch (_) {} return r; }; } catch (_) {} }); })();
+function ixDadosAgora() {
+  const s = ixSB(), temDados = Object.keys(ST.docs).some(k => /^(dia|treino)-/.test(k) && !ST.docs[k]._del);
+  return ixDadosEstado({ temDados, nuvem: { user: !!s.user, err: s.err || null, ultOk: +bkGet(IX_SBOK) || 0 }, ultBackup: bkGet(BKK), hoje: TODAY() });
+}
+function ixDadosCard(bk, nuv) {
+  const s = ixDadosAgora(), cls = { ok: "good", aviso: "warn", ruim: "bad" }[s.nivel], rot = { ok: "Seguro", aviso: "Atenção", ruim: "Falhou" }[s.nivel];
+  return `<div class="card stack"><div class="row between"><h2>Seus dados estão seguros?</h2><span class="pill ${cls}">${rot}</span></div><div class="small ink2">${esc(s.msg)}</div>
+    <button class="btn pri block" data-act="ixNuvem">Guardar na nuvem</button>
+    <div class="row wrap-ok"><button class="btn grow" data-act="exportar">Baixar cópia</button><button class="btn grow" data-act="ixRestaura">Restaurar cópia</button></div>
+    <input type="file" id="ixImp" accept="application/json,.json,.txt" class="hidden" data-on="importar" aria-label="Arquivo da cópia">
+    <div class="xs muted">Restaurar só junta: acrescenta e atualiza, nunca apaga o que você já tem.</div>
+    <details class="acc" data-ixav ${UIc.ixAv ? "open" : ""}><summary class="small ink2">Avançado: colar backup, copiar tudo, conta da nuvem ${ICON.down.replace("<svg", '<svg width="16" height="16"')}</summary><div class="stack" style="margin-top:8px">${bk}${nuv}</div></details></div>`;
+}
+document.addEventListener("toggle", e => { const d = e.target; if (d && d.matches && d.matches("details[data-ixav]")) UIc.ixAv = d.open; }, true);
+ACT.ixRestaura = () => { const el = $("#ixImp"); if (el) el.click(); };
+ACT.ixNuvem = async () => {
+  const s = ixSB();
+  if (!s.cli) { toast("A nuvem não está disponível neste aparelho. Use Baixar cópia."); return; }
+  if (!s.user) { UIc.ixAv = true; UIc.sec = UIc.sec || {}; UIc.sec.dados = true; render(); toast("Entre com e-mail e senha em Avançado, na conta da nuvem."); return; }
+  toast("Guardando..."); await sbPull(); await sbFlush(); ixMarcaNuvem(); render(); toast(s.err ? "Falhou: " + s.err : "Guardado na nuvem.");
+};
+// 2. Estagnação
+function ixAlertas() {
+  const p = P(), out = [];
+  try {
+    const pe = ixEstagnacaoPeso(frPesos(), TODAY(), p.objetivo, p.metaPeso);
+    if (pe && !ixSoneca("peso")) out.push({ k: "peso", t: "Peso parado", txt: `Seu peso está estável há ${pe.dias} dias (${fmt1(pe.kg)} kg). Antes de mexer em tudo, confira se está registrando tudo e olhe a média da semana. Se continuar assim, ${p.objetivo === "ganhar" ? "some cerca de 150 kcal na meta" : "tire cerca de 100 kcal da meta ou some uns 20 minutos de caminhada por dia"}.` });
+    const ws = workouts(), eids = []; ws.slice(0, 10).forEach(w => (w.ex || []).forEach(x => { if (!eids.includes(x.eid)) eids.push(x.eid); }));
+    eids.forEach(eid => { const r = ixEstagnacaoCarga(ws, eid); if (r && !ixSoneca("c:" + eid)) out.push({ k: "c:" + eid, t: "Carga travada", txt: `${r.nome} está em ${fmt1(r.kg)} kg nos últimos 3 treinos. Tente +1 repetição por série, suba ${fmt1(num(p.incremento) || 2)} kg quando bater o topo das repetições, ou faça uma semana mais leve (cerca de 60% da carga) e volte.` }); });
+  } catch (e) {}
+  return out;
+}
+const ixAlertaHtml = a => `<div class="card flat"><div class="eyebrow">${esc(a.t)}</div><div class="small" style="margin-top:4px">${esc(a.txt)}</div><button class="btn sm ghost" style="margin-top:8px" data-act="ixSoneca" data-k="${esc(a.k)}">Entendi, avise só daqui a 7 dias</button></div>`;
+// 3. Resumo semanal
+function ixResumoDados(ini, fim) {
+  const p = P(), dias = Array.from({ length: 7 }, (_, i) => addDays(ini, i)).map(dt => ({ dt, kcal: dayT(day(dt)).kcal }));
+  const ws = workouts().filter(w => w.data >= ini && w.data <= fim), pesos = frPesos(), antes = pesos.filter(x => x.data <= ini).pop(), dentro = pesos.filter(x => x.data >= ini && x.data <= fim);
+  const pesoFim = dentro.length ? dentro[dentro.length - 1].kg : null, pesoIni = antes ? antes.kg : dentro.length ? dentro[0].kg : null;
+  return Object.assign(ixResumoSemana({ dias, metaKcal: metas(p).kcal, treinos: ws.length, pesoIni: pesoFim == null ? null : pesoIni, pesoFim, seq: frSeq(), objetivo: p.objetivo }), { ini, fim });
+}
+function ixResumoCard() {
+  const ref = ixSemanaRef(TODAY()); if (!ref || ixLsGet(IX_RES, "") === ref.fim) return "";
+  const r = ixResumoDados(ref.ini, ref.fim);
+  return `<div class="card ai"><div class="row between"><h2>${ref.passada ? "Como foi a semana passada" : "Resumo da semana"}</h2><span class="pill">${ddmm(ref.ini)} a ${ddmm(ref.fim)}</span></div>
+    <div class="grid3" style="margin-top:8px"><div class="card stat"><span>Dias com registro</span><b>${r.diasReg}/7</b></div><div class="card stat"><span>Média</span><b>${r.diasReg ? fmt(r.kcalMedia) : "—"}</b><span>kcal</span></div><div class="card stat"><span>Treinos</span><b>${r.treinos}</b></div></div>
+    ${r.dPeso != null ? `<div class="small ink2" style="margin-top:8px">Peso na semana: <b>${r.dPeso > 0 ? "+" : ""}${fmt1(r.dPeso)} kg</b></div>` : ""}
+    <div class="small" style="margin-top:8px"><b>Conquista:</b> ${esc(r.conquista)}</div><div class="small" style="margin-top:4px"><b>Para a próxima:</b> ${esc(r.ajuste)}</div>
+    <div class="row wrap-ok" style="margin-top:10px"><button class="btn sm" data-act="relPer" data-k="7">Ver detalhes</button><button class="btn sm ghost" data-act="ixResumoOk" data-fim="${ref.fim}">Dispensar</button></div></div>`;
+}
+ACT.ixResumoOk = ds => { ixLsSet(IX_RES, ds.fim); render(); };
+function ixResumoPush() { try { return ixResumoDados(addDays(TODAY(), -6), TODAY()).curto; } catch (e) { return ""; } }
+// 4. Origem e duplicidade
+const IX_ORI = { hevy: "Hevy", strava: "Strava", painel: "Painel/Strava", app: "Feito no app" };
+const ixOriNome = w => IX_ORI[ixOrigem(w)];
+function ixTreinosTodos() { return Object.keys(ST.docs).filter(k => k.startsWith("treino-") && !ST.docs[k]._del).map(k => ST.docs[k]).sort((a, b) => (b.inicio || 0) - (a.inicio || 0)); }
+function ixDupPares() {
+  const ok = new Set(P().dupOk || []), ws = workouts().filter(w => w.data >= addDays(TODAY(), -90)), out = [];
+  for (let i = 0; i < ws.length; i++) for (let j = i + 1; j < ws.length; j++) {
+    if (ws[i].data !== ws[j].data || ok.has([ws[i].id, ws[j].id].sort().join("|"))) continue;
+    if (ixParecidos(ws[i], ws[j])) out.push([ws[i], ws[j]]);
+  }
+  return out;
+}
+const ixTrDesc = w => `${esc(w.nome)} (${ixOriNome(w)}, ${hhmm((w.fim - w.inicio) / 1000)})`;
+function ixDupHtml() {
+  const pares = ixDupPares(), ign = ixTreinosTodos().filter(w => w.ignorar); let h = "";
+  pares.slice(0, 3).forEach(([a, b]) => { h += `<div class="card flat"><div class="eyebrow">Parece o mesmo treino</div><div class="small" style="margin-top:4px">Dia ${ddmm(a.data)}: ${ixTrDesc(a)} e ${ixTrDesc(b)}. Contando os dois, o volume e as calorias do dia dobram. Nada é apagado.</div>
+    <div class="row wrap-ok" style="margin-top:8px"><button class="btn sm" data-act="ixDupUsa" data-keep="${esc(a.id)}" data-drop="${esc(b.id)}">Contar só ${esc(ixOriNome(a))}</button><button class="btn sm" data-act="ixDupUsa" data-keep="${esc(b.id)}" data-drop="${esc(a.id)}">Contar só ${esc(ixOriNome(b))}</button><button class="btn sm ghost" data-act="ixDupDiff" data-a="${esc(a.id)}" data-b="${esc(b.id)}">São diferentes</button></div></div>`; });
+  if (ign.length) h += `<div class="card flat"><div class="eyebrow">Fora da conta (${ign.length})</div><div class="list" style="margin-top:4px">${ign.slice(0, 6).map(w => `<div class="li"><div class="grow"><div class="t">${esc(w.nome)}</div><div class="s">${ddmm(w.data)} · ${ixOriNome(w)}</div></div><button class="btn sm" data-act="ixDupVolta" data-id="${esc(w.id)}">Voltar a contar</button></div>`).join("")}</div></div>`;
+  return h;
+}
+ACT.ixDupUsa = ds => { const w = getDoc("treino-" + ds.drop); if (!w) return; const c = clean(w); c.ignorar = true; c.ignoradoPor = ds.keep; putDoc("treino-" + ds.drop, c); render(); toast("Pronto: agora conta só um. Dá para desfazer em Treino, Histórico."); };
+ACT.ixDupVolta = ds => { const w = getDoc("treino-" + ds.id); if (!w) return; const c = clean(w); delete c.ignorar; delete c.ignoradoPor; putDoc("treino-" + ds.id, c); render(); toast("Voltou a contar."); };
+ACT.ixDupDiff = ds => { updP(p => { p.dupOk = (p.dupOk || []).concat([[ds.a, ds.b].sort().join("|")]); }); render(); toast("Ok, vou tratar como treinos diferentes."); };
+// 5. Favoritos em 1 toque
+function ixFavs(meal) { const ini = addDays(TODAY(), -60); return ixTopPorRefeicao(allDays().filter(dt => dt >= ini).map(dt => ({ dt, ref: day(dt).ref })), meal, 5, TODAY()); }
+function ixFavBar() {
+  const meal = guessMeal(), top = ixFavs(meal); if (!top.length) return "";
+  return `<div class="card flat"><div class="eyebrow">Mais usados no ${esc(mealName(meal).toLowerCase())}</div><div class="chips" style="flex-wrap:wrap;margin-top:6px">${top.map(x => `<button class="chip" data-act="ixFavAdd" data-m="${esc(meal)}" data-k="${esc(x.key)}">${esc(x.nome)} · ${esc(qtdLabel(x.e).replace(/ \(.*\)$/, ""))}</button>`).join("")}</div><div class="xs muted" style="margin-top:6px">Toque para lançar com a última quantidade.</div></div>`;
+}
+ACT.ixFavAdd = ds => { const x = ixFavs(ds.m).find(f => f.key === ds.k); if (!x) { toast("Não achei esse item."); return; } addEntries(ui.date, ds.m, [Object.assign(clean(x.e), { id: uid() })]); render(); toast(x.nome + " lançado em " + mealName(ds.m).toLowerCase() + ". Para tirar, toque no item abaixo."); };
+// 7. Metas com prazo
+function ixMetaDados(p = P()) {
+  if (!p.metaPeso || !p.metaData) return null;
+  const pesos = frPesos(), ini = num(p.metaPeso0) || (pesos.filter(x => x.data >= addDays(TODAY(), -90))[0] || {}).kg || pesoAtual(p);
+  return ixMetaPrazo({ pesoAtual: pesoAtual(p), pesoIni: ini, alvo: p.metaPeso, dataAlvo: p.metaData, hoje: TODAY(), pesos, objetivo: p.objetivo });
+}
+function ixMetaHtml(p = P(), compacto) {
+  const m = ixMetaDados(p); if (!m) return "";
+  const rot = { adiantado: ["good", "Adiantado"], "no-ritmo": ["good", "No ritmo"], atrasado: ["warn", "Um pouco atrás"], "sem-ritmo": ["", "Acompanhando"], vencido: ["warn", "Prazo passou"], atingida: ["good", "Meta atingida"] }[m.status];
+  const kg = v => fmt1(Math.abs(v)), sem = v => (Math.round(Math.abs(v) * 100) / 100).toLocaleString("pt-BR") + " kg por semana";
+  let t;
+  if (m.status === "atingida") t = "Meta batida. Dá para definir uma nova ou passar para manutenção.";
+  else if (m.status === "vencido") t = `O prazo passou e faltam ${kg(m.falta)} kg. Defina uma nova data no Perfil para o app recalcular o ritmo.`;
+  else if (m.status === "sem-ritmo") t = `Faltam ${kg(m.falta)} kg em ${m.dias} dias: cerca de ${sem(m.needKgSem)}. Pese-se toda semana para o app medir seu ritmo.`;
+  else t = `Faltam ${kg(m.falta)} kg em ${m.dias} dias. Você precisa de ${sem(m.needKgSem)} e está em ${sem(m.realKgSem)}.` + (m.status === "atrasado" ? " Revise a meta de calorias ou estique a data." : m.dataProj ? ` Nesse ritmo chega em ${fmtData(m.dataProj)}.` : "");
+  if (m.agressivo && m.status !== "atingida" && m.status !== "vencido") t += " Atenção: esse ritmo passa de 1% do peso por semana, difícil de manter. Considere uma data mais longa.";
+  return `<div class="card flat"><div class="row between"><div class="eyebrow">Meta de ${fmt1(p.metaPeso)} kg até ${fmtData(p.metaData)}</div><span class="pill ${rot[0]}">${rot[1]}</span></div><div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${m.pct}" aria-label="Progresso da meta" style="height:8px;border-radius:99px;background:var(--surface-2);margin:8px 0;overflow:hidden"><div style="height:100%;width:${m.pct}%;background:var(--accent)"></div></div><div class="small ink2">${m.pct}% do caminho. ${esc(t)}</div></div>`;
+}
+// 6. Convidado: IA pelo Worker e entrada rápida
+const IXIA = { url: "", ligada: false, rest: null };
+function ixDid() { let v = ""; try { v = localStorage.getItem(IX_DID) || ""; if (!v) { v = uid() + uid(); localStorage.setItem(IX_DID, v); } } catch (_) {} return v || "anon"; }
+function workerSampler() {
+  async function call(input, opts = {}) {
+    let msgs = typeof input === "string" ? [{ role: "user", content: input }] : input.map(m => ({ role: m.role, content: m.content }));
+    msgs = msgs.reduce((a, m) => { const l = a[a.length - 1]; if (l && l.role === m.role) l.content += "\n\n" + m.content; else a.push(Object.assign({}, m)); return a; }, []);
+    const imgs = opts.images ? [].concat(opts.images) : [];
+    if (imgs.length) { const b = imgs[0], last = msgs[msgs.length - 1]; last.content = [{ type: "image", source: { type: "base64", media_type: b.type && /^image\/(jpeg|png|gif|webp)$/.test(b.type) ? b.type : "image/jpeg", data: await blobToB64(b) } }, { type: "text", text: last.content }]; }
+    let r; try { r = await fetch(IXIA.url + "/ia", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ did: ixDid(), messages: msgs }), signal: opts.signal }); }
+    catch (e) { throw { code: e && e.name === "AbortError" ? "cancelled" : "network", message: String(e) }; }
+    let j = null; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) throw { code: r.status === 429 ? (j && j.erro === "limite-diario" ? "limite_dia" : "rate_limited") : r.status === 503 ? "ia_desligada" : r.status >= 500 ? "upstream_error" : "invalid_request", message: j && j.erro || "" };
+    if (j && typeof j.restantes === "number") IXIA.rest = j.restantes;
+    const text = j && j.text || ""; if (!text) throw { code: "empty_completion", message: "" };
+    if (opts.onText) opts.onText({ text, delta: text });
+    return { text, truncated: !!(j && j.truncated) };
+  }
+  const f = (input, opts) => call(input, opts);
+  f.json = async (input, opts) => { const { text } = await call(input, opts); const v = parseLoose(text); if (v == null) throw { code: "invalid_json", message: "", text }; return v; };
+  f.limits = async () => ({ images: { maxCount: 1 } });
+  return f;
+}
+async function ixIaInit() {
+  try {
+    const cfg = await fetch("push-config.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({}));
+    IXIA.url = (cfg && cfg.url || "").replace(/\/$/, ""); if (!IXIA.url) return;
+    const r = await fetch(IXIA.url + "/ia", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ did: ixDid(), ping: true }) }); if (!r.ok) return;
+    const j = await r.json(); IXIA.ligada = !!(j && j.ligada); IXIA.rest = j && j.restantes != null ? j.restantes : null;
+    if (IXIA.ligada) { useApiKey(); if (!SHEET.stack.length) render(); }
+  } catch (e) {}
+}
+ACT.onbRapido = () => { onbLe(); ONB.rapido = true; ONB.i = 1; drawSheet(); const b = $(".sheet-b"); if (b) b.scrollTop = 0; };
+function ixConviteHtml() {
+  const p = P(), s = ixSB(); if (!p.convidado || !s.cli || s.user || (ixLsGet(IX_CONV, "") >= TODAY()) || frRegDays().length < 3) return "";
+  return `<div class="card flat"><div class="eyebrow">Guardar seus dados</div><div class="small" style="margin-top:4px">Por enquanto seus dados estão só neste aparelho. Criando uma conta (e-mail e senha) eles ficam na nuvem e você pode abrir em outro celular.</div><div class="row wrap-ok" style="margin-top:8px"><button class="btn sm pri" data-act="ixConviteSim">Guardar na nuvem</button><button class="btn sm ghost" data-act="ixConviteDepois">Depois</button></div></div>`;
+}
+ACT.ixConviteSim = () => { UIc.ixAv = true; UIc.sec = UIc.sec || {}; UIc.sec.dados = true; ui.tab = "perfil"; render(); };
+ACT.ixConviteDepois = () => { ixLsSet(IX_CONV, addDays(TODAY(), 7)); render(); };
+// topo da tela Hoje
+function ixHojeTopo() {
+  let h = "";
+  try {
+    const s = ixSB(); if (s.user && s.err) h += `<div class="card flat"><div class="eyebrow">Nuvem</div><div class="small" style="margin-top:4px">A nuvem falhou na última tentativa. Seus dados continuam neste aparelho.</div><button class="btn sm" style="margin-top:8px" data-act="ixNuvem">Tentar de novo</button></div>`;
+    h += ixResumoCard() + ixConviteHtml() + ixMetaHtml(P(), true);
+    ixAlertas().slice(0, 2).forEach(a => { h += ixAlertaHtml(a); });
+    if (ixDupPares().length) h += `<div class="card flat"><div class="small">Parece que um treino foi contado duas vezes.</div><button class="btn sm" style="margin-top:8px" data-act="ixVerDup">Ver em Treino</button></div>`;
+  } catch (e) {}
+  return h;
+}
+ACT.ixVerDup = () => { ui.tab = "treino"; ui.sub.treino = "hist"; render(); };
+function ixEvoExtra() {
+  let h = ""; try { h += ixMetaHtml(); ixAlertas().forEach(a => { h += ixAlertaHtml(a); }); } catch (e) {}
+  return h;
+}
 function render() {
   const showDate = ui.tab === "hoje" || (ui.tab === "comer" && ui.sub.comer === "diario");
   $("#topbar").innerHTML = `<div class="brand">${frRael("normal", 34)}<span class="fr-logo">Frangômetro</span><span class="fr-ver">versão teste</span></div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
@@ -5651,7 +5941,7 @@ function render() {
 (async function init() {
   ST.docs = lsRead();
   render();
-  connectCaps();
+  connectCaps(); ixIaInit();
   await Promise.race([connectCloud(), new Promise(r => setTimeout(r, 2500))]);
   try { sbInit().then(() => { if (!SHEET.stack.length) render(); }); } catch (e) {}
   try { if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}   /* cache offline: registra sempre, não só com avisos ligados */
@@ -5774,9 +6064,9 @@ ACT.voltouPeso = () => { closeSheet(); ui.tab = "hoje"; ui.date = TODAY(); rende
 ACT.onbVer = () => { SHEET.stack = []; onboarding(true); ONB.prev = true; drawSheet(); };
 function iaCard() {
   const via = CAP.via, k = apiKey();
-  const st = via === "claude" ? ["good", "Ligada pela conta Claude"] : via === "gemini" ? ["good", "Ligada pelo Gemini (grátis)"] : via === "api" ? ["good", "Ligada pela API do Claude"] : ["", "Modo copiar e colar"];
+  const st = via === "claude" ? ["good", "Ligada pela conta Claude"] : via === "gemini" ? ["good", "Ligada pelo Gemini (grátis)"] : via === "api" ? ["good", "Ligada pela API do Claude"] : via === "worker" ? ["good", "Ligada pelo app (limite por dia)"] : ["", "Modo copiar e colar"];
   return `<div class="card stack ai"><div class="row between"><h2>Inteligência artificial</h2><span class="pill ${st[0]}">${st[1]}</span></div>
-    <div class="small ink2">${via === "claude" ? "Os botões de IA usam a conta Claude de quem está logado. Nada a configurar." : "Cole uma chave grátis do Gemini e a IA calcula direto aqui: refeição por texto e foto, cardápio, treino da semana e coach. Sem chave, os botões montam a pergunta para você colar no ChatGPT, Gemini ou Claude."}</div>
+    <div class="small ink2">${via === "claude" ? "Os botões de IA usam a conta Claude de quem está logado. Nada a configurar." : via === "worker" ? "A IA do app já está ligada, sem você precisar de chave. Tem um limite de pedidos por dia" + (IXIA.rest != null ? " (restam " + IXIA.rest + " hoje)" : "") + ". Para usar sem limite, cole sua própria chave abaixo." : "Cole uma chave grátis do Gemini e a IA calcula direto aqui: refeição por texto e foto, cardápio, treino da semana e coach. Sem chave, os botões montam a pergunta para você colar no ChatGPT, Gemini ou Claude."}</div>
     ${via === "claude" ? "" : `<ol class="small ink2" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px"><li>Abra o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> e entre com uma conta Google.</li><li>Toque em "Create API key" (criar chave) e copie.</li><li>Cole aqui e salve. Pronto.</li></ol>
     <label class="f">Chave de IA (Gemini grátis, ou Claude sk-ant-)<input type="password" id="apiKeyIn" autocomplete="off" placeholder="${k ? "chave salva (••••" + esc(k.slice(-4)) + ")" : "cole a chave aqui"}"></label>
     <div class="row wrap-ok"><button class="btn sm pri" data-act="saveKey" ${UIc.keyBusy ? "disabled" : ""}>${UIc.keyBusy ? '<span class="spin"></span> Testando' : "Salvar e testar"}</button>${k ? `<button class="btn sm danger" data-act="delKey">Remover chave</button>` : ""}</div>
