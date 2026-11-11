@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v64-20261111c"><script>(function(){try{var V="v64-20261111c";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v65-20261111d"><script>(function(){try{var V="v65-20261111d";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1609,6 +1609,7 @@ function bestOf(eid) {
 // progressão: bateu o topo das repetições em todas as séries válidas -> +incremento; senão mantém a carga e busca +1 repetição
 function suggest(eid, item, p = P()) {
   const lp = lastPerf(eid); if (!lp) return null;
+  const mt = typeof ixMetaDe === "function" ? ixMetaDe(eid) : null; if (mt) return { kg: mt.kg, reps: mt.reps, up: false, meta: mt, last: lp };
   const ok = lp.ex.series.filter(s => s.ok && s.tipo !== "aq");
   if (!ok.length) return null;
   const kg = Math.max(...ok.map(s => num(s.kg)));
@@ -2584,7 +2585,7 @@ function sessionEx(eid, it, p = P()) {
   const lastS = sg && sg.last.ex.series.filter(s => s.tipo !== "aq");
   const aq = Math.min(3, Math.max(0, num(item.aq) || 0)), wk = sg && num(sg.kg) ? Math.round(num(sg.kg) * 0.5 / 2.5) * 2.5 : "";
   const aqS = Array.from({ length: aq }, () => ({ kg: wk, reps: "", ph: "12", ok: false, tipo: "aq" })); // aquecimento da rotina: série W, fora do volume e da progressão
-  return { eid, nome: ex.nome, tipo: ex.tipo, item: { series: n, aq, min: item.min, max: item.max, desc: item.desc }, series: aqS.concat(Array.from({ length: n }, (_, i) => ({ kg: sg ? sg.kg : "", reps: "", ph: sg ? (sg.up ? sg.reps : (lastS[i] ? Math.min(num(item.max) || 99, num(lastS[i].reps) + (sg.up ? 0 : 0)) : sg.reps)) : "", ok: false, tipo: "" }))) };
+  return { eid, nome: ex.nome, tipo: ex.tipo, item: { series: n, aq, min: item.min, max: item.max, desc: item.desc }, series: aqS.concat(Array.from({ length: n }, (_, i) => ({ kg: sg ? sg.kg : "", reps: "", ph: sg ? (sg.up || sg.meta ? sg.reps : (lastS[i] ? Math.min(num(item.max) || 99, num(lastS[i].reps) + (sg.up ? 0 : 0)) : sg.reps)) : "", ok: false, tipo: "" }))) };
 }
 ACT.startRoutine = ds => {
   if (getDoc("ativo")) { toast("Já tem um treino em andamento."); openSession(); return; }
@@ -2652,6 +2653,7 @@ function sessBody() {
     const last = sg ? sg.last.ex.series.filter(s => s.ok).map(s => (s.kg !== "" && num(s.kg) ? fmt1(s.kg) + "×" : "") + (s.reps || "")).join(", ") : "";
     h += `<div class="ex-card"><div class="row"><div class="grow"><div style="font-weight:700">${esc(x.nome)}</div><div class="xs muted">${x.item.min && x.item.max ? `Meta ${x.item.min}–${x.item.max} ${hr}` : ""}</div><label class="xs muted" style="display:inline-flex;align-items:center;gap:6px;margin-top:2px">Descanso <input type="number" inputmode="numeric" min="0" max="900" data-in="exDesc" data-x="${xi}" value="${esc(x.item.desc != null ? x.item.desc : "")}" style="width:64px;min-height:30px;padding:2px 6px;text-align:center"> s</label></div><button class="iconbtn" data-act="exInfo" data-id="${esc(x.eid)}" aria-label="Como fazer" style="font-weight:800">?</button><button class="iconbtn" data-act="exMenu" data-x="${xi}" aria-label="Opções">${ICON.more}</button></div>
       ${last ? `<div class="xs ink2" style="margin-top:4px">Última vez (${ddmm(sg.last.w.data)}): ${esc(last)}</div>` : ""}
+      ${sg && sg.meta && x.tipo === "carga" ? `<div style="margin-top:6px"><span class="pill acc">Meta de hoje: ${fmt1(sg.kg)} kg × ${sg.reps}${sg.meta.tipo === "leve" ? " (semana leve)" : ""}</span></div>` : ""}
       ${sg && sg.up && x.tipo === "carga" ? `<div style="margin-top:6px"><span class="pill good">Subiu de nível: ${fmt1(sg.kg)} kg hoje</span></div>` : ""}
       <table class="sets" style="margin-top:6px"><thead><tr><th>Série</th>${hk ? `<th>${hk}</th>` : ""}<th>${hr}</th><th aria-label="Feita"></th></tr></thead><tbody>
       ${x.series.map((s, si) => `<tr class="${s.ok ? "done" : ""}"><td><button class="stt ${ST_CLS[s.tipo] || ""}" data-act="setType" data-x="${xi}" data-s="${si}" title="Tocar muda o tipo: normal, aquecimento (W), drop set (D), falha (F)">${stLbl(x.series, si)}</button></td>
@@ -5668,6 +5670,18 @@ function ixDadosEstado(o) {
   return { nivel: "ok", msg: "Última cópia: " + (dias <= 0 ? "hoje" : "há " + dias + (dias === 1 ? " dia" : " dias")) + "." };
 }
 // ---- 2. Estagnação ----
+// Meta para destravar: +1 repetição na mesma carga (ou +inc kg se já está no topo das repetições); semana leve = 60% da carga
+function ixMetaCarga(o) {
+  const kg = num(o.kg), top = num(o.top) || 12, min = num(o.min) || 8, inc = num(o.inc) || 2, mr = num(o.maxReps) || min;
+  const sug = mr < top ? { kg, reps: mr + 1 } : { kg: Math.round((kg + inc) * 100) / 100, reps: min };
+  const leve = { kg: Math.max(2.5, Math.round(kg * 0.6 / 2.5) * 2.5), reps: mr };
+  return { sug, leve };
+}
+// a meta vale até o próximo treino que traga o exercício (depois volta ao normal)
+function ixMetaAtiva(m, ws, eid) {
+  if (!m || !(m.em > 0)) return false;
+  return !(ws || []).some(w => !w.ignorar && w.inicio > m.em && (w.ex || []).some(x => x.eid === eid && (x.series || []).some(s => s.ok)));
+}
 // Cargas travadas: os n mais relevantes (maior carga primeiro) e quantos ficam de fora
 function ixCargasTop(lista, n) {
   const l = (lista || []).slice().sort((a, b) => (b.kg - a.kg) || String(a.nome).localeCompare(String(b.nome)));
@@ -5809,18 +5823,31 @@ function ixAlertas() {
     const pe = ixEstagnacaoPeso(frPesos(), TODAY(), p.objetivo, p.metaPeso);
     if (pe && !ixSoneca("peso")) out.push({ k: "peso", t: "Peso parado", txt: `Seu peso está estável há ${pe.dias} dias (${fmt1(pe.kg)} kg). Antes de mexer em tudo, confira se está registrando tudo e olhe a média da semana. Se continuar assim, ${p.objetivo === "ganhar" ? "some cerca de 150 kcal na meta" : "tire cerca de 100 kcal da meta ou some uns 20 minutos de caminhada por dia"}.` });
     const ws = workouts(), eids = []; ws.slice(0, 10).forEach(w => (w.ex || []).forEach(x => { if (!eids.includes(x.eid)) eids.push(x.eid); }));
-    eids.forEach(eid => { const r = ixEstagnacaoCarga(ws, eid); if (r && !ixSoneca("c:" + eid)) out.push({ k: "c:" + eid, t: "Carga travada", carga: { nome: r.nome, kg: r.kg }, txt: `${r.nome} está em ${fmt1(r.kg)} kg nos últimos 3 treinos. Tente +1 repetição por série, suba ${fmt1(num(p.incremento) || 2)} kg quando bater o topo das repetições, ou faça uma semana mais leve (cerca de 60% da carga) e volte.` }); });
+    eids.forEach(eid => { const r = ixEstagnacaoCarga(ws, eid); if (r && !ixSoneca("c:" + eid)) out.push({ k: "c:" + eid, t: "Carga travada", carga: { nome: r.nome, kg: r.kg, eid: r.eid }, txt: `${r.nome} está em ${fmt1(r.kg)} kg nos últimos 3 treinos. Tente +1 repetição por série, suba ${fmt1(num(p.incremento) || 2)} kg quando bater o topo das repetições, ou faça uma semana mais leve (cerca de 60% da carga) e volte.` }); });
   } catch (e) {}
   return out;
 }
 const ixCargas = () => ixAlertas().filter(a => a.carga);
+const ixMetaDe = eid => { const m = (P().ixMeta || {})[eid]; return m && ixMetaAtiva(m, workouts(), eid) ? m : null; };
+function ixMetaLinha(c) {
+  const lp = lastPerf(c.eid); if (!lp) return null;
+  const ok = lp.ex.series.filter(s => s.ok && s.tipo !== "aq"); if (!ok.length) return null;
+  const kg = Math.max(...ok.map(s => num(s.kg))), mr = Math.max(...ok.filter(s => num(s.kg) === kg).map(s => num(s.reps)));
+  let it = null; (P().rotinas || []).some(r => (r.itens || []).some(i => i.eid === c.eid && (it = i)));
+  const m = ixMetaCarga({ kg, maxReps: mr, top: it && it.max, min: it && it.min, inc: P().incremento });
+  return { sug: m.sug, leve: m.leve, ativa: ixMetaDe(c.eid) };
+}
 function ixCargasEvo() {
   const cs = ixCargas(); if (!cs.length) return "";
-  const aberto = !!UIc.ixCg, t = ixCargasTop(cs.map(a => ({ k: a.k, nome: a.carga.nome, kg: a.carga.kg })), aberto ? cs.length : 3), inc = fmt1(num(P().incremento) || 2);
-  const linha = c => `<div class="li"><div class="grow"><div class="t">${esc(c.nome)}</div><div class="s">${fmt1(c.kg)} kg · 3 treinos</div></div><button class="btn sm ghost" data-act="ixSoneca" data-k="${esc(c.k)}" aria-label="Avisar só daqui a 7 dias">✕</button></div>`;
-  return `<div class="card flat"><div class="eyebrow">Cargas travadas (${cs.length})</div>
-    <div class="xs muted" style="margin-top:4px">Dica: +1 repetição por série, suba ${inc} kg quando bater o topo das repetições, ou faça uma semana mais leve (cerca de 60% da carga). O ✕ some com o aviso por 7 dias.</div>
-    <div class="list" style="margin-top:6px${aberto ? ";max-height:320px;overflow-y:auto" : ""}">${t.top.map(linha).join("")}</div>
+  const aberto = !!UIc.ixCg, t = ixCargasTop(cs.map(a => ({ k: a.k, nome: a.carga.nome, kg: a.carga.kg, eid: a.carga.eid })), aberto ? cs.length : 3);
+  const kr = o => fmt1(o.kg) + " kg × " + o.reps;
+  const linha = c => { const m = ixMetaLinha(c);
+    const acao = !m ? "" : m.ativa ? `<div class="row wrap-ok" style="margin-top:6px"><span class="pill good">Meta aplicada: ${kr(m.ativa)}${m.ativa.tipo === "leve" ? " (semana leve)" : ""}</span><button class="btn sm ghost" data-act="ixMetaDesfaz" data-eid="${esc(c.eid)}">Desfazer</button></div>`
+      : `<div class="row wrap-ok" style="margin-top:6px"><button class="btn sm pri" data-act="ixMetaAplica" data-eid="${esc(c.eid)}" data-tipo="sug">Aplicar: ${kr(m.sug)}</button><button class="btn sm" data-act="ixMetaAplica" data-eid="${esc(c.eid)}" data-tipo="leve">Semana leve: ${kr(m.leve)}</button></div>`;
+    return `<div class="li" style="align-items:flex-start"><div class="grow"><div class="t">${esc(c.nome)}</div><div class="s">${fmt1(c.kg)} kg · 3 treinos</div>${acao}</div><button class="btn sm ghost" data-act="ixSoneca" data-k="${esc(c.k)}" aria-label="Silenciar por 7 dias" title="Silenciar por 7 dias">✕</button></div>`; };
+  return `<div class="card flat" id="ix-cargas" style="scroll-margin-top:96px"><div class="eyebrow">Cargas travadas (${cs.length})</div>
+    <div class="xs muted" style="margin-top:4px">O botão <b>Aplicar</b> grava a meta do próximo treino daquele exercício (+1 repetição, ou mais carga se já está no topo). Ela aparece em Treino como "Meta de hoje". <b>Semana leve</b> usa 60% da carga uma vez e depois volta ao normal. Dá para desfazer. O ✕ só silencia o aviso por 7 dias.</div>
+    <div class="list" style="margin-top:6px${aberto ? ";max-height:420px;overflow-y:auto" : ""}">${t.top.map(linha).join("")}</div>
     <div class="row wrap-ok" style="margin-top:8px">${cs.length > 3 ? `<button class="btn sm" data-act="ixCgTog">${aberto ? "Recolher" : "Ver todos (" + cs.length + ")"}</button>` : ""}<button class="btn sm ghost" data-act="ixSonecaTodos">Silenciar todos por 7 dias</button></div></div>`;
 }
 function ixCargasHoje() {
@@ -5828,7 +5855,14 @@ function ixCargasHoje() {
   return `<div class="card flat"><div class="row between"><div class="small"><b>${n} ${n === 1 ? "carga travada" : "cargas travadas"}</b></div><button class="btn sm" data-act="ixCgVer">ver</button></div></div>`;
 }
 ACT.ixCgTog = () => { UIc.ixCg = !UIc.ixCg; render(); };
-ACT.ixCgVer = () => { UIc.ixCg = false; ui.tab = "evo"; render(); window.scrollTo && window.scrollTo(0, 0); };
+ACT.ixCgVer = () => { UIc.ixCg = true; ui.tab = "evo"; render(); const go = () => { const el = document.getElementById("ix-cargas"); if (el) el.scrollIntoView({ block: "start" }); }; go(); setTimeout(go, 120); };
+ACT.ixMetaAplica = ds => {
+  const c = ixCargas().find(a => a.carga.eid === ds.eid); if (!c) return; const m = ixMetaLinha({ eid: ds.eid }); if (!m) return;
+  const alvo = ds.tipo === "leve" ? m.leve : m.sug, lp = lastPerf(ds.eid);
+  updP(p => { p.ixMeta = p.ixMeta || {}; p.ixMeta[ds.eid] = { kg: alvo.kg, reps: alvo.reps, tipo: ds.tipo === "leve" ? "leve" : "sug", em: Date.now(), de: { kg: c.carga.kg } }; });
+  render(); toast("Meta salva: " + fmt1(alvo.kg) + " kg × " + alvo.reps + " no próximo treino de " + c.carga.nome + ". Dá para desfazer.");
+};
+ACT.ixMetaDesfaz = ds => { updP(p => { if (p.ixMeta) delete p.ixMeta[ds.eid]; }); render(); toast("Meta desfeita. Voltou ao normal."); };
 ACT.ixSonecaTodos = () => { const o = ixLsGet(IX_SON, {}), d = addDays(TODAY(), 7); ixCargas().forEach(a => { o[a.k] = d; }); ixLsSet(IX_SON, o); UIc.ixCg = false; render(); toast("Ok, silenciei as cargas travadas por 7 dias."); };
 const ixAlertaHtml = a => `<div class="card flat"><div class="eyebrow">${esc(a.t)}</div><div class="small" style="margin-top:4px">${esc(a.txt)}</div><button class="btn sm ghost" style="margin-top:8px" data-act="ixSoneca" data-k="${esc(a.k)}">Entendi, avise só daqui a 7 dias</button></div>`;
 // 3. Resumo semanal
