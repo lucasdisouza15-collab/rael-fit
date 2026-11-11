@@ -19,7 +19,7 @@ function iso(d) { const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000
 function addDays(s, n) { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return iso(d); }
 const dowOf = s => new Date(s + "T12:00:00").getDay();
 `;
-vm.runInContext(pre + m[1] + '\nout.f={ixHa,ixDadosEstado,ixEstagnacaoCarga,ixEstagnacaoPeso,ixCargasTop,ixResumoSemana,ixSemanaRef,ixOrigem,ixParecidos,ixTopPorRefeicao,ixMetaPrazo};', sb);
+vm.runInContext(pre + m[1] + '\nout.f={ixHa,ixDadosEstado,ixEstagnacaoCarga,ixEstagnacaoPeso,ixCargasTop,ixMetaCarga,ixMetaAtiva,ixResumoSemana,ixSemanaRef,ixOrigem,ixParecidos,ixTopPorRefeicao,ixMetaPrazo};', sb);
 const F = sb.out.f;
 
 // ---------- 1. Meus dados ----------
@@ -122,6 +122,22 @@ eq('sem data = null', F.ixMetaPrazo(Object.assign({}, base, { dataAlvo: '' })), 
 mp = F.ixMetaPrazo(Object.assign({}, base, { alvo: 90, pesoIni: 80, pesoAtual: 85, pesos: P(['2026-10-14', 83], ['2026-11-11', 85]), objetivo: 'ganhar' })); ok('ganhar massa também funciona', mp.status === 'no-ritmo' || mp.status === 'adiantado');
 
 
+// ---------- 2c. Meta para destravar (Aplicar / Semana leve) ----------
+{
+  const base = { kg: 46, maxReps: 7, top: 12, min: 8, inc: 2 };
+  eq('meta: +1 repetição na mesma carga', F.ixMetaCarga(base).sug, { kg: 46, reps: 8 });
+  eq('meta: no topo das repetições sobe a carga', F.ixMetaCarga(Object.assign({}, base, { maxReps: 12 })).sug, { kg: 48, reps: 8 });
+  eq('semana leve: 60% da carga, arredondado a 2,5', F.ixMetaCarga(base).leve, { kg: 27.5, reps: 7 });
+  eq('semana leve: nunca abaixo de 2,5 kg', F.ixMetaCarga({ kg: 2, maxReps: 10 }).leve.kg, 2.5);
+  const m = { em: 1000, kg: 46, reps: 8 }, tr = (ini, ok) => ({ inicio: ini, ex: [{ eid: 'supino', series: [{ ok }] }] });
+  eq('meta ativa sem treino novo', F.ixMetaAtiva(m, [tr(500, true)], 'supino'), true);
+  eq('meta some depois de um treino novo com o exercício', F.ixMetaAtiva(m, [tr(2000, true)], 'supino'), false);
+  eq('treino novo sem série feita não consome a meta', F.ixMetaAtiva(m, [tr(2000, false)], 'supino'), true);
+  eq('treino novo de outro exercício não consome', F.ixMetaAtiva(m, [{ inicio: 2000, ex: [{ eid: 'remada', series: [{ ok: true }] }] }], 'supino'), true);
+  eq('sem meta = inativa', F.ixMetaAtiva(null, [], 'supino'), false);
+  ok('suggest() usa a meta aplicada e Treino mostra "Meta de hoje"', /const mt = typeof ixMetaDe/.test(html) && /Meta de hoje: \$\{fmt1\(sg\.kg\)\} kg × \$\{sg\.reps\}/.test(html));
+  ok('ver leva ao cartão expandido', /ACT\.ixCgVer = \(\) => \{ UIc\.ixCg = true; ui\.tab = "evo"/.test(html) && /id="ix-cargas"/.test(html));
+}
 // ---------- 2b. Cargas travadas: cartão compacto ----------
 {
   const gera = n => Array.from({ length: n }, (_, i) => ({ k: 'c:e' + i, nome: 'Ex ' + i, kg: 20 + (i % 50) }));
@@ -137,17 +153,21 @@ mp = F.ixMetaPrazo(Object.assign({}, base, { alvo: 90, pesoIni: 80, pesoAtual: 8
   if (fm) {
     for (const n of [1, 5, 1000]) {
       for (const aberto of [false, true]) {
-        const sb2 = { out: {}, UIc: { ixCg: aberto }, P: () => ({ incremento: 2 }), esc: x => String(x), fmt1: x => String(x), num: x => +x || 0 };
+        const sb2 = { out: {}, UIc: { ixCg: aberto }, P: () => ({ incremento: 2, rotinas: [] }), lastPerf: () => ({ ex: { series: [{ ok: true, kg: 40, reps: 8 }] } }), workouts: () => [], esc: x => String(x), fmt1: x => String(x), num: x => +x || 0 };
         vm.createContext(sb2);
         vm.runInContext(pre + m[1] + '\nconst ixAlertas = () => Array.from({length:' + n + '},(_,i)=>({k:"c:e"+i,t:"Carga travada",carga:{nome:"Ex "+i,kg:20+i%50},txt:"x"}));\n' + fm[0] + '\nout.e = ixCargasEvo(); out.h = ixCargasHoje();', sb2);
         const linhas = (sb2.out.e.match(/class="li"/g) || []).length;
         eq('cartão ' + n + ' ' + (aberto ? 'aberto' : 'recolhido') + ': linhas', linhas, aberto ? n : Math.min(3, n));
         ok('cartão ' + n + ': título com contagem', sb2.out.e.includes('Cargas travadas (' + n + ')'));
-        eq('cartão ' + n + ': dica aparece 1 vez', (sb2.out.e.match(/Dica:/g) || []).length, 1);
+        eq('cartão ' + n + ': dica aparece 1 vez', (sb2.out.e.match(/grava a meta do próximo treino/g) || []).length, 1);
         eq('cartão ' + n + ': 1 só cartão', (sb2.out.e.match(/class="card flat"/g) || []).length, 1);
         ok('cartão ' + n + ': silenciar todos', sb2.out.e.includes('ixSonecaTodos'));
+        const nl = aberto ? n : Math.min(3, n);
+        eq('cartão ' + n + ': cada linha tem Aplicar e Semana leve', [(sb2.out.e.match(/data-tipo="sug"/g) || []).length, (sb2.out.e.match(/data-tipo="leve"/g) || []).length], [nl, nl]);
+        ok('cartão ' + n + ': botão mostra o que será aplicado (40 kg × 9 / 25 kg × 8)', sb2.out.e.includes('Aplicar: 40 kg × 9') && sb2.out.e.includes('Semana leve: 25 kg × 8'));
+        ok('cartão ' + n + ': dica explica que o botão aplica', sb2.out.e.includes('grava a meta do próximo treino'));
         ok('cartão ' + n + ': ver todos só se > 3', n > 3 ? sb2.out.e.includes('ixCgTog') : !sb2.out.e.includes('ixCgTog'));
-        ok('Hoje ' + n + ': uma linha de resumo', sb2.out.h.includes('ixCgVer') && !sb2.out.h.includes('Dica') && sb2.out.h.includes(n + (n === 1 ? ' carga travada' : ' cargas travadas')));
+        ok('Hoje ' + n + ': uma linha de resumo', sb2.out.h.includes('ixCgVer') && !sb2.out.h.includes('grava a meta') && sb2.out.h.includes(n + (n === 1 ? ' carga travada' : ' cargas travadas')));
       }
     }
   }
