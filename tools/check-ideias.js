@@ -19,7 +19,7 @@ function iso(d) { const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000
 function addDays(s, n) { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return iso(d); }
 const dowOf = s => new Date(s + "T12:00:00").getDay();
 `;
-vm.runInContext(pre + m[1] + '\nout.f={ixHa,ixDadosEstado,ixEstagnacaoCarga,ixEstagnacaoPeso,ixResumoSemana,ixSemanaRef,ixOrigem,ixParecidos,ixTopPorRefeicao,ixMetaPrazo};', sb);
+vm.runInContext(pre + m[1] + '\nout.f={ixHa,ixDadosEstado,ixEstagnacaoCarga,ixEstagnacaoPeso,ixCargasTop,ixResumoSemana,ixSemanaRef,ixOrigem,ixParecidos,ixTopPorRefeicao,ixMetaPrazo};', sb);
 const F = sb.out.f;
 
 // ---------- 1. Meus dados ----------
@@ -120,6 +120,38 @@ mp = F.ixMetaPrazo(Object.assign({}, base, { dataAlvo: '2026-11-01' })); eq('pra
 mp = F.ixMetaPrazo(Object.assign({}, base, { pesoAtual: 80.1 })); eq('atingida', mp.status, 'atingida');
 eq('sem data = null', F.ixMetaPrazo(Object.assign({}, base, { dataAlvo: '' })), null);
 mp = F.ixMetaPrazo(Object.assign({}, base, { alvo: 90, pesoIni: 80, pesoAtual: 85, pesos: P(['2026-10-14', 83], ['2026-11-11', 85]), objetivo: 'ganhar' })); ok('ganhar massa também funciona', mp.status === 'no-ritmo' || mp.status === 'adiantado');
+
+
+// ---------- 2b. Cargas travadas: cartão compacto ----------
+{
+  const gera = n => Array.from({ length: n }, (_, i) => ({ k: 'c:e' + i, nome: 'Ex ' + i, kg: 20 + (i % 50) }));
+  for (const n of [1, 5, 1000]) {
+    const r = F.ixCargasTop(gera(n), 3);
+    eq('cargas ' + n + ': total', r.total, n); eq('cargas ' + n + ': mostra no máx. 3', r.top.length, Math.min(3, n)); eq('cargas ' + n + ': resto', r.resto, Math.max(0, n - 3));
+    ok('cargas ' + n + ': ordem por carga desc', r.top.every((c, i) => i === 0 || r.top[i - 1].kg >= c.kg));
+  }
+  eq('cargas vazio', F.ixCargasTop([], 3), { total: 0, top: [], resto: 0 });
+  // HTML: extrai ixCargasEvo/ixCargasHoje e confere tamanho (1 cartão, 3 linhas recolhido)
+  const fm = html.match(/const ixCargas = [\s\S]*?function ixCargasHoje\(\) \{[\s\S]*?\n\}\n/);
+  ok('funções do cartão compacto existem no index.html', !!fm);
+  if (fm) {
+    for (const n of [1, 5, 1000]) {
+      for (const aberto of [false, true]) {
+        const sb2 = { out: {}, UIc: { ixCg: aberto }, P: () => ({ incremento: 2 }), esc: x => String(x), fmt1: x => String(x), num: x => +x || 0 };
+        vm.createContext(sb2);
+        vm.runInContext(pre + m[1] + '\nconst ixAlertas = () => Array.from({length:' + n + '},(_,i)=>({k:"c:e"+i,t:"Carga travada",carga:{nome:"Ex "+i,kg:20+i%50},txt:"x"}));\n' + fm[0] + '\nout.e = ixCargasEvo(); out.h = ixCargasHoje();', sb2);
+        const linhas = (sb2.out.e.match(/class="li"/g) || []).length;
+        eq('cartão ' + n + ' ' + (aberto ? 'aberto' : 'recolhido') + ': linhas', linhas, aberto ? n : Math.min(3, n));
+        ok('cartão ' + n + ': título com contagem', sb2.out.e.includes('Cargas travadas (' + n + ')'));
+        eq('cartão ' + n + ': dica aparece 1 vez', (sb2.out.e.match(/Dica:/g) || []).length, 1);
+        eq('cartão ' + n + ': 1 só cartão', (sb2.out.e.match(/class="card flat"/g) || []).length, 1);
+        ok('cartão ' + n + ': silenciar todos', sb2.out.e.includes('ixSonecaTodos'));
+        ok('cartão ' + n + ': ver todos só se > 3', n > 3 ? sb2.out.e.includes('ixCgTog') : !sb2.out.e.includes('ixCgTog'));
+        ok('Hoje ' + n + ': uma linha de resumo', sb2.out.h.includes('ixCgVer') && !sb2.out.h.includes('Dica') && sb2.out.h.includes(n + (n === 1 ? ' carga travada' : ' cargas travadas')));
+      }
+    }
+  }
+}
 
 console.log((total - falhas) + '/' + total + ' testes das ideias 1 a 7 passaram');
 process.exit(falhas ? 1 : 0);

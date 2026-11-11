@@ -46,3 +46,6 @@ Lógica pura em `index.html` entre `/*IX-PURO-INI*/` e `/*IX-PURO-FIM*/`, testad
 ## Regras do método
 - Antes de abrir PR: `node tools/check.js` (sintaxe dos scripts + testes das contas de kcal/macros e da nota Pintinho/Frango/Galo Alfa). Se mudar uma regra de conta, ajustar o teste na mesma entrega.
 - Paridade: tudo que entra no site (index.html) vai também para a aba Frangômetro do Painel, exceto o que for exclusivo de um dos dois.
+
+## Cargas travadas em cartão compacto (v63, 11/11/2026)
+Pedido do Lucas: com muitos exercícios travados a tela ficava enorme. Regra: um único cartão "Cargas travadas (N)" na Evolução, com os 3 de maior carga (uma linha cada: exercício, kg, 3 treinos) e "Ver todos (N)" que expande a lista (rolagem própria, altura máx. 320 px) e recolhe. A dica (+1 repetição, subir X kg, semana a 60%) aparece uma vez só no topo. O ✕ da linha avisa de novo só em 7 dias para aquele exercício; "Silenciar todos por 7 dias" vale para todos. Na aba Hoje só uma linha ("N cargas travadas · ver") que leva à Evolução. Nada é apagado, só adiado. Verificador: tools/check-ideias.js testa 1, 5 e 1000 travados (recolhido e aberto): 1 cartão, no máx. 3 linhas recolhido, dica 1 vez, resumo de 1 linha no Hoje.
