@@ -22,8 +22,53 @@ const FRASES = [
   "Série seguinte. Respira, pega o peso e finge que é fácil.",
   "Acabou a pausa. Entre as séries, o tempo é sempre curto e o sofá, longo."
 ];
-self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
+/* ===== Offline (cache) =====
+   - Página (index.html): rede primeiro (sempre a versão nova); sem internet ou lenta (4 s), usa a última guardada.
+   - Arquivos fixos (ícones, fotos de exercício, fontes, supabase-js): guarda na 1ª vez e serve do cache.
+   - Configs .json: rede primeiro, cópia se offline. Nunca guarda: chamadas de dados (Supabase, IA, Worker), pedidos que não são GET e o teste de versão (?_=).
+   Para forçar renovação geral, suba CACHE (ex.: frango-v2); o botão "Atualizar app" do app também limpa tudo. */
+const CACHE = "frango-v1";
+const FIXOS = ["./", "icon.png", "icon-192.png", "apple-touch-icon.png", "manifest.json", "supabase-sync.js?v=1"];
+const EXTERNOS_OK = [/^fonts\.googleapis\.com$/, /^fonts\.gstatic\.com$/, /^cdn\.jsdelivr\.net$/];
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(CACHE).then(c => Promise.all(FIXOS.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
+});
+self.addEventListener("activate", e => e.waitUntil(
+  caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith("frango-") && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())
+));
+const comTimeout = (p, ms) => new Promise((ok, no) => { const t = setTimeout(() => no(new Error("lento")), ms); p.then(r => { clearTimeout(t); ok(r); }, er => { clearTimeout(t); no(er); }); });
+async function paginaRedePrimeiro(req) {
+  const c = await caches.open(CACHE), chave = new URL("./", self.registration.scope).href;
+  try {
+    const r = await comTimeout(fetch(req), 4000);
+    if (r && r.ok) c.put(chave, r.clone());
+    return r;
+  } catch (er) {
+    return (await c.match(chave)) || (await c.match("./")) || Response.error();
+  }
+}
+async function jsonRedePrimeiro(req) {
+  const c = await caches.open(CACHE);
+  try { const r = await fetch(req); if (r && r.ok) c.put(req.url.split("?")[0], r.clone()); return r; }
+  catch (er) { return (await c.match(req.url.split("?")[0])) || Response.error(); }
+}
+async function arquivoCacheDepois(req) {
+  const c = await caches.open(CACHE), hit = await c.match(req);
+  if (hit) { fetch(req).then(r => { if (r && (r.ok || r.type === "opaque")) c.put(req, r); }).catch(() => {}); return hit; }
+  const r = await fetch(req);
+  if (r && (r.ok || r.type === "opaque")) c.put(req, r.clone());
+  return r;
+}
+self.addEventListener("fetch", e => {
+  const req = e.request;
+  if (req.method !== "GET") return;
+  const u = new URL(req.url);
+  if (u.searchParams.has("_")) return;                                   // teste de versão: sempre rede
+  if (u.origin !== self.location.origin) { if (EXTERNOS_OK.some(r => r.test(u.hostname))) e.respondWith(arquivoCacheDepois(req)); return; }
+  if (req.mode === "navigate") { e.respondWith(paginaRedePrimeiro(req)); return; }
+  if (/\.json$/.test(u.pathname)) { e.respondWith(jsonRedePrimeiro(req)); return; }   // configs (push, supabase): rede primeiro, cópia se offline
+  if (/\.(png|jpe?g|webp|svg|ico|woff2?|js|css)$/.test(u.pathname)) e.respondWith(arquivoCacheDepois(req).catch(() => Response.error()));
+});
 /* O push chega sem conteúdo: o Worker diz o que mostrar (descanso, lembrete do dia ou novidade).
    Se a consulta falhar, cai no aviso de descanso (comportamento antigo). */
 async function proximoAviso() {

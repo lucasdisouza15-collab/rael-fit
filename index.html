@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v60-20261108c"><script>(function(){try{var V="v60-20261108c";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v61-20261111a"><script>(function(){try{var V="v61-20261111a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -38,7 +38,7 @@ header.top .in{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area
 .datenav .lbl{font-weight:600;font-size:14px;min-width:64px;text-align:center;cursor:pointer;padding:6px 4px;border-radius:8px}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
-nav.tabs button{border:0;background:transparent;padding:8px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer}
+nav.tabs button{border:0;background:transparent;padding:8px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
 nav.tabs button svg{width:23px;height:23px}
 nav.tabs button[aria-current="page"]{color:var(--accent)}
 .stack{display:flex;flex-direction:column;gap:12px}
@@ -50,7 +50,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .card.flat{box-shadow:none}
 .sec-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 2px 0}
 .sec-title h2{font-size:16px}
-.eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
 .muted{color:var(--muted)} .ink2{color:var(--ink-2)} .small{font-size:13px} .xs{font-size:12px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:9px 14px;font-weight:600;cursor:pointer;min-height:40px;white-space:nowrap}
 .btn:hover{background:var(--surface-2)}
@@ -82,7 +82,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 .seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:3px}
 .seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 6px;font-weight:600;font-size:13.5px;cursor:pointer;color:var(--ink-2)}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--surface-2);color:var(--ink-2)}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:var(--surface-2);color:var(--ink-2)}
 .pill.good{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
 .pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
 .pill.bad{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
@@ -106,13 +106,13 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .ring .c b{font-family:var(--f-display);font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
-.ring .c span{font-size:11.5px;color:var(--muted);margin-top:3px}
+.ring .c span{font-size:12px;color:var(--muted);margin-top:3px}
 .kv{display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:3px 0}
 .kv b{font-variant-numeric:tabular-nums;font-weight:600}
 .balance{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;text-align:center;gap:4px}
 .balance .op{color:var(--muted);font-family:var(--f-display);font-size:18px}
 .balance .n{font-family:var(--f-display);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
-.balance .l{font-size:11.5px;color:var(--muted)}
+.balance .l{font-size:12px;color:var(--muted)}
 .water{display:flex;gap:5px;flex-wrap:wrap}
 .cup{width:26px;height:32px;border-radius:4px 4px 8px 8px;border:2px solid var(--accent);opacity:.35;cursor:pointer;background:transparent;padding:0}
 .cup.on{background:var(--accent);opacity:1}
@@ -120,7 +120,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 .meal-h h3{flex:1}
 .ex-card{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px}
 .sets{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.sets th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;text-align:center;padding:4px 2px}
+.sets th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;text-align:center;padding:4px 2px}
 .sets td{padding:3px 2px;text-align:center}
 .sets input{text-align:center;min-height:36px;padding:5px 4px;border-radius:8px}
 .sets tr.done td{background:color-mix(in srgb,var(--good) 10%,transparent)}
@@ -130,8 +130,8 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 .check svg{width:18px;height:18px}
 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .wd{border:1px solid var(--line);border-radius:11px;padding:7px 3px;text-align:center;background:var(--surface);cursor:pointer;min-width:0}
-.wd .d{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase}
-.wd .r{font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.wd .d{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.wd .r{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
 .wd.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .wd.rest .r{color:var(--muted)}
 .wd.done{background:var(--accent-soft)}
@@ -155,7 +155,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 .restbar b{font-family:var(--f-display);font-size:22px;font-variant-numeric:tabular-nums}
 .restbar .btn{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 30%,transparent)}
 .ai{border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));background:linear-gradient(180deg,var(--accent-soft),var(--surface) 70%)}
-.ai-badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em}
+.ai-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em}
 .ai-out{white-space:pre-wrap;font-size:14.5px;line-height:1.55}
 .chat{display:flex;flex-direction:column;gap:8px}
 .bubble{padding:9px 12px;border-radius:14px;max-width:88%;white-space:pre-wrap;font-size:14.5px}
@@ -163,7 +163,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:60
 .bubble.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
 .chart{width:100%;overflow-x:auto}
 .chart svg{display:block;width:100%;height:auto}
-.chart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+.chart text{fill:var(--muted);font-size:12px;font-family:var(--f-body)}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .tip{position:fixed;z-index:70;background:var(--ink);color:var(--bg);font-size:12.5px;padding:6px 9px;border-radius:8px;pointer-events:none;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -187,7 +187,7 @@ details.acc summary::-webkit-details-marker{display:none}
 .card{border-width:1.5px}
 /* Frangômetro: Rael e medidor (só o mascote e o medidor levam cor da marca) */
 .brand{min-width:0;white-space:nowrap}.brand .fr-logo{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.01em}
-.brand .fr-ver{white-space:nowrap;font-size:10px;font-weight:700;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:2px 10px}
+.brand .fr-ver{white-space:nowrap;font-size:12px;font-weight:700;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:2px 10px}
 .fr-top{display:flex;align-items:center;gap:12px}
 .fr-bal{min-width:0;flex:1;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:10px 12px}
 .fr-fala{font-size:13.5px;font-style:italic;color:var(--ink-2);line-height:1.4}
@@ -284,7 +284,7 @@ details.acc summary::-webkit-details-marker{display:none}
 .fr-chip.ok{background:#E7ECF7;border-color:#2F4C9E;color:#2F4C9E}.fr-chip.meio{background:#FBEFC9;border-color:#E5C26A;color:#7A5A00}.fr-chip.zero{opacity:.8}
 .fr-bal .fr-resp{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fr-bal .fr-resp button{font:700 12.5px var(--f-body,inherit);border:1.5px solid var(--line);border-radius:999px;background:var(--chip);padding:6px 12px;cursor:pointer;color:inherit}.fr-bal .fr-resp button.pri{background:#2F4C9E;border-color:#2F4C9E;color:#fff}
 /* ===== Identidade B "Anilha", tom pervinca (04/11/2026): cores lavadas, cantos chanfrados, letra condensada ===== */
-:root{--bg:#C9D3EC;--surface:#FBFAF6;--surface-2:#DDE3F3;--ink:#27335F;--ink-2:#3F4B78;--muted:#4B5784;--line:#AEBBDD;--accent:#27335F;--accent-ink:#fff;--accent-soft:#DDE3F3;--prot:#6E85C2;--carb:#D9B95E;--gord:#C98A80;--fib:#9A9AB4;--good:#3F7A62;--warn:#7A5F18;--bad:#A8473F;--deficit:#6E85C2;--surplus:#C98A80;--grid:#BCC8E4;--axis:#9AA9D2;--gema:#F0DC9A;--r:0px;--r-sm:0px;--f-display:"Big Shoulders Display",ui-sans-serif,system-ui,sans-serif;--f-body:"Barlow",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--bg:#C9D3EC;--surface:#FBFAF6;--surface-2:#DDE3F3;--ink:#27335F;--ink-2:#3F4B78;--muted:#4B5784;--line:#AEBBDD;--accent:#27335F;--accent-ink:#fff;--accent-soft:#DDE3F3;--prot:#6E85C2;--carb:#D9B95E;--gord:#C98A80;--fib:#9A9AB4;--good:#2C6049;--warn:#6B5010;--bad:#8F3730;--deficit:#6E85C2;--surplus:#C98A80;--grid:#BCC8E4;--axis:#9AA9D2;--gema:#F0DC9A;--r:0px;--r-sm:0px;--f-display:"Big Shoulders Display",ui-sans-serif,system-ui,sans-serif;--f-body:"Barlow",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 :root{--cham:polygon(0 12px,12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);--cham-s:polygon(0 8px,8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%)}
 body{font-weight:500}
 h1,h2,h3,.sec-title h2{text-transform:uppercase;letter-spacing:.02em;font-weight:900}
@@ -373,7 +373,7 @@ details.sec .sec-body{padding:0 16px 16px}
 details.sec .sec-body>.card{background:none;clip-path:none;padding:0;border:0}
 details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{display:none}
 .sec-label{font:900 13px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 2px -4px}
-.humrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}.humb{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 2px 4px;font:inherit;font-size:11px;font-weight:600;color:var(--ink-2);cursor:pointer}.humb svg{width:100%;max-width:46px;height:auto}.humb.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--ink)}
+.humrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}.humb{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 2px 4px;font:inherit;font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer}.humb svg{width:100%;max-width:46px;height:auto}.humb.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--ink)}
 .onb{display:flex;flex-direction:column;gap:14px;min-height:60vh}
 .rfala{display:flex;gap:10px;align-items:flex-start}.rfala .ra,.rfala svg{flex:none}
 .rbal{position:relative;flex:1;min-width:0;background:var(--surface-2);border:2px solid var(--ink);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
@@ -404,6 +404,11 @@ details.sec .sec-body>.card>h2,details.sec .sec-body>.card>.row.between>h2{displ
 .onb-hold.hold i{transform:scaleX(1);transition:transform 1.4s linear}
 .onb-hold.done{background:var(--accent);color:var(--accent-ink)}
 .onb-hold span{position:relative}
+/* ===== Acessibilidade (11/11/2026): campos 16px (iPhone não dá zoom), foco visível, macros legíveis sem depender só da cor ===== */
+input,select,textarea{font-size:16px}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.onb-big:focus-visible{outline:none;border-bottom-color:var(--accent);box-shadow:0 3px 0 0 var(--accent)}
+.bar>i{box-shadow:inset 0 0 0 1px rgba(27,22,48,.55)}
 </style>
 
 <header class="top"><div class="in" id="topbar"></div></header>
@@ -1959,7 +1964,7 @@ function searchFoods(q, lim = 40) {
 }
 function addBuscar() {
   const res = searchFoods(ADD.q);
-  let h = `<input type="search" id="foodQ" data-in="foodQ" placeholder="Buscar alimento, receita ou o que você cadastrou" value="${esc(ADD.q)}" autocomplete="off">`;
+  let h = `<input type="search" aria-label="Buscar alimento" id="foodQ" data-in="foodQ" placeholder="Buscar alimento, receita ou o que você cadastrou" value="${esc(ADD.q)}" autocomplete="off">`;
   h += `<div id="foodRes">${foodResults(res)}</div>`;
   return h;
 }
@@ -2111,7 +2116,7 @@ ACT.swapParsed = ds => {
   const it = ADD.parsed[+ds.i];
   if (it.ok) { Object.assign(QTY, { f: it.f, modo: it.e.modo, qtd: it.e.qtd, edit: null, swapIdx: +ds.i }); openSheet({ title: it.f.nome, body: qtyBody, foot: () => `<button class="btn pri block" data-act="qtyAdd">Usar esta quantidade</button>` }); return; }
   QTY.swapIdx = +ds.i; ADD.q = tokens(it.raw).join(" ");
-  openSheet({ title: "Escolher alimento", body: () => `<input type="search" id="foodQ" data-in="foodQ" value="${esc(ADD.q)}" placeholder="Buscar"><div id="foodRes">${foodResults(searchFoods(ADD.q))}</div>` });
+  openSheet({ title: "Escolher alimento", body: () => `<input type="search" aria-label="Buscar alimento" id="foodQ" data-in="foodQ" value="${esc(ADD.q)}" placeholder="Buscar"><div id="foodRes">${foodResults(searchFoods(ADD.q))}</div>` });
 };
 ACT.addParsed = () => {
   const list = (ADD.parsed || []).filter(x => x.ok).map(x => x.e); if (!list.length) return;
@@ -2540,7 +2545,7 @@ const XP = { q: "", g: "", e: "", cb: null };
 function openExPicker(cb) { XP.cb = cb; XP.q = ""; openSheet({ title: "Escolher exercício", full: true, body: exPickBody, mount: el => { const q = $("#xpQ", el); if (q) q.focus(); } }); }
 function exFilter(q, g, e) { const qt = tokens(q); return allEx().filter(x => (!g || x.grupo === g) && (!e || x.equip === e) && (!qt.length || qt.every(w => tokens(x.nome + " " + x.grupo + " " + x.equip).some(t => t.startsWith(w))))); }
 function exPickBody() {
-  return `<input type="search" id="xpQ" data-in="xpQ" placeholder="Buscar exercício" value="${esc(XP.q)}" autocomplete="off">
+  return `<input type="search" aria-label="Buscar exercício" id="xpQ" data-in="xpQ" placeholder="Buscar exercício" value="${esc(XP.q)}" autocomplete="off">
     <div class="chips"><button class="chip" aria-pressed="${!XP.g}" data-act="xpG" data-g="">Todos</button>${GRUPOS.map(g => `<button class="chip" aria-pressed="${XP.g === g}" data-act="xpG" data-g="${esc(g)}">${esc(g)}</button>`).join("")}</div>
     <select id="xpE" data-on="xpE"><option value="">Qualquer equipamento</option>${EQUIPS.map(e => `<option ${XP.e === e ? "selected" : ""}>${esc(e)}</option>`).join("")}</select>
     <div id="xpRes">${exPickList()}</div>`;
@@ -2856,7 +2861,7 @@ ACT.repeatWorkout = ds => {
 // ---------- biblioteca ----------
 function viewExs() {
   const f = ui.exFiltro, list = exFilter(f.q, f.g, f.e);
-  return `<input type="search" id="exQ" data-in="exQ" placeholder="Buscar entre ${allEx().length} exercícios" value="${esc(f.q)}">
+  return `<input type="search" aria-label="Buscar exercício" id="exQ" data-in="exQ" placeholder="Buscar entre ${allEx().length} exercícios" value="${esc(f.q)}">
     <div class="chips"><button class="chip" aria-pressed="${!f.g}" data-act="exG" data-g="">Todos</button>${GRUPOS.map(g => `<button class="chip" aria-pressed="${f.g === g}" data-act="exG" data-g="${esc(g)}">${esc(g)}</button>`).join("")}</div>
     <div class="row"><select id="exE" data-on="exE" class="grow"><option value="">Qualquer equipamento</option>${EQUIPS.map(e => `<option ${f.e === e ? "selected" : ""}>${esc(e)}</option>`).join("")}</select><button class="btn" data-act="newExLib">Criar</button></div>
     <div class="card" id="exRes">${exLibList(list)}</div>`;
@@ -3378,7 +3383,7 @@ function pushPost(rota, seg, extra) {
   try { fetch(PUSH.url + rota, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ sub: PUSH.sub.toJSON(), seg }, extra || {})), keepalive: true }).catch(() => {}); } catch (e) {}
 }
 /* manda horários + resumo do dia; o aparelho informa o próprio fuso (getTimezoneOffset) */
-function pushSync() { pushPost("/config", 0, { cfg: pushCfg(), estado: pushEstado(), tz: new Date().getTimezoneOffset() }); }
+function pushSync() { let uid = "", perfil = "main"; try { uid = (typeof SB !== "undefined" && SB.user && SB.user.id) || ""; perfil = PID(); } catch (e) {} pushPost("/config", 0, { cfg: pushCfg(), estado: pushEstado(), tz: new Date().getTimezoneOffset(), uid, perfil }); }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") pushSync(); });
 addEventListener("pagehide", () => pushSync());
 setInterval(() => { if (document.visibilityState === "visible") pushSync(); }, 4 * 60 * 1000);
@@ -3556,7 +3561,7 @@ function fotoBody() {
     <div class="row" style="gap:8px;flex-wrap:wrap"><span class="xs muted grow" id="fotoSelLbl">${FOTO.sel ? "Selecionado: " + FOTO_NOMES[FOTO.sel] : "Toque num item do cartão para mover"}</span><button class="btn sm soft" data-act="fotoEsc" data-d="-0.15">Menor</button><button class="btn sm soft" data-act="fotoEsc" data-d="0.15">Maior</button><button class="btn sm soft" data-act="fotoReset">Reiniciar</button></div>
     <div class="xs muted">Pose do Rael</div><div class="row" style="flex-wrap:wrap;gap:6px">${FOTO_CENAS.map(([k, n]) => chip("fotoCena", FOTO.cena === k, n, `data-k="${k}"`)).join("")}</div>
     <div class="xs muted">Métricas na foto</div><div class="row" style="flex-wrap:wrap;gap:6px">${mets.map(([k, n]) => chip("fotoMet", FOTO.met[k], n, `data-k="${k}"`)).join("")}</div>
-    <div class="row" style="gap:8px"><input type="text" class="grow" maxlength="90" placeholder="Escreva sua frase (ou use a do Rael)" value="${esc(FOTO.livre)}" data-in="fotoFrase" style="min-width:0"><button class="btn sm soft" data-act="fotoFrase">Outra frase</button></div>
+    <div class="row" style="gap:8px"><input type="text" class="grow" aria-label="Sua frase" maxlength="90" placeholder="Escreva sua frase (ou use a do Rael)" value="${esc(FOTO.livre)}" data-in="fotoFrase" style="min-width:0"><button class="btn sm soft" data-act="fotoFrase">Outra frase</button></div>
     <div class="xs muted">A foto fica só neste aparelho, no histórico deste treino. Nada é publicado: você compartilha quando quiser.</div></div>`;
 }
 (function () { const o = drawSheet; drawSheet = function () { o.apply(this, arguments); try { if (document.getElementById("fotoCv")) fotoDraw(); } catch (e) {} }; })();
@@ -3804,7 +3809,7 @@ function syncCard() {
 ACT.syncCopia = async () => {
   const txt = JSON.stringify(await syncPacote());
   try { await navigator.clipboard.writeText(txt); toast("Copiado. Agora cole no outro lado em Colar backup."); return; } catch (e) {}
-  openSheet({ title: "Copiar tudo", body: () => `<div class="stack"><div class="small ink2">O celular não deixou copiar sozinho. Toque no texto, selecione tudo e copie. Depois cole no outro lado em Colar backup.</div><textarea id="syncOut" readonly style="min-height:200px;font-size:11px">${esc(txt)}</textarea></div>`, foot: () => `<button class="btn pri block" data-act="syncSel">Selecionar tudo</button>` });
+  openSheet({ title: "Copiar tudo", body: () => `<div class="stack"><div class="small ink2">O celular não deixou copiar sozinho. Toque no texto, selecione tudo e copie. Depois cole no outro lado em Colar backup.</div><textarea id="syncOut" readonly style="min-height:200px;font-size:12px">${esc(txt)}</textarea></div>`, foot: () => `<button class="btn pri block" data-act="syncSel">Selecionar tudo</button>` });
 };
 ACT.syncSel = () => { const t = $("#syncOut"); if (t) { t.focus(); t.select(); try { t.setSelectionRange(0, t.value.length); } catch (e) {} } };
 ACT.syncCola = () => {
@@ -5150,7 +5155,7 @@ function treinoStatsCard(per) {
   for (let i = 0; i < offs; i++) cel += `<div></div>`;
   for (let d = 1; d <= nDias; d++) {
     const ds = mes + "-" + String(d).padStart(2, "0"), l = porDia[ds], hoje = ds === end;
-    cel += `<div style="min-height:46px;padding:3px;border:1px solid ${hoje ? "var(--accent)" : "var(--line)"};background:${l ? "color-mix(in srgb, var(--prot) 28%, var(--surface))" : "var(--surface)"};font-size:11px;line-height:1.15;overflow:hidden" ${l ? `data-tip="${esc(ddmm(ds) + ": " + l.map(w => w.nome).join(", "))}"` : ""}><span class="muted">${d}</span>${l ? `<div style="font-weight:700;color:var(--ink)">${esc(String(l[0].nome || "Treino").split(/\s+/)[0].slice(0, 6).toUpperCase())}</div>` : ""}</div>`;
+    cel += `<div style="min-height:46px;padding:3px;border:1px solid ${hoje ? "var(--accent)" : "var(--line)"};background:${l ? "color-mix(in srgb, var(--prot) 28%, var(--surface))" : "var(--surface)"};font-size:12px;line-height:1.15;overflow:hidden" ${l ? `data-tip="${esc(ddmm(ds) + ": " + l.map(w => w.nome).join(", "))}"` : ""}><span class="muted">${d}</span>${l ? `<div style="font-weight:700;color:var(--ink)">${esc(String(l[0].nome || "Treino").split(/\s+/)[0].slice(0, 6).toUpperCase())}</div>` : ""}</div>`;
   }
   const doMes = all.filter(w => w.data.slice(0, 7) === mes), diasT = new Set(doMes.map(w => w.data)).size;
   const ateAqui = mes === end.slice(0, 7) ? new Date(end + "T12:00:00").getDate() : nDias;
@@ -5649,6 +5654,7 @@ function render() {
   connectCaps();
   await Promise.race([connectCloud(), new Promise(r => setTimeout(r, 2500))]);
   try { sbInit().then(() => { if (!SHEET.stack.length) render(); }); } catch (e) {}
+  try { if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}   /* cache offline: registra sempre, não só com avisos ligados */
   if (!P().onb && !SHEET.stack.length) onboarding(); else if (!SHEET.stack.length) voltouCheck();
   if (getDoc("ativo") && !SHEET.stack.length) render();
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { if (ui.date !== TODAY() && ui._lastToday && ui.date === ui._lastToday) ui.date = TODAY(); ui._lastToday = TODAY(); render(); } });
