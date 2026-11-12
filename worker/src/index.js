@@ -6,7 +6,7 @@
 //  - Novidade: o GitHub Actions chama POST /novidade (autenticado) quando um commit traz "[avisar]".
 import { MAX_DIA, JANELA_MIN, TIPOS, limpaCfg, limpaEstado, local, proximo, motivoPular, monta, aplicaNuvem } from "./logica.js";
 
-const ORIGENS = ["https://lucasdisouza15-collab.github.io"];
+const ORIGENS = ["https://lucasdisouza15-collab.github.io", "https://frangometro-app.pages.dev"];
 const PUSH_HOSTS = [/^fcm\.googleapis\.com$/, /^web\.push\.apple\.com$/, /\.push\.apple\.com$/, /\.push\.services\.mozilla\.com$/, /\.notify\.windows\.com$/, /^updates\.push\.services\.mozilla\.com$/];
 const VAPID_PUBLICA = "BJaFRYvPv7GX37tIkqe2STVZw7X6WRshqKbPJgkup86YPdNrDsVBlZof6IQosdmWXb7nSmYHPs_NYZuz3BMt3HM";
 const VAPID_ASSUNTO = "https://lucasdisouza15-collab.github.io/rael-fit/";
