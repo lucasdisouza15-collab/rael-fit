@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v90-20261113i"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v91-20261113j"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v90-20261113i";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v91-20261113j";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -297,6 +297,17 @@ details.acc summary::-webkit-details-marker{display:none}
 @keyframes rsX2{0%,64.9%{opacity:0}65%{opacity:1}68.5%{opacity:0}72%{opacity:1}75.5%{opacity:0}79%{opacity:1}82.5%{opacity:0}86%{opacity:1}89.5%{opacity:0}93%{opacity:1}96.5%,100%{opacity:0}}
 @keyframes rsX3{0%,68.4%{opacity:0}68.5%{opacity:1}72%{opacity:0}75.5%{opacity:1}79%{opacity:0}82.5%{opacity:1}86%{opacity:0}89.5%{opacity:1}93%{opacity:0}96.5%,100%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.rs-espia,.fr-corda{display:none}.fr-pux{animation:none}}
+/* poses novas (folha de 32) */
+.rs-salta .rs-c{animation:rsSalta .9s ease-in-out infinite}@keyframes rsSalta{0%,100%{transform:scale(1.04,.94)}45%{transform:translateY(-9%) scale(.96,1.05)}}
+.rs-salta .rs-som{animation:rsSomL .9s ease-in-out infinite}
+.rs-treme .rs-c{animation:rsTreme .32s linear infinite}@keyframes rsTreme{0%,100%{transform:translateX(-1.2%)}50%{transform:translateX(1.2%) scale(1.01)}}
+.rs-chora .rs-c{animation:rsChora .8s ease-in-out infinite}@keyframes rsChora{0%,100%{transform:translateY(0) scale(1.02,.98)}50%{transform:translateY(-2%) scale(.99,1.02)}}
+.rs-come .rs-c{animation:rsCome 1.2s ease-in-out infinite}@keyframes rsCome{0%,100%{transform:scale(1.01,.99)}30%{transform:rotate(-2deg) scale(1.03,.97)}60%{transform:rotate(2deg) translateY(-1%) scale(.99,1.02)}}
+.rs-sobe .rs-c{animation:rsSobe 3s ease-in-out infinite}@keyframes rsSobe{0%,100%{transform:scale(1.01,.99)}50%{transform:translateY(-2%) scale(.99,1.02)}}
+.rs-ponta .rs-c{animation:rsPonta 1.4s ease-in-out infinite}@keyframes rsPonta{0%,100%{transform:translateX(0) scale(1.01,.99)}40%{transform:translateX(4%) rotate(2deg)}}
+.rs-pensa .rs-c{animation:rsPensa 4s ease-in-out infinite}@keyframes rsPensa{0%,100%{transform:rotate(-3deg) scale(1.01,.99)}50%{transform:rotate(3deg) scale(.99,1.02)}}
+.rs-chora .rs-suor,.rs-treme .rs-suor{display:none}
+@media (prefers-reduced-motion:reduce){.rs-salta .rs-c,.rs-treme .rs-c,.rs-chora .rs-c,.rs-come .rs-c,.rs-sobe .rs-c,.rs-ponta .rs-c,.rs-pensa .rs-c{animation:none}}
 /* ator solto: Rael passeando */
 .rs-ator{position:fixed;left:0;top:0;width:104px;height:104px;z-index:30;will-change:transform;cursor:pointer}
 .at-in{width:100%;height:100%;transform-origin:50% 96%}.at-in .rs{width:100%!important;height:100%!important}
@@ -4531,7 +4542,7 @@ function frTopo(tab, td) {
   const bal = frBalaoDo(ctx); ctx.pensando = !!bal && bal.k === "treino";
   if (!bal && hoje && !tabela && tab !== "evo" && typeof frRespFrase === "function") { const rf = frRespFrase(); if (rf) fala = rf; }
   let cena = hoje ? frCenaApp(ctx) : (humor === "feliz" ? "danca" : "tarde");
-  if (tab === "evo") { const ps2 = frPesos(); const subiu = ps2.length > 1 && ps2[ps2.length - 1].kg > ps2[ps2.length - 2].kg + 0.3; cena = humor === "feliz" ? "danca" : subiu ? "susto" : (new Date().getDate() % 2 ? "espelho" : "pesando"); }
+  if (tab === "evo") { const ps2 = frPesos(); const subiu = ps2.length > 1 && ps2[ps2.length - 1].kg > ps2[ps2.length - 2].kg + 0.3; cena = humor === "feliz" ? "pesaFeliz" : subiu ? "decep" : (new Date().getDate() % 2 ? "espelho" : "pesando"); }
   const corpo = bal ? `<div class="fr-fala">${esc(bal.txt)}</div><div class="fr-resp">${bal.resp.map(r => `<button class="${r[0]}" data-act="frBal" data-k="${bal.k}" data-a="${r[1]}">${r[2]}</button>`).join("")}</div>` : `<div class="fr-fala">${esc(fala)}</div>`;
   const it = frIntroDo(tab, cena, 104);
   return `<div class="fr-top">${it ? it.rael : frRaelCena(cena, 104)}${it && it.pux ? '<i class="fr-corda"></i>' : ""}<div class="fr-bal${it && it.pux ? " fr-pux" : ""}"><div class="eyebrow">${esc(rot)}</div>${corpo}</div></div>`;
@@ -4650,19 +4661,20 @@ if (/[?&]galeria=rael/.test(location.search)) addEventListener("load", () => set
 }, 700));
 // ===== Rael de argila (arte final, WebP): poses reais animadas em CSS (2.5D). Cai no Rael SVG se o aparelho for fraco ou a imagem falhar. =====
 // Cada pose é um recorte transparente em rael/ (~8 KB cada, carregado só quando o Rael aparece). Todas na mesma escala (base 250 px de altura).
-const FR_SPRP = { parado: [230, 247], corre1: [199, 248], corre2: [205, 250], halter: [227, 251], barra: [280, 240], biceps: [211, 249], dorme: [261, 197] };
+const FR_SPRP = { parado: [230, 247], corre1: [199, 248], corre2: [205, 250], halter: [227, 251], barra: [280, 240], biceps: [211, 249], dorme: [261, 197], chora: [214, 231], triste: [167, 241], neutro: [175, 247], alegre: [210, 243], feliz: [214, 243], decep: [171, 251], balfeliz: [220, 272], susto: [171, 268], pizza: [198, 231], maca: [190, 235], shake: [165, 239], cafe: [163, 233], sofa: [254, 180], deitado: [272, 120], bocejo: [163, 237], podio: [196, 240], confete: [225, 212], aponta: [210, 227], pensa: [157, 231], medita: [216, 220], fone: [192, 237], anda: [194, 231], dorme2: [208, 177], acena: [196, 229], caido: [208, 163] };
 const FR_SEQ = { corre: [8, 295, 273, 1.2], barra: [6, 389, 258, 1.5], rosca: [6, 389, 260, 1.5], agua: [4, 236, 245, 1.6] }; // sequências: [quadros, largura, altura (base 250), segundos do ciclo]; âncora nos pés, sem tremer
 const FR_SPRO = { parado: [[35.4, 35.3, 3.6], [62.2, 35.5, 3.5]], barra: [[39.6, 32.5, 2.7], [59.4, 32.2, 2.7]], biceps: [[56.2, 35, 3.7], [81.4, 34.4, 3.2]] }; // olhos (%) para piscar
 const FR_SPRC = { // cena -> [animação, quadros]
-  tarde: ["parado", ["parado"]], manha: ["parado", ["parado"]], sabado: ["parado", ["parado"]], hidratado: ["agua", ["seq:agua"]], aplauso: ["parado", ["parado"]], alongando: ["parado", ["parado"]], meditando: ["parado", ["parado"]],
-  danca: ["danca", ["parado"]], noite: ["dorme", ["dorme"]], soneca: ["dorme", ["dorme"]], domingo: ["dorme", ["dorme"]], bocejo: ["dorme", ["dorme"]], cansado: ["cansado", ["parado"]],
-  treinando: ["treinaS", ["seq:barra", "seq:rosca"]], forte: ["flex", ["biceps"]], alfa: ["flex", ["biceps"]], rei: ["flex", ["biceps"]], comemora: ["pula", ["barra"]], corrida: ["correS", ["seq:corre"]], fone: ["correS", ["seq:corre"]]
+  tarde: ["parado", ["parado"]], manha: ["come", ["cafe"]], sabado: ["parado", ["parado"]], hidratado: ["agua", ["seq:agua"]], aplauso: ["salta", ["acena"]], alongando: ["parado", ["parado"]], meditando: ["parado", ["medita"]],
+  pizza: ["come", ["pizza"]], almoco: ["come", ["maca"]], shake: ["come", ["shake"]], cafeina: ["come", ["cafe"]], sofa: ["parado", ["sofa"]], susto: ["treme", ["susto"]], pesando: ["parado", ["decep"]], decep: ["treme", ["decep"]], pesaFeliz: ["salta", ["balfeliz"]], podio: ["sobe", ["podio"]], cobra: ["ponta", ["aponta"]], pensando: ["pensa", ["pensa"]], triste: ["chora", ["chora"]], caido: ["cansado", ["caido"]], deitado: ["parado", ["deitado"]],
+  danca: ["danca", ["alegre"]], noite: ["dorme", ["dorme2"]], soneca: ["dorme", ["dorme2"]], domingo: ["dorme", ["dorme2"]], bocejo: ["parado", ["bocejo"]], cansado: ["cansado", ["parado"]],
+  treinando: ["treinaS", ["seq:barra", "seq:rosca"]], forte: ["flex", ["biceps"]], alfa: ["flex", ["biceps"]], rei: ["flex", ["biceps"]], comemora: ["pula", ["confete"]], corrida: ["correS", ["seq:corre"]], fone: ["danca", ["fone"]]
 };
 let FR_SPR_OFF = false;
 function frSprOk() { return !FR_SPR_OFF && frRael25ok() && !/[?&]rael=svg/.test(location.search); }
 function frSprFalha(img) { FR_SPR_OFF = true; try { const e = img.closest(".ra"); if (e) e.outerHTML = frRaelCenaSvg(e.dataset.cena || "tarde", +e.dataset.tam || 96); } catch (er) {} }
 function frSprHtml(anim, quadros, tam, cena) {
-  const t = tam || 96, extra = { treina: '<i class="rs-suor"></i>', treinaS: '<i class="rs-suor"></i>', correS: '<i class="rs-v rs-v1"></i><i class="rs-v rs-v2"></i>', cansado: '<i class="rs-suor"></i>', pula: '<i class="rs-c1"></i><i class="rs-c2"></i><i class="rs-c3"></i>', flex: '<i class="rs-st rs-s1"></i><i class="rs-st rs-s2"></i>', dorme: '<b class="rs-z">z</b><b class="rs-z rs-z2">Z</b>', danca: '<b class="rs-n">♪</b><b class="rs-n rs-n2">♫</b>', corre: '<i class="rs-v rs-v1"></i><i class="rs-v rs-v2"></i>' }[anim] || "";
+  const t = tam || 96, extra = { treme: '<i class="rs-suor"></i>', chora: '<i class="rs-suor"></i>', treina: '<i class="rs-suor"></i>', treinaS: '<i class="rs-suor"></i>', correS: '<i class="rs-v rs-v1"></i><i class="rs-v rs-v2"></i>', cansado: '<i class="rs-suor"></i>', pula: '<i class="rs-c1"></i><i class="rs-c2"></i><i class="rs-c3"></i>', flex: '<i class="rs-st rs-s1"></i><i class="rs-st rs-s2"></i>', dorme: '<b class="rs-z">z</b><b class="rs-z rs-z2">Z</b>', danca: '<b class="rs-n">♪</b><b class="rs-n rs-n2">♫</b>', corre: '<i class="rs-v rs-v1"></i><i class="rs-v rs-v2"></i>' }[anim] || "";
   const fr = quadros.map((q, i) => {
     if (q.startsWith("seq:")) { const nome = q.slice(4), [n, w, h, dur] = FR_SEQ[nome]; return `<span class="rs-f rs-f${i} rs-sq" style="width:${(w / 250 * 100).toFixed(1)}%;height:${(h / 250 * 100).toFixed(1)}%;margin-left:-${(w / 500 * 100).toFixed(1)}%"><img src="rael/seq-${nome}.webp" alt="" decoding="async" draggable="false" style="width:${n * 100}%;animation:rsStrip ${dur}s steps(${n}) infinite" ${i ? "" : 'onerror="frSprFalha(this)"'}></span>`; }
     const [w, h] = FR_SPRP[q], ol = FR_SPRO[q], pj = `style="width:${(w / 250 * 100).toFixed(1)}%;height:${(h / 250 * 100).toFixed(1)}%;margin-left:-${(w / 500 * 100).toFixed(1)}%"`;
@@ -4676,8 +4688,8 @@ function frRaelSpr(cena, tam) { const c = FR_SPRC[cena]; return c ? frSprHtml(c[
 function frRaelCena(cena, tam) { if (frSprOk()) { const s = frRaelSpr(cena, tam); if (s) return s; } return frRaelCenaSvg(cena, tam); }
 function frRaelPose(humor, tam) { // Rael pequeno (logo, balões, humor)
   if (!frSprOk()) return frRael(humor, tam);
-  const dorme = humor === "dorme", forte = humor === "alfa" || humor === "otimo";
-  return frSprHtml(dorme ? "dorme" : forte ? "flex" : "parado", [dorme ? "dorme" : forte ? "biceps" : "parado"], tam, humor || "normal");
+  const H = { pessimo: ["chora", "chora"], mal: ["parado", "triste"], normal: ["parado", "neutro"], feliz: ["parado", "alegre"], otimo: ["salta", "feliz"], alfa: ["flex", "biceps"], foco: ["pensa", "pensa"], dorme: ["dorme", "dorme2"] }[humor] || ["parado", "neutro"];
+  return frSprHtml(H[0], [H[1]], tam, humor || "normal");
 }
 
 // ---- Rael interage com a tela: entra puxando o balão, levanta de manhã, espia por trás da barra de abas e sai correndo
