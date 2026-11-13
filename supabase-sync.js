@@ -28,6 +28,13 @@ async function sbEntrar(email, senha) {
   const { error } = await SB.cli.auth.signInWithPassword({ email, password: senha });
   return error ? error.message : null;
 }
+// Login com Google (OAuth do Supabase). Volta para a mesma página; o supabase-js lê a sessão da URL em sbInit.
+// Precisa: provider Google ativo no Supabase + a URL do site em Redirect URLs.
+async function sbGoogle() {
+  if (!SB.cli) return "Nuvem indisponível neste aparelho.";
+  const { error } = await SB.cli.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: "select_account" } } });
+  return error ? error.message : null;
+}
 async function sbSair() { await SB.cli.auth.signOut(); SB.user = null; }
 
 // Baixa tudo do perfil atual e mescla (mesma regra do mergeRemote: o _t maior vence)
