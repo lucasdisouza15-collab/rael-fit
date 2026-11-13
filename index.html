@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v76-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v77-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v76-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v77-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -1543,6 +1543,14 @@ function apiKey() { try { return localStorage.getItem(KEY_LS) || CHAVE_PADRAO; }
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
   setTimeout(() => toast && toast("IA ativada neste aparelho"), 800);
 })();
+/* Rumo ao TAF é opt-in (o app tem outros usuários): o link #taf liga neste aparelho e no perfil; sem isso nada do TAF aparece. */
+(function ativarTafPorLink() {
+  if ((location.hash || "") !== "#taf") return;
+  try { localStorage.setItem("frango:taf-on", "1"); } catch (e) {}
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
+  setTimeout(() => toast && toast("Rumo ao TAF ativado"), 800);
+})();
+function tafAtivo(p) { let ls = false; try { ls = localStorage.getItem("frango:taf-on") === "1"; } catch (e) {} return !!(p && p.tafOn === true) || ls; }
 function useApiKey() { if (CAP.via === "claude") return; const k = apiKey(); if (k) { const cl = /^sk-ant-/.test(k); CAP.sample = cl ? apiSampler(k) : geminiSampler(k); CAP.images = true; CAP.via = cl ? "api" : "gemini"; } else if (CAP.via === "api" || CAP.via === "gemini") { CAP.sample = null; CAP.images = false; CAP.via = null; } }
 async function connectCaps() {
   useApiKey();
@@ -2450,7 +2458,7 @@ function activeBanner() {
    Seg a Sex giram as rotinas na ordem, continuando do último treino feito; a rotina "bônus/opcional" vai ao sábado; domingo folga.
    Quem escolheu os dias à mão (p.semana com algum dia) continua mandando. */
 function semanaRot(p, ws, feitos, hoje) {
-  const rs = (p.rotinas || []).filter(r => r && r.id && r.nome);
+  const rs = (p.rotinas || []).filter(r => r && r.id && r.nome && !r.taf); // rotinas TAF (flag taf) nunca entram na rotação push/pull/perna
   const base = rs.filter(r => !/b[ôo]nus|opcional/i.test(r.nome)), bon = rs.find(r => /b[ôo]nus|opcional/i.test(r.nome));
   const out = {}; if (!base.length) return out;
   const isLeg = r => /^\s*(legs?|pernas?)\b/i.test(r.nome), leg = base.find(isLeg), nonLeg = base.filter(r => !isLeg(r));
@@ -2510,6 +2518,36 @@ const TAF_ABC = [
   ["2027-05-17", "volume -30% (polimento)", "1 x 8' no ritmo da meta", "leve"]
 ];
 const TAF_FIM = "2027-05-30";
+const TAF_ROTINAS = [
+  { id: "taf-corrida", nome: "TAF Corrida", taf: true, itens: [
+    { eid: "caminhada", series: 1, aq: 0, min: 5, max: 5, desc: 0 },
+    { eid: "corrida-rua", series: 1, aq: 0, min: 20, max: 32, desc: 0 }] },
+  { id: "taf-fin-push", nome: "TAF Finalizador PUSH", taf: true, itens: [
+    { eid: "abdominal-supra", series: 3, aq: 1, min: 12, max: 25, desc: 60 }] },
+  { id: "taf-fin-pull", nome: "TAF Finalizador PULL", taf: true, itens: [
+    { eid: "barra-fixa", series: 4, aq: 1, min: 3, max: 5, desc: 90 }] },
+  { id: "taf-teste", nome: "TESTE TAF", taf: true, itens: [
+    { eid: "caminhada", series: 1, aq: 0, min: 5, max: 5, desc: 0 },
+    { eid: "polichinelo", series: 1, aq: 0, min: 30, max: 60, desc: 30 },
+    { eid: "barra-fixa", series: 1, aq: 1, min: 1, max: 10, desc: 180 },
+    { eid: "abdominal-supra", series: 1, aq: 1, min: 20, max: 45, desc: 180 },
+    { eid: "corrida-rua", series: 1, aq: 0, min: 12, max: 12, desc: 0 }] }
+];
+// Garante aquecimento (série W) em toda rotina sem nenhum: 1 série no primeiro exercício de carga/corpo. Devolve quantas rotinas mudou. Não mexe em quem já tem.
+function tafGarantirAquec(rotinas, ehTipo) {
+  let n = 0;
+  (rotinas || []).forEach(r => {
+    if (!r || r.taf || !Array.isArray(r.itens) || r.itens.some(i => (+i.aq || 0) > 0)) return;
+    const it = r.itens.find(i => { const t = ehTipo(i.eid); return t === "carga" || t === "corpo"; }); if (!it) return;
+    it.aq = 1; n++;
+  });
+  return n;
+}
+function tafAddRotinas(rotinas) {
+  const have = new Set((rotinas || []).map(r => r && r.id)); let n = 0;
+  TAF_ROTINAS.forEach(r => { if (!have.has(r.id)) { rotinas.push(JSON.parse(JSON.stringify(r))); n++; } });
+  return n;
+}
 function tafDif(a, b) { return Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000); }
 function tafBarraTxt(hoje) {
   return hoje < "2026-12-12" ? "4 x 3 negativas de 5 s (sobe pulando, desce devagar)" : hoje < "2027-02-06" ? "4 x máximo de negativas + 20 s de isometria no topo" : hoje < "2027-04-03" ? "4 x 2 a 3 repetições assistidas (elástico), diminuindo a ajuda" : "4 séries de 2 a 3 repetições limpas";
@@ -2531,8 +2569,23 @@ function tafStatus(t) {
   return { barra: f(t && t.barra, TAF_MIN.barra), abd: f(t && t.abd, TAF_MIN.abd), corrida: f(t && t.corrida, TAF_MIN.corrida) };
 }
 /*TAF-PURO-FIM*/
+let TAF_ROT_OK = false;
+function tafRotInit() {
+  if (TAF_ROT_OK) return; TAF_ROT_OK = true;
+  try {
+    const p = P(); if (!tafAtivo(p) || p.tafRotV === 1) return;
+    updP(q => {
+      q.tafOn = true;
+      if (!q.tafRotAntes) q.tafRotAntes = clean(q.rotinas || []); // estado anterior, para voltar se precisar
+      q.rotinas = q.rotinas || [];
+      tafGarantirAquec(q.rotinas, eid => exById(eid, q).tipo);
+      tafAddRotinas(q.rotinas);
+      q.tafRotV = 1;
+    });
+  } catch (e) {}
+}
 function tafCard() {
-  const p = P(), t = TODAY(), pl = tafPlano(t); if (!pl.ativo || p.tafOff) return "";
+  const p = P(), t = TODAY(), pl = tafPlano(t); if (!pl.ativo || !tafAtivo(p)) return "";
   const u = tafUltimo(p.taf), st = tafStatus(u), A = pl.alvo;
   const cel = (v, un, s) => v == null || v === "" ? `<span class="muted">sem dado</span>` : `<b style="color:var(--${s === "ok" ? "good" : "warn"})">${esc(String(v))}${un}</b>`;
   let h = `<div class="card"><div class="row between"><h2>Rumo ao TAF</h2><span class="pill acc">Escrivão PC-BA</span></div>`;
@@ -2664,7 +2717,7 @@ function viewRotinas() {
   if (sel) h += `<div class="card flat"><div class="small ink2">Toque nas rotinas para marcar. ${nSel} marcada${nSel === 1 ? "" : "s"}.</div><div class="row" style="margin-top:8px;gap:8px"><button class="btn sm" data-act="rtSelAll">Marcar todas</button><button class="btn sm danger grow" data-act="rtSelDelAsk" ${nSel ? "" : "disabled"}>${ICON.trash.replace("<svg", '<svg width="16" height="16"')} Excluir marcadas (${nSel})</button></div></div>`;
   const sug = !sel && typeof hvRotinas === "function" ? hvRotinas(workouts()) : [];
   if (sug.length) h += `<div class="card flat"><div class="small ink2">Seu histórico tem ${sug.length} treino${sug.length === 1 ? "" : "s"} com nome que ${sug.length === 1 ? "pode virar rotina" : "podem virar rotinas"}.</div><button class="btn soft block" style="margin-top:8px" data-act="hevyRotHist">Criar rotinas a partir do histórico (${sug.length})</button></div>`;
-  h += rs.length ? rs.map(r => `<div class="card ${sel && sel[r.id] ? "rt-on" : ""}"><div class="row">${sel ? `<button class="rtck ${sel[r.id] ? "on" : ""}" data-act="rtSelTog" data-id="${r.id}" aria-label="Marcar">${sel[r.id] ? ICON.check : ""}</button>` : ""}<div class="grow" ${sel ? `data-act="rtSelTog" data-id="${r.id}"` : ""}><h3>${esc(r.nome)}</h3><div class="xs muted">${r.itens.length} exercícios · ${r.itens.reduce((s, x) => s + num(x.series), 0)} séries · ${[...new Set(r.itens.map(i => exById(i.eid).grupo))].slice(0, 4).join(", ")}</div></div>${sel ? "" : `<button class="iconbtn" data-act="rtDelCard" data-id="${r.id}" aria-label="Apagar rotina">${ICON.trash}</button><button class="iconbtn" data-act="editRoutine" data-id="${r.id}" aria-label="Editar">${ICON.edit}</button><button class="btn sm pri" data-act="startRoutine" data-id="${r.id}">Começar</button>`}</div></div>`).join("")
+  h += rs.length ? rs.map(r => `<div class="card ${sel && sel[r.id] ? "rt-on" : ""}"><div class="row">${sel ? `<button class="rtck ${sel[r.id] ? "on" : ""}" data-act="rtSelTog" data-id="${r.id}" aria-label="Marcar">${sel[r.id] ? ICON.check : ""}</button>` : ""}<div class="grow" ${sel ? `data-act="rtSelTog" data-id="${r.id}"` : ""}><h3>${esc(r.nome)}</h3><div class="xs muted">${r.itens.length} exercícios · ${r.itens.reduce((s, x) => s + num(x.series), 0)} séries · ${[...new Set(r.itens.map(i => exById(i.eid).grupo))].slice(0, 4).join(", ")}</div><div class="xs ${r.itens.some(i => num(i.aq) > 0) || r.taf ? "ink2" : "muted"}">${r.taf ? "TAF · aquecimento no 1º item (caminhada) ou série W · fora da sua rotação push/pull/perna" : r.itens.some(i => num(i.aq) > 0) ? "Aquecimento: " + r.itens.filter(i => num(i.aq) > 0).map(i => num(i.aq) + "W " + esc(exById(i.eid).nome)).join(", ") : "Sem aquecimento (toque em editar para incluir)"}</div></div>${sel ? "" : `<button class="iconbtn" data-act="rtDelCard" data-id="${r.id}" aria-label="Apagar rotina">${ICON.trash}</button><button class="iconbtn" data-act="editRoutine" data-id="${r.id}" aria-label="Editar">${ICON.edit}</button><button class="btn sm pri" data-act="startRoutine" data-id="${r.id}">Começar</button>`}</div></div>`).join("")
     : `<div class="empty">Nenhuma rotina ainda. Crie do zero, use um modelo pronto ou monte a semana inteira na aba Semana.</div>`;
   return h;
 }
@@ -2684,14 +2737,14 @@ ACT.useModel = () => {
 };
 ACT.addModel = ds => { const m = MODELOS[+ds.i]; updP(p => { p.rotinas = (p.rotinas || []).concat([{ id: uid(), nome: m.nome, itens: adaptItens(m.itens, "academia", "int", "hip") }]); }); closeSheet(); toast("Rotina adicionada"); };
 const RT = {};
-ACT.newRoutine = () => { Object.assign(RT, { id: null, nome: "", itens: [] }); UIc.confirm = null; openRoutine(); };
-ACT.editRoutine = ds => { const r = rotinaById(ds.id); if (!r) return; Object.assign(RT, clean(r)); UIc.confirm = null; openRoutine(); };
+ACT.newRoutine = () => { delete RT.taf; Object.assign(RT, { id: null, nome: "", itens: [] }); UIc.confirm = null; openRoutine(); };
+ACT.editRoutine = ds => { const r = rotinaById(ds.id); if (!r) return; delete RT.taf; Object.assign(RT, clean(r)); UIc.confirm = null; openRoutine(); };
 function openRoutine() {
   openSheet({ title: RT.id ? "Editar rotina" : "Nova rotina", full: true, body: () => `
     <label class="f">Nome da rotina<input type="text" id="rtNome" data-in="rtNome" value="${esc(RT.nome)}" placeholder="Ex.: Treino A, peito e tríceps" maxlength="60"></label>
     ${RT.itens.map((it, i) => { const ex = exById(it.eid); const lt = ex.tipo === "tempo" ? "seg" : ex.tipo === "cardio" ? "min" : "reps"; return `<div class="ex-card"><div class="row"><div class="grow"><div class="t" style="font-weight:700">${esc(ex.nome)}</div><div class="xs muted">${esc(ex.grupo)} · ${esc(ex.equip)}</div></div>
       <button class="iconbtn" data-act="rtMove" data-i="${i}" data-d="-1" aria-label="Subir" ${i ? "" : "disabled"}>${ICON.up}</button><button class="iconbtn" data-act="rtMove" data-i="${i}" data-d="1" aria-label="Descer" ${i < RT.itens.length - 1 ? "" : "disabled"}>${ICON.down}</button><button class="iconbtn" data-act="rtDel" data-i="${i}" aria-label="Tirar">${ICON.x}</button></div>
-      <div class="grid4" style="margin-top:8px"><label class="f">Séries<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="series" value="${it.series}"></label><label class="f">${lt} mín<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="min" value="${it.min}"></label><label class="f">${lt} máx<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="max" value="${it.max}"></label><label class="f">Descanso s<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="desc" value="${it.desc}"></label></div></div>`; }).join("")}
+      <div class="grid4" style="margin-top:8px"><label class="f">Séries<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="series" value="${it.series}"></label><label class="f">${lt} mín<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="min" value="${it.min}"></label><label class="f">${lt} máx<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="max" value="${it.max}"></label><label class="f">Descanso s<input type="number" inputmode="numeric" data-in="rtF" data-i="${i}" data-f="desc" value="${it.desc}"></label></div><label class="f" style="margin-top:8px">Aquecimento: séries W antes das séries de trabalho (0 a 3)<input type="number" inputmode="numeric" min="0" max="3" data-in="rtF" data-i="${i}" data-f="aq" value="${it.aq || 0}"></label></div>`; }).join("")}
     <button class="btn soft block" data-act="rtAdd">${ICON.plus.replace("<svg", '<svg width="16" height="16"')} Adicionar exercício</button>
     <div class="disc">Progressão automática: quando você fizer todas as séries no máximo de repetições, o app sugere +${fmt1(P().incremento)} kg no próximo treino.</div>
     `,
@@ -2705,7 +2758,8 @@ ACT.rtAdd = () => openExPicker(ex => { RT.itens.push({ eid: ex.id, series: 3, mi
 ACT.saveRoutine = () => {
   const nome = (RT.nome || "").trim(); if (!nome) { toast("Dê um nome à rotina."); return; }
   if (!RT.itens.length) { toast("Adicione pelo menos um exercício."); return; }
-  const r = { id: RT.id || uid(), nome, itens: clean(RT.itens) };
+  const r = { id: RT.id || uid(), nome, itens: clean(RT.itens).map(i => Object.assign(i, { aq: Math.min(3, Math.max(0, Math.round(num(i.aq) || 0))) })) };
+  if (RT.taf) r.taf = true;
   updP(p => { const i = (p.rotinas || []).findIndex(x => x.id === r.id); if (i >= 0) p.rotinas[i] = r; else p.rotinas = (p.rotinas || []).concat([r]); });
   closeSheet(); toast("Rotina salva");
 };
@@ -6128,6 +6182,7 @@ function ixEvoExtra() {
   return h;
 }
 function render() {
+  tafRotInit();
   const showDate = ui.tab === "hoje" || (ui.tab === "comer" && ui.sub.comer === "diario");
   $("#topbar").innerHTML = `<div class="brand">${frRael("normal", 34)}<span class="fr-logo">Frangômetro</span><span class="fr-ver">versão teste</span></div>${perfis().list.length > 1 ? `<button class="chip" data-act="perfilMenu" aria-label="Trocar perfil" style="padding:4px 10px">${esc(nomeU().slice(0, 12))}</button>` : ""}${showDate ? `<div class="datenav"><button data-act="dPrev" aria-label="Dia anterior">‹</button><span class="lbl" data-act="dToday" role="button" tabindex="0" title="Voltar para hoje">${esc(labelDate(ui.date))}</span><button data-act="dNext" aria-label="Próximo dia">›</button></div>` : ""}`;
   $("#tabbar").innerHTML = TABS.map(([k, n]) => `<button data-act="tab" data-k="${k}" ${ui.tab === k ? 'aria-current="page"' : ""}>${ICON[k]}<span>${n}</span></button>`).join("");
