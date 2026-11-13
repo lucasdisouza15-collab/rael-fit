@@ -67,6 +67,11 @@ Lógica pura em `index.html` entre `/*IX-PURO-INI*/` e `/*IX-PURO-FIM*/`, testad
 - Aceite: `node tools/check.js` verde (25 verificações TAF + semana com 4 rotinas TAF); prova em navegador com recarga: 6 rotinas + 4 TAF, rotação inalterada, 6 no backup, sem duplicar. Nada testado em celular real.
 - Paridade: aba Frangômetro do Painel (opt-in sempre ligado, é privado).
 
+### Barra do TAF: escada de regressões (13/11/2026, v79)
+- Problema: Lucas relatou que sobe no banco, pega a barra e, ao tirar o apoio, o peso o puxa e ele não segura 1 s (~112 kg). A negativa não é ponto de partida.
+- Mudança: `TAF Finalizador PULL` = dead hang assistido (tempo) + remada invertida; `TESTE TAF` ganha dead hang (tempo máximo). Metas de barra por ciclo em segundos/reps (12/12 suspensão assistida 20 s; 06/02 sem apoio 10 s; 03/04 3 negativas de 3 s; 29/05 1 rep limpa). A meta final fica ABAIXO do mínimo oficial (3 reps) e isso está escrito. Rotinas já criadas (v1/v2) são atualizadas por id na primeira abertura (`tafRotV` 3); o resto do perfil não muda.
+- Aceite: `node tools/check.js` verde (27 TAF) e prova de migração v1 para v3 em navegador (PUSH A intacta, 2 itens no Finalizador PULL).
+
 ## Regras do método
 - Antes de abrir PR: `node tools/check.js` (sintaxe dos scripts + testes das contas de kcal/macros e da nota Pintinho/Frango/Galo Alfa). Se mudar uma regra de conta, ajustar o teste na mesma entrega.
 - Paridade: tudo que entra no site (index.html) vai também para a aba Frangômetro do Painel, exceto o que for exclusivo de um dos dois.
