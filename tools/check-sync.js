@@ -40,6 +40,11 @@ function mundo(linhas, local) {
     m.sb.SB.cli.auth = { signInWithOAuth: async () => ({ error: { message: 'x' } }) }; ok((await m.sb.sbGoogle()) === 'x', 'Google: erro do Supabase volta como mensagem');
     const html = fs.readFileSync(__dirname + '/../index.html', 'utf8');
     ok((html.match(/data-act="sbGoogle"/g) || []).length === 2 && /ACT\.sbGoogle\s*=/.test(html), 'Google: botão na tela de Nuvem e no início do onboarding, com ação ligada'); }
+  // Depois do pull, o app é avisado (fecha onboarding aberto antes da nuvem); volta do Google espera mais
+  { m = mundo(linhas.slice(0, 3), {}); let avisou = 0; m.sb.sbDepoisPull = () => { avisou++; }; await m.sb.sbPull();
+    ok(avisou === 1, 'Pós-login: sbPull avisa o app (sbDepoisPull) ao terminar');
+    const html = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+    ok(/function sbDepoisPull\(\)/.test(html) && /volta \? 15000 : 3000/.test(html), 'Pós-login: onboarding aberto cedo fecha após o pull; volta do Google espera até 15 s'); }
   console.log('NÃO TESTADO aqui (precisa do Supabase real): RLS entre dois logins; mescla por campo.');
   console.log(f ? f + ' falha(s)' : 'sync VERDE'); process.exit(f ? 1 : 0);
 })();

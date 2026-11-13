@@ -33,6 +33,7 @@ async function sbEntrar(email, senha) {
 // Precisa: provider Google ativo no Supabase + a URL do site em Redirect URLs.
 async function sbGoogle() {
   if (!SB.cli) return "Nuvem indisponível neste aparelho.";
+  try { sessionStorage.setItem("sb:oauth", "1"); } catch (e) {}   // marca a volta do Google: o app espera mais pela nuvem antes de decidir o onboarding
   const { error } = await SB.cli.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: "select_account" } } });
   return error ? error.message : null;
 }
@@ -58,6 +59,7 @@ async function sbPull() {
     for (const k in rem) if (!ST.docs[k] || (rem[k]._t || 0) > (ST.docs[k]._t || 0)) ST.docs[k] = rem[k];
     for (const k in ST.docs) if (!rem[k] || (ST.docs[k]._t || 0) > (rem[k]._t || 0)) sbQueue(k);
     lsWrite(); render(); SB.on = true; SB.err = null;
+    if (typeof sbDepoisPull === "function") sbDepoisPull();   // se o onboarding abriu antes da nuvem responder, fecha quando o perfil chega
   } catch (e) { SB.err = e.message || "erro"; SB.on = false; }
 }
 
