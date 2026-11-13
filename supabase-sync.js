@@ -4,7 +4,7 @@
  * (a chave publishable é pública por desenho; quem protege os dados é o RLS. NUNCA usar secret/service_role aqui.)
  * Carregar ANTES do app: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
  */
-const SB = { msg: "", cli: null, user: null, on: false, fila: new Set(), timer: null, err: null };
+const SB = { google: false, msg: "", cli: null, user: null, on: false, fila: new Set(), timer: null, err: null };
 
 async function sbInit() {
   try {
@@ -14,6 +14,7 @@ async function sbInit() {
     const { data } = await SB.cli.auth.getSession();
     SB.user = data.session && data.session.user || null;
     SB.cli.auth.onAuthStateChange((_e, s) => { SB.user = s && s.user || null; if (SB.user) sbPull(); });
+    try { const st = await (await fetch(cfg.url + "/auth/v1/settings", { headers: { apikey: cfg.key } })).json(); SB.google = !!(st.external && st.external.google); } catch (e) {}   // botão Google só aparece se o provider estiver ligado no Supabase
     if (SB.user) await sbPull();
   } catch (e) { SB.err = String(e); }
 }
