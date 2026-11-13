@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v87-20261113f"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v88-20261113g"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v87-20261113f";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v88-20261113g";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -262,6 +262,16 @@ details.acc summary::-webkit-details-marker{display:none}
 @keyframes raBic{0%,12%{transform:scale(0)}38%{transform:scale(1.25)}46%,70%{transform:scale(1)}85%,100%{transform:scale(0)}}
 .ra-pow{transform-origin:100px 26px;transform:scale(0);animation:raPow 3.2s ease-out infinite}
 @keyframes raPow{0%,36%{transform:scale(0) rotate(0)}44%{transform:scale(1.2) rotate(8deg)}60%{transform:scale(1) rotate(-4deg)}75%,100%{transform:scale(0)}}
+/* sequências reais (spritesheet em tiras, âncora nos pés) */
+.rs-sq{overflow:hidden}.rs-sq img{inset:auto;left:0;top:0;height:100%;max-width:none}
+@keyframes rsStrip{to{transform:translateX(-100%)}}
+.rs-correS .rs-c{animation:rsCorreS .4s ease-in-out infinite}
+@keyframes rsCorreS{0%,100%{transform:translateY(0) scale(1.02,.98)}50%{transform:translateY(-3%) scale(.99,1.02)}}
+.rs-correS .rs-som{animation:rsSomC .4s ease-in-out infinite}
+.rs-treinaS .rs-f0{animation:rsTS0 6s steps(1) infinite}.rs-treinaS .rs-f1{animation:rsTS1 6s steps(1) infinite}
+@keyframes rsTS0{0%{opacity:1}50%,100%{opacity:0}}@keyframes rsTS1{0%{opacity:0}50%,100%{opacity:1}}
+.rs-agua .rs-c{animation:rsAgua 3.2s ease-in-out infinite}@keyframes rsAgua{0%,100%{transform:scale(1.01,.99)}50%{transform:scale(.99,1.02)}}
+@media (prefers-reduced-motion:reduce){.rs-treinaS .rs-f1{opacity:0}.rs-sq img{animation:none!important}}
 /* Rael de argila: movimento em CSS por cima das poses reais (só transform e opacity) */
 .rs{display:inline-block;position:relative;vertical-align:bottom}
 .rs-c,.rs-halo,.rs-som{position:absolute;pointer-events:none}
@@ -4607,18 +4617,20 @@ if (/[?&]galeria=rael/.test(location.search)) addEventListener("load", () => set
 // ===== Rael de argila (arte final, WebP): poses reais animadas em CSS (2.5D). Cai no Rael SVG se o aparelho for fraco ou a imagem falhar. =====
 // Cada pose é um recorte transparente em rael/ (~8 KB cada, carregado só quando o Rael aparece). Todas na mesma escala (base 250 px de altura).
 const FR_SPRP = { parado: [230, 247], corre1: [199, 248], corre2: [205, 250], halter: [227, 251], barra: [280, 240], biceps: [211, 249], dorme: [261, 197] };
+const FR_SEQ = { corre: [8, 295, 273, .8], barra: [6, 389, 258, 1.5], rosca: [6, 389, 260, 1.5], agua: [4, 236, 245, 1.6] }; // sequências: [quadros, largura, altura (base 250), segundos do ciclo]; âncora nos pés, sem tremer
 const FR_SPRO = { parado: [[35.4, 35.3, 3.6], [62.2, 35.5, 3.5]], barra: [[39.6, 32.5, 2.7], [59.4, 32.2, 2.7]], biceps: [[56.2, 35, 3.7], [81.4, 34.4, 3.2]] }; // olhos (%) para piscar
 const FR_SPRC = { // cena -> [animação, quadros]
-  tarde: ["parado", ["parado"]], manha: ["parado", ["parado"]], sabado: ["parado", ["parado"]], hidratado: ["parado", ["parado"]], aplauso: ["parado", ["parado"]], alongando: ["parado", ["parado"]], meditando: ["parado", ["parado"]],
+  tarde: ["parado", ["parado"]], manha: ["parado", ["parado"]], sabado: ["parado", ["parado"]], hidratado: ["agua", ["seq:agua"]], aplauso: ["parado", ["parado"]], alongando: ["parado", ["parado"]], meditando: ["parado", ["parado"]],
   danca: ["danca", ["parado"]], noite: ["dorme", ["dorme"]], soneca: ["dorme", ["dorme"]], domingo: ["dorme", ["dorme"]], bocejo: ["dorme", ["dorme"]], cansado: ["cansado", ["parado"]],
-  treinando: ["treina", ["halter", "barra"]], forte: ["flex", ["biceps"]], alfa: ["flex", ["biceps"]], rei: ["flex", ["biceps"]], comemora: ["pula", ["barra"]], corrida: ["corre", ["corre1", "corre2"]], fone: ["corre", ["corre1", "corre2"]]
+  treinando: ["treinaS", ["seq:barra", "seq:rosca"]], forte: ["flex", ["biceps"]], alfa: ["flex", ["biceps"]], rei: ["flex", ["biceps"]], comemora: ["pula", ["barra"]], corrida: ["correS", ["seq:corre"]], fone: ["correS", ["seq:corre"]]
 };
 let FR_SPR_OFF = false;
 function frSprOk() { return !FR_SPR_OFF && frRael25ok() && !/[?&]rael=svg/.test(location.search); }
 function frSprFalha(img) { FR_SPR_OFF = true; try { const e = img.closest(".ra"); if (e) e.outerHTML = frRaelCenaSvg(e.dataset.cena || "tarde", +e.dataset.tam || 96); } catch (er) {} }
 function frSprHtml(anim, quadros, tam, cena) {
-  const t = tam || 96, extra = { treina: '<i class="rs-suor"></i>', cansado: '<i class="rs-suor"></i>', pula: '<i class="rs-c1"></i><i class="rs-c2"></i><i class="rs-c3"></i>', flex: '<i class="rs-st rs-s1"></i><i class="rs-st rs-s2"></i>', dorme: '<b class="rs-z">z</b><b class="rs-z rs-z2">Z</b>', danca: '<b class="rs-n">♪</b><b class="rs-n rs-n2">♫</b>', corre: '<i class="rs-v rs-v1"></i><i class="rs-v rs-v2"></i>' }[anim] || "";
+  const t = tam || 96, extra = { treina: '<i class="rs-suor"></i>', treinaS: '<i class="rs-suor"></i>', correS: '<i class="rs-v rs-v1"></i><i class="rs-v rs-v2"></i>', cansado: '<i class="rs-suor"></i>', pula: '<i class="rs-c1"></i><i class="rs-c2"></i><i class="rs-c3"></i>', flex: '<i class="rs-st rs-s1"></i><i class="rs-st rs-s2"></i>', dorme: '<b class="rs-z">z</b><b class="rs-z rs-z2">Z</b>', danca: '<b class="rs-n">♪</b><b class="rs-n rs-n2">♫</b>', corre: '<i class="rs-v rs-v1"></i><i class="rs-v rs-v2"></i>' }[anim] || "";
   const fr = quadros.map((q, i) => {
+    if (q.startsWith("seq:")) { const nome = q.slice(4), [n, w, h, dur] = FR_SEQ[nome]; return `<span class="rs-f rs-f${i} rs-sq" style="width:${(w / 250 * 100).toFixed(1)}%;height:${(h / 250 * 100).toFixed(1)}%;margin-left:-${(w / 500 * 100).toFixed(1)}%"><img src="rael/seq-${nome}.webp" alt="" decoding="async" draggable="false" style="width:${n * 100}%;animation:rsStrip ${dur}s steps(${n}) infinite" ${i ? "" : 'onerror="frSprFalha(this)"'}></span>`; }
     const [w, h] = FR_SPRP[q], ol = FR_SPRO[q], pj = `style="width:${(w / 250 * 100).toFixed(1)}%;height:${(h / 250 * 100).toFixed(1)}%;margin-left:-${(w / 500 * 100).toFixed(1)}%"`;
     const lids = ol ? ol.map(([x, y, r]) => `<i class="rs-lid" style="left:${x}%;top:${y}%;width:${(r * 3).toFixed(1)}%;height:${(r * 3 * w / h).toFixed(1)}%"></i>`).join("") : "";
     const braco = anim === "flex" ? `<img class="rs-bra" src="rael/biceps.webp" alt="" aria-hidden="true" draggable="false">` : "";
