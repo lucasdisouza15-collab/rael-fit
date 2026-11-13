@@ -218,9 +218,9 @@ details.acc summary::-webkit-details-marker{display:none}
 .ra svg{overflow:visible}
 .ra .ra-corpo{transform-origin:100px 180px}
 .ra-resp .ra-corpo{animation:raResp 3.4s ease-in-out infinite}
-@keyframes raResp{0%,100%{transform:scale(1,1)}50%{transform:scale(1.015,1.035)}}
+@keyframes raResp{0%,100%{transform:scale(1.02,.975)}50%{transform:scale(.985,1.04)}}
 .ra-pulo .ra-corpo{animation:raPulo .9s ease-in-out infinite}
-@keyframes raPulo{0%,100%{transform:translateY(0) scale(1.04,.94)}45%{transform:translateY(-22px) scale(.97,1.05)}}
+@keyframes raPulo{0%,12%,100%{transform:translateY(0) scale(1.12,.86)}45%{transform:translateY(-26px) scale(.92,1.12)}75%{transform:translateY(-4px) scale(1.02,.98)}}
 .ra-bal .ra-corpo{animation:raBal 3.6s ease-in-out infinite}
 @keyframes raBal{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .ra-cansa .ra-corpo{animation:raCansa 4s ease-in-out infinite;transform-origin:100px 180px}
@@ -4299,19 +4299,19 @@ function frRael(humor, tam) {
   const pup = humor === "foco" ? 3 : 0;
   const olho = (cx) => fechado ? `<path d="M${cx - 9} 99q9 7 18 0" fill="none" stroke="${L}" stroke-width="4" stroke-linecap="round"/>`
     : alegre ? `<path d="M${cx - 9} 103q9-11 18 0" fill="none" stroke="${L}" stroke-width="4.5" stroke-linecap="round"/>`
-    : `<circle cx="${cx}" cy="98" r="11.5" fill="#fff" stroke="${L}" stroke-width="3.5"/><circle cx="${cx + pup}" cy="100" r="7" fill="${L}"/><circle cx="${cx + pup - 2.6}" cy="96.6" r="2.8" fill="#fff"/><circle cx="${cx + pup + 2.4}" cy="102.6" r="1.4" fill="#fff" opacity=".8"/>`;
-  const sobr = fechado ? "" : `<path d="${humor === "alfa" ? "M62 76L90 92M138 76L110 92" : humor === "pessimo" ? "M62 94L90 80M138 94L110 80" : humor === "mal" ? "M64 90L90 82M136 90L110 82" : "M64 80L90 87M136 80L110 87"}" fill="none" stroke="${L}" stroke-width="4.5" stroke-linecap="round"/>`;
+    : `<ellipse cx="${cx}" cy="97" rx="11.5" ry="14" fill="#fff" stroke="${L}" stroke-width="4"/><ellipse cx="${cx + pup}" cy="100" rx="7.6" ry="9.6" fill="${L}"/><ellipse cx="${cx + pup - 2.8}" cy="95.4" rx="3.2" ry="3.8" fill="#fff"/><circle cx="${cx + pup + 3}" cy="104" r="1.7" fill="#fff" opacity=".85"/>`;
+  const sobr = fechado ? "" : `<path d="${humor === "alfa" ? "M62 76L90 92M138 76L110 92" : humor === "pessimo" ? "M62 94L90 80M138 94L110 80" : humor === "mal" ? "M64 90L90 82M136 90L110 82" : "M64 76L90 84M136 76L110 84"}" fill="none" stroke="${L}" stroke-width="5.5" stroke-linecap="round"/>`;
   const extra = humor === "pessimo" ? `<path d="M68 112q-6 10 0 14q6-4 0-14z" fill="#8FD3FF" stroke="${L}" stroke-width="3" stroke-linejoin="round"/>` : humor === "otimo" ? `<path d="M164 52l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#F2C14E" stroke="${L}" stroke-width="3" stroke-linejoin="round"/><path d="M30 60l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="#F2C14E" stroke="${L}" stroke-width="2.5" stroke-linejoin="round"/>` : "";
   return `<svg width="${tam || 96}" height="${tam || 96}" viewBox="0 0 200 200" role="img" aria-label="Rael Frango" style="flex:none">
-<defs><radialGradient id="${u}c" cx="38%" cy="28%" r="80%"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".45" stop-color="#F7D77A"/><stop offset="1" stop-color="#E2A530"/></radialGradient>
-<radialGradient id="${u}v" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#F58A7C"/><stop offset=".6" stop-color="#D4574A"/><stop offset="1" stop-color="#A93A32"/></radialGradient>
-<radialGradient id="${u}a" cx="40%" cy="25%" r="85%"><stop offset="0" stop-color="#F4C95A"/><stop offset="1" stop-color="#D79A2B"/></radialGradient>
+<defs><radialGradient id="${u}c" cx="38%" cy="28%" r="80%"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".45" stop-color="#FFD84A"/><stop offset="1" stop-color="#F2A81A"/></radialGradient>
+<radialGradient id="${u}v" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#FF8C7A"/><stop offset=".6" stop-color="#EE4B3C"/><stop offset="1" stop-color="#B8301F"/></radialGradient>
+<radialGradient id="${u}a" cx="40%" cy="25%" r="85%"><stop offset="0" stop-color="#FFC93A"/><stop offset="1" stop-color="#EE9A12"/></radialGradient>
 <linearGradient id="${u}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5A455"/><stop offset="1" stop-color="#DE7E28"/></linearGradient>
-<linearGradient id="${u}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4764BE"/><stop offset="1" stop-color="#2F4C9E"/></linearGradient>
+<linearGradient id="${u}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C74E6"/><stop offset="1" stop-color="#2C4DB8"/></linearGradient>
 <radialGradient id="${u}s" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="${L}" stop-opacity=".28"/><stop offset="1" stop-color="${L}" stop-opacity="0"/></radialGradient></defs>
 <ellipse cx="100" cy="188" rx="60" ry="9" fill="url(#${u}s)"/>
 <path d="M82 164V184M70 186H94M118 164V184M106 186H130" fill="none" stroke="#E08A3A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-<g stroke="${L}" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round">
+<g stroke="${L}" stroke-width="4.4" stroke-linejoin="round" stroke-linecap="round">
 <circle cx="84" cy="50" r="14" fill="url(#${u}v)"/><circle cx="100" cy="42" r="15" fill="url(#${u}v)"/><circle cx="116" cy="50" r="14" fill="url(#${u}v)"/>
 <g class="ra-asa-e"><ellipse cx="36" cy="124" rx="15" ry="27" transform="rotate(22 36 124)" fill="url(#${u}a)"/></g>
 <g class="ra-asa-d"><ellipse cx="164" cy="124" rx="15" ry="27" transform="rotate(-22 164 124)" fill="url(#${u}a)"/></g>
@@ -4326,7 +4326,7 @@ function frRael(humor, tam) {
 <g stroke="${L}" stroke-linejoin="round" stroke-linecap="round"><path d="M89 109Q100 105 111 109Q108 123 100 128Q92 123 89 109Z" fill="url(#${u}b)" stroke-width="4.2"/>
 <ellipse cx="100" cy="137" rx="6" ry="8.5" fill="url(#${u}v)" stroke-width="3.6"/></g>
 <path d="M94 114Q100 111 106 114" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
-<ellipse cx="62" cy="118" rx="10" ry="6.5" fill="#E8604F" opacity=".38"/><ellipse cx="138" cy="118" rx="10" ry="6.5" fill="#E8604F" opacity=".38"/>${extra}</svg>`;
+<ellipse cx="60" cy="118" rx="12" ry="8" fill="#FF6A55" opacity=".5"/><ellipse cx="140" cy="118" rx="12" ry="8" fill="#FF6A55" opacity=".5"/>${alegre ? `<path d="M88 130Q100 146 112 130Z" fill="#7A1F2B" stroke="${L}" stroke-width="3.6" stroke-linejoin="round"/><path d="M93 138Q100 143 107 138" fill="none" stroke="#FF7A8A" stroke-width="3" stroke-linecap="round"/>` : ""}${extra}</svg>`;
 }
 
 // ---- adaptação ao app: dados do próprio aparelho (mesmo formato de sempre) ----
@@ -4429,7 +4429,7 @@ function frRaelCena(cena, tam) {
   const i = svg.indexOf('<path d="M82 164'); // começa no corpo todo
   svg = svg.replace('<path d="M82 164', '<g class="ra-corpo"><path d="M82 164').replace(/<\/svg>$/, "__DENTRO__</g>__SOBRE__</svg>");
   let sobre = "", cls = "ra-resp";
-  const lids = `<ellipse class="ra-lid" cx="80" cy="97" rx="11" ry="11" fill="#F7D77A"/><ellipse class="ra-lid" cx="120" cy="97" rx="11" ry="11" fill="#F7D77A"/>`;
+  const lids = `<ellipse class="ra-lid" cx="80" cy="96" rx="13" ry="15" fill="#FFD84A"/><ellipse class="ra-lid" cx="120" cy="96" rx="13" ry="15" fill="#FFD84A"/>`;
   const cej = `<path d="M66 83L90 91M134 83L110 91" fill="none" stroke="#1B1630" stroke-width="4.5" stroke-linecap="round"/>`;
   const gota = `<path class="ra-gota" d="M152 70q6 9 0 13q-6-4 0-13Z" fill="#8FC5F0" stroke="#1B1630" stroke-width="2.5"/><path class="ra-gota" d="M50 78q6 9 0 13q-6-4 0-13Z" fill="#8FC5F0" stroke="#1B1630" stroke-width="2.5"/>`;
   if (cena === "manha") {
@@ -4452,7 +4452,7 @@ function frRaelCena(cena, tam) {
     svg = svg.replace('class="ra-corpo"', 'class="ra-corpo" style="transform:scale(1.07,1.05)"');
   } else if (cena === "cansado") {
     cls = "ra-cansa";
-    sobre = `<ellipse class="ra-lid" cx="80" cy="97" rx="11" ry="11" fill="#F7D77A" style="animation:none;transform:scaleY(.5)"/><ellipse class="ra-lid" cx="120" cy="97" rx="11" ry="11" fill="#F7D77A" style="animation:none;transform:scaleY(.5)"/>` + cej +
+    sobre = `<ellipse class="ra-lid" cx="80" cy="96" rx="13" ry="15" fill="#FFD84A" style="animation:none;transform:scaleY(.5)"/><ellipse class="ra-lid" cx="120" cy="96" rx="13" ry="15" fill="#FFD84A" style="animation:none;transform:scaleY(.5)"/>` + cej +
       `<path d="M50 150Q100 172 150 150L150 168Q100 186 50 168Z" fill="#fff" stroke="#1B1630" stroke-width="4.5" stroke-linejoin="round"/><path d="M60 158h22M118 158h22" stroke="#2F4C9E" stroke-width="3"/>` + gota;
   } else if (cena === "almoco") {
     cls = "ra-masca";
