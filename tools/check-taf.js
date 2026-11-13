@@ -4,7 +4,7 @@ const html = fs.readFileSync(__dirname + '/../index.html', 'utf8');
 const a = html.indexOf('/*TAF-PURO-INI*/'), b = html.indexOf('/*TAF-PURO-FIM*/');
 if (a < 0 || b < 0) { console.error('FALHOU: bloco TAF-PURO não encontrado'); process.exit(1); }
 const sb = { out: {} }; vm.createContext(sb);
-vm.runInContext(html.slice(a, b) + '\nout.f={TAF_MIN,TAF_TESTES,TAF_ALVOS,tafPlano,tafUltimo,tafStatus};', sb);
+vm.runInContext(html.slice(a, b) + '\nout.f={TAF_MIN,TAF_TESTES,TAF_ALVOS,tafPlano,tafUltimo,tafStatus,TAF_ROTINAS,tafGarantirAquec,tafAddRotinas};', sb);
 const F = sb.out.f; let falhas = 0, total = 0;
 const ok = (n, c) => { total++; if (!c) { falhas++; console.error('FALHOU ' + n); } };
 const eq = (n, x, y) => ok(n + ' (obteve ' + JSON.stringify(x) + ')', JSON.stringify(x) === JSON.stringify(y));
@@ -25,5 +25,18 @@ eq('sem testes', F.tafUltimo({}), null);
 eq('status vs mínimo', F.tafStatus({ barra: 3, abd: 35, corrida: 2400 }), { barra: 'ok', abd: 'falta', corrida: 'ok' });
 eq('status sem dado', F.tafStatus(null), { barra: 'sem', abd: 'sem', corrida: 'sem' });
 ok('cartão entra na aba Semana e botão salva sem apagar nada', /h \+= tafCard\(\);/.test(html) && /ACT\.tafSalvar/.test(html) && !/delete p\.taf|p\.taf = \{\}\s*;?\s*\}\)/.test(html));
+
+// ---- rotinas TAF e aquecimento ----
+ok('4 rotinas TAF com id fixo e flag taf', F.TAF_ROTINAS.map(r => r.id).join() === 'taf-corrida,taf-fin-push,taf-fin-pull,taf-teste' && F.TAF_ROTINAS.every(r => r.taf === true));
+const tipo = id => ({ 'supino': 'carga', 'barra-fixa': 'corpo', 'esteira': 'cardio' }[id] || 'carga');
+ok('toda rotina TAF abre com aquecimento (caminhada, série W ou os dois)', F.TAF_ROTINAS.every(r => r.itens[0].eid === 'caminhada' || r.itens.some(i => i.aq > 0)));
+ok('TESTE TAF na ordem do TAF real: aquecimento, barra, abdominal, corrida', F.TAF_ROTINAS[3].itens.map(i => i.eid).join() === 'caminhada,polichinelo,barra-fixa,abdominal-supra,corrida-rua');
+let rs = [{ id: 'a', nome: 'PUSH A', itens: [{ eid: 'supino', aq: 1 }, { eid: 'x' }] }, { id: 'b', nome: 'LEGS', itens: [{ eid: 'esteira' }, { eid: 'agach' }] }, { id: 'c', nome: 'PULL B', itens: [{ eid: 'barra-fixa', aq: 0 }] }];
+let n = F.tafGarantirAquec(rs, tipo);
+eq('aquecimento só onde faltava (LEGS e PULL B), PUSH A intocada', [n, rs[0].itens[0].aq, rs[0].itens[1].aq || 0, rs[1].itens[1].aq, rs[1].itens[0].aq || 0, rs[2].itens[0].aq], [2, 1, 0, 1, 0, 1]);
+eq('segunda passada não muda nada (idempotente)', F.tafGarantirAquec(rs, tipo), 0);
+eq('adiciona as 4 TAF uma vez', [F.tafAddRotinas(rs), F.tafAddRotinas(rs), rs.length], [4, 0, 7]);
+ok('aquecimento não altera as rotinas TAF', F.tafGarantirAquec([{ id: 't', taf: true, itens: [{ eid: 'supino' }] }], tipo) === 0);
+ok('TAF é opt-in: cartão e rotinas só com tafAtivo (link #taf)', /!tafAtivo\(p\)\) return ""/.test(html) && /if \(!tafAtivo\(p\) \|\| p\.tafRotV === 1\) return;/.test(html) && /location\.hash \|\| ""\) !== "#taf"/.test(html));
 console.log((total - falhas) + '/' + total + ' verificações do TAF passaram');
 process.exit(falhas ? 1 : 0);

@@ -41,6 +41,12 @@ ok('sem histórico: PUSH A, PULL A, LEGS, PUSH B, PULL B', s[1] === 'PUSH A' && 
 // treino casado pelo id da rotina (r2 = LEGS depois de PULL A)
 s = seqDe([{ rotinaId: 'r2', nome: 'qualquer', data: '2026-11-10' }, { nome: 'PULL A', data: '2026-11-09' }], '2026-11-11');
 ok('casa o último treino pelo id', s[3] === 'PUSH B', JSON.stringify(s));
+const nomes0 = m => [3,4,5,6].map(k => (R.find(r => r.id === m[k]) || {}).nome).join();
+// rotinas TAF (flag taf) NUNCA entram na rotação push/pull/perna
+const TAFR = ['TAF Corrida', 'TAF Finalizador PUSH', 'TAF Finalizador PULL', 'TESTE TAF'].map((nome, i) => ({ id: 'taf' + i, nome, taf: true }));
+s = out.semanaRot({ rotinas: R.concat(TAFR) }, [{ nome: 'PUSH A', data: '2026-11-10' }], false, '2026-11-11');
+ok('com 4 rotinas TAF na lista a rotação continua PULL A, LEGS, PUSH B, bônus', nomes0(s) === 'PULL A,LEGS,PUSH B,UPPER BÔNUS', JSON.stringify(s));
+ok('nenhum dia recebe rotina TAF', !Object.values(s).some(v => /^taf/.test(v)));
 // sem rotina de perna: segue a lista como veio
 s = out.semanaRot({ rotinas: R.filter(r => r.nome !== 'LEGS') }, [], false, '2026-11-09');
 ok('sem LEGS cadastrada segue a lista', Object.keys(s).length === 6);

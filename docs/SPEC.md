@@ -60,6 +60,13 @@ Lógica pura em `index.html` entre `/*IX-PURO-INI*/` e `/*IX-PURO-FIM*/`, testad
 - Aceite: `node tools/check.js` verde (17 verificações do TAF) e prova no navegador (cartão com data simulada 18/11 e registro salvo). Nada testado em celular real.
 - Paridade: aplicar na aba Frangômetro do Painel; Hevy: rotinas prontas para colar (sem acesso direto ao Hevy).
 
+### Rotinas TAF e aquecimento nas rotinas (13/11/2026, v77)
+- Problema: (1) Lucas esperava ver como ROTINAS de treino: TAF Corrida, TAF Finalizador PUSH, TAF Finalizador PULL e TESTE TAF; só existia o cartão. (2) Ele não via o aquecimento nas rotinas: o app já tinha séries W por exercício (`item.aq`, 0 a 3), mas o editor não tinha o campo e a lista não mostrava. Não foi regressão do TAF (código igual antes).
+- Comportamento: (a) editor de rotina ganha "Aquecimento: séries W (0 a 3)" por exercício; a lista mostra o aquecimento de cada rotina ou "Sem aquecimento". (b) Rotinas com flag `taf: true` (ids fixos taf-corrida, taf-fin-push, taf-fin-pull, taf-teste) NUNCA entram em `semanaRot` (rotação push/pull/perna intacta). Todas abrem com aquecimento (caminhada 5 min ou série W). TESTE TAF na ordem do TAF real: caminhada, polichinelo, barra, abdominal, corrida. (c) Rotinas do usuário sem nenhum aquecimento recebem 1 série W no primeiro exercício de carga/corpo; quem já tem fica igual.
+- Opt-in (o app tem outros usuários): só com o link `#taf` (ou `p.tafOn`). Na primeira vez, guarda o estado anterior em `p.tafRotAntes`, cria as 4 rotinas, aplica aquecimento e marca `p.tafRotV = 1`. Idempotente. Cartão "Rumo ao TAF" também só aparece com opt-in (corrige o PR #65, que mostrava a todos).
+- Aceite: `node tools/check.js` verde (25 verificações TAF + semana com 4 rotinas TAF); prova em navegador com recarga: 6 rotinas + 4 TAF, rotação inalterada, 6 no backup, sem duplicar. Nada testado em celular real.
+- Paridade: aba Frangômetro do Painel (opt-in sempre ligado, é privado).
+
 ## Regras do método
 - Antes de abrir PR: `node tools/check.js` (sintaxe dos scripts + testes das contas de kcal/macros e da nota Pintinho/Frango/Galo Alfa). Se mudar uma regra de conta, ajustar o teste na mesma entrega.
 - Paridade: tudo que entra no site (index.html) vai também para a aba Frangômetro do Painel, exceto o que for exclusivo de um dos dois.
