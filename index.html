@@ -4334,7 +4334,7 @@ ${olhos}${sobr}
 let _r25n = 0;
 // Três estilos para o Lucas escolher (prévia): "grosso" (cartoon, traço escuro grosso), "duo" (fofo e plano, cores chapadas, traço fino quente), "suave" (3D suave, sem contorno). Padrão: grosso.
 let RAEL_ESTILO = "grosso";
-try { const q = (location.search.match(/[?&]estilo=(duo|grosso|suave)/) || [])[1]; if (q) localStorage.setItem("raelfit:rael25estilo", q); const v = localStorage.getItem("raelfit:rael25estilo"); if (/^(duo|grosso|suave)$/.test(v)) RAEL_ESTILO = v; } catch (e) {}
+try { const q = (location.search.match(/[?&]estilo=(duo|grosso|suave|toy)/) || [])[1]; if (q) localStorage.setItem("raelfit:rael25estilo", q); const v = localStorage.getItem("raelfit:rael25estilo"); if (/^(duo|grosso|suave|toy)$/.test(v)) RAEL_ESTILO = v; } catch (e) {}
 function frEstilo(svg) {
   const e = RAEL_ESTILO; if (e === "grosso") return svg;
   const oc = e === "duo" ? 'stroke="#C9801A" stroke-width="3"' : 'stroke="none"';
@@ -4347,6 +4347,12 @@ function frEstilo(svg) {
     svg = svg.replace(/url\(#[rl]\d+([cvabf])\)/g, (m, k) => M[k] || m).replace(/<ellipse cx="68" cy="82"[^>]*\/>/, "");
   } else {
     svg = svg.replace(/opacity="\.4"/g, 'opacity=".6"').replace(/rx="60" ry="9" fill="url/, 'rx="64" ry="11" fill="url');
+  }
+  if (e === "toy") { // brinquedo de vinil num diorama: base redonda, brilho de plástico, luz de contorno
+    const base = '<ellipse cx="100" cy="193" rx="76" ry="13" fill="#CFC6AE"/><ellipse cx="100" cy="189" rx="76" ry="13" fill="#F3EEDD"/><ellipse cx="100" cy="189" rx="76" ry="13" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/>';
+    svg = svg.replace(/<ellipse cx="100" cy="188" rx="64" ry="11" fill="url\(#[^)]*\)"\/>/, base + '<ellipse cx="100" cy="187" rx="40" ry="6" fill="#1B1630" opacity=".12"/>')
+      .replace(/<ellipse class="ra-sombra" cx="100" cy="190" rx="62" ry="8" fill="url\(#[^)]*\)"\/>/, base + '<ellipse cx="100" cy="187" rx="44" ry="6" fill="#1B1630" opacity=".12"/>')
+      .replace(/<ellipse cx="68" cy="82" rx="16" ry="9" transform="rotate\(-28 68 82\)" fill="#fff" opacity="\.6"\/>/, '<ellipse cx="70" cy="84" rx="21" ry="11" transform="rotate(-30 70 84)" fill="#fff" opacity=".8"/><circle cx="52" cy="104" r="3.4" fill="#fff" opacity=".8"/><path d="M150 138Q134 170 98 170" fill="none" stroke="#FFF6C9" stroke-width="5" stroke-linecap="round" opacity=".65"/>');
   }
   return svg;
 }
@@ -4533,7 +4539,7 @@ function frRaelFrente(cena, tam) {
 // Galeria de prévia (?galeria=rael): mostra os 3 estilos com todas as poses ao vivo. Remover antes de mesclar na principal.
 if (/[?&]galeria=rael/.test(location.search)) addEventListener("load", () => setTimeout(() => {
   const poses = ["tarde", "acena", "comemora", "crescendo", "corre_lado", "agacha_lado", "pula_lado", "noite", "danca", "forte"];
-  const E = [["duo", "A · Fofo e plano (estilo Duolingo)"], ["grosso", "B · Cartoon grosso (o que você viu)"], ["suave", "C · 3D suave, sem contorno"]], keep = RAEL_ESTILO;
+  const E = [["duo", "A · Fofo e plano (estilo Duolingo)"], ["grosso", "B · Cartoon grosso (o que você viu)"], ["suave", "C · 3D suave, sem contorno"], ["toy", "D · Brinquedo de vinil num diorama (estilo Link's Awakening)"]], keep = RAEL_ESTILO;
   document.title = "Rael: escolha o estilo";
   document.body.style.cssText = "background:#FBFAF6;color:#27335F;font-family:system-ui,sans-serif;padding:14px";
   [...document.body.children].forEach(n => { if (n.tagName !== "STYLE" && n.tagName !== "SCRIPT") n.remove(); });
