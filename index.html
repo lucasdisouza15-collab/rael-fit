@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v89-20261113h"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v90-20261113i"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v89-20261113h";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v90-20261113i";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -4702,78 +4702,107 @@ function frEspia() { // Rael sobe por trás da barra de abas, olha, mostra o bí
   d.innerHTML = `<div style="position:absolute;left:${x | 0}px;bottom:0;width:96px;height:96px">${frSprHtml("espia", ["parado", "biceps", "corre1", "corre2"], 96, "espia")}</div>`;
   document.body.appendChild(d); setTimeout(() => { d.remove(); FR_ESP_BUSY = false; }, 6300);
 }
-// ---- Rael passeando pela tela: sai do canto, anda pelo chão, sobe em cards, bebe, treina, volta; toque faz ele reagir ----
-const AT = { el: null, busy: false, S: 104, x: 0, y: 0, flip: 1, live: false };
+// ---- Rael em cena: entra correndo, sobe num elemento da aba e age conforme o assunto (comer, treino, evolução, hoje) ----
+const AT = { el: null, i: null, busy: false, S: 104, x: 0, y: 0, flip: 1, live: false, alvo: null };
 const atFloor = () => { const n = document.querySelector("nav.tabs"); return (n ? n.getBoundingClientRect().top : innerHeight) + 2; };
 const atSleep = ms => new Promise(r => setTimeout(r, ms));
 const atRnd = (a, b) => a + Math.random() * (b - a);
-function atPose(anim, quadros, flip) {
-  if (flip) AT.flip = flip < 0 ? -1 : 1;
-  AT.el.firstChild.innerHTML = frSprHtml(anim, quadros, AT.S, "ator"); AT.el.firstChild.style.transform = `scaleX(${AT.flip})`;
-}
+function atPose(anim, quadros, flip) { if (flip) AT.flip = flip; AT.i.innerHTML = frSprHtml(anim, quadros, AT.S, "ator"); AT.i.style.transition = "none"; AT.i.style.transform = `scaleX(${AT.flip})`; }
 function atPlace(x, y) { AT.x = x; AT.y = y; AT.el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`; }
 function atTween(ms, fn) { return new Promise(res => { const t0 = performance.now(); (function f(t) { const u = Math.min((t - t0) / ms, 1); fn(u); if (u < 1 && AT.live) requestAnimationFrame(f); else res(); })(t0); }); }
-function atGo(x1, y1, ms, arc) { const x0 = AT.x, y0 = AT.y; return atTween(ms, u => { const e = arc ? u * u * (3 - 2 * u) : u; atPlace(x0 + (x1 - x0) * e, y0 + (y1 - y0) * u - (arc || 0) * 4 * u * (1 - u)); }); }
-async function atSquash(sx, sy, ms) { const i = AT.el.firstChild; i.style.transition = `transform ${ms}ms ease-out`; i.style.transform = `scale(${AT.flip * sx},${sy})`; await atSleep(ms); }
-async function atPula(x1, y1, arc, ms) { await atSquash(1.14, .84, 130); atPose("parado", ["parado"]); AT.el.firstChild.style.transition = "none"; AT.el.firstChild.style.transform = `scale(${AT.flip * .92},1.12)`; await atGo(x1, y1, ms, arc); await atSquash(1.14, .86, 90); await atSquash(1, 1, 120); }
-async function atAnda(x1, y1, flip) { const d = Math.abs(x1 - AT.x); if (d < 4) return; atPose("correS", ["seq:corre"], x1 > AT.x ? 1 : -1); await atGo(x1, y1, d / 95 * 1000); }
-async function atPausa(tipo, ms) { // o que ele faz parado
-  const m = { flex: ["flex", ["biceps"]], agua: ["agua", ["seq:agua"]], rosca: ["treinaS", ["seq:rosca"]], barra: ["treinaS", ["seq:barra"]], nap: ["dorme", ["dorme"]], olha: ["parado", ["parado"]] }[tipo] || ["parado", ["parado"]];
-  atPose(m[0], m[1]); await atSleep(ms);
+async function atXf(sx, sy, ms) { AT.i.style.transition = `transform ${ms}ms ease-out`; AT.i.style.transform = `scale(${AT.flip * sx},${sy})`; await atSleep(ms); }
+const atDip = (c, px = 5) => c && c.animate([{ transform: "none" }, { transform: `translateY(${px}px)`, offset: .3 }, { transform: "translateY(-1px)", offset: .65 }, { transform: "none" }], { duration: 440, easing: "ease-out" });
+const atEmpurra = (c, px = 12) => c && c.animate([{ transform: "none" }, { transform: `translateX(${px}px)`, offset: .3 }, { transform: `translateX(${px * .85}px)`, offset: .6 }, { transform: "none" }], { duration: 1500, easing: "cubic-bezier(.3,1.3,.5,1)" });
+async function atCorre(x1, y) { // passos de verdade, velocidade constante
+  const d = Math.abs(x1 - AT.x); if (d < 4) return; const dir = x1 > AT.x ? 1 : -1; atPose("correS", ["seq:corre"], dir);
+  const x0 = AT.x; await atTween(d / 115 * 1000, u => atPlace(x0 + (x1 - x0) * u, y == null ? AT.y : y));
 }
-function atInicio() {
-  const ban = document.querySelector(".fr-top .rs"), floor = atFloor(), S = AT.S;
-  const d = document.createElement("div"); d.className = "rs-ator"; d.innerHTML = '<div class="at-in"></div>'; document.body.appendChild(d); AT.el = d; AT.live = true;
-  d.addEventListener("click", () => { const i = d.firstChild; i.classList.remove("at-pop"); void i.offsetWidth; i.classList.add("at-pop"); const s = document.createElement("i"); s.className = "at-est"; s.textContent = ["★", "♥", "!"][Math.random() * 3 | 0]; d.appendChild(s); setTimeout(() => s.remove(), 900); });
+async function atSalto(x1, y1, h, onLand) { // antecipa agacha, sobe em arco (desacelera), cai (acelera), amortece
+  const x0 = AT.x, y0 = AT.y, A = Math.min(y0, y1) - h, du = y0 - A, dd = y1 - A, f = Math.sqrt(du) / (Math.sqrt(du) + Math.sqrt(dd)), T = 380 + (Math.sqrt(du) + Math.sqrt(dd)) * 30, dir = x1 >= x0 ? 1 : -1;
+  atPose("parado", ["parado"], dir); await atXf(1.16, .82, 170);
+  AT.i.style.transition = "none";
+  await atTween(T, u => { let y; if (u < f) { const p = u / f; y = y0 - du * (1 - (1 - p) * (1 - p)); } else { const p = (u - f) / (1 - f); y = A + dd * p * p; } atPlace(x0 + (x1 - x0) * u, y); AT.i.style.transform = `rotate(${dir * (u < f ? -5 : 7)}deg) scale(${dir * .95},${u < f ? 1.1 : 1.04})`; });
+  atPlace(x1, y1); if (onLand) onLand();
+  await atXf(1.2, .8, 110); await atXf(.97, 1.04, 100); await atXf(1, 1, 120);
+}
+function atNoAlto(c, ms) { // fica em cima do elemento acompanhando a rolagem
+  const S = AT.S; return atTween(ms, () => { const r = c.getBoundingClientRect(); if (r.top < 60 || r.top > atFloor() - 80) { AT.live = false; return; } atPlace(AT.x, r.top - S + 8); });
+}
+function atAlvo(sel) {
+  const fl = atFloor(), W = innerWidth;
+  const l = [...document.querySelectorAll(sel)].filter(c => { const r = c.getBoundingClientRect(); return r.width > 150 && r.top > 100 && r.top < fl - 190 && r.bottom > 0 && !c.closest(".fr-top"); });
+  return l[0] || null;
+}
+function atInicio(lado) {
+  const d = document.createElement("div"); d.className = "rs-ator"; d.innerHTML = '<div class="at-in"></div>'; document.body.appendChild(d); AT.el = d; AT.i = d.firstChild; AT.live = true;
+  d.addEventListener("click", () => { const i = AT.i; if (!i) return; i.style.transition = "none"; i.classList.remove("at-pop"); void i.offsetWidth; i.classList.add("at-pop"); const s = document.createElement("i"); s.className = "at-est"; s.textContent = ["★", "♥", "!"][Math.random() * 3 | 0]; d.appendChild(s); setTimeout(() => s.remove(), 900); });
   document.documentElement.classList.add("fr-ator-fora");
-  if (ban) { const r = ban.getBoundingClientRect(); atPlace(r.left + r.width / 2 - S / 2, r.bottom - S + 6); AT.home = [AT.x, AT.y]; atPose("parado", ["parado"], 1); return true; }
-  AT.home = null; atPlace(-S, floor - S + 4); atPose("parado", ["parado"], 1); return false;
+  atPlace(lado < 0 ? -AT.S - 30 : innerWidth + 30, atFloor() - AT.S + 4); atPose("correS", ["seq:corre"], -lado);
 }
-function atFim() { AT.live = false; AT.busy = false; if (AT.el) { AT.el.remove(); AT.el = null; } document.documentElement.classList.remove("fr-ator-fora"); }
-async function atVolta() { // volta ao canto de onde saiu (ou sai de cena se o canto sumiu)
-  const ban = document.querySelector(".fr-top .rs"), floor = atFloor(), S = AT.S;
-  if (!ban) { await atAnda(AT.x < innerWidth / 2 ? -S - 20 : innerWidth + 20, floor - S + 4); return; }
-  const r = ban.getBoundingClientRect(), hx = r.left + r.width / 2 - S / 2, hy = r.bottom - S + 6;
-  await atAnda(hx, floor - S + 4); await atPula(hx, hy, 70, 650);
+function atFim() { AT.live = false; AT.busy = false; if (AT.el) { AT.el.remove(); AT.el = null; AT.i = null; } document.documentElement.classList.remove("fr-ator-fora"); }
+async function atSai() { const W = innerWidth, dir = AT.x < W / 2 ? -1 : 1; await atCorre(dir > 0 ? W + 40 : -AT.S - 40, atFloor() - AT.S + 4); }
+async function atDesceSai(h) { // pula pra fora do elemento em arco e sai correndo
+  const fl = atFloor() - AT.S + 4, W = innerWidth, dir = AT.x < W / 2 ? 1 : -1; await atSalto(Math.min(Math.max(AT.x + dir * 70, 6), W - AT.S - 6), fl, h || 50); await atSai();
 }
-async function atDesce() { const floor = atFloor(), S = AT.S; if (AT.y < floor - S - 8) await atPula(AT.x + 24, floor - S + 4, 50, 600); }
-async function atPasseio(tipo) {
-  if (AT.busy || !document.querySelector("nav.tabs")) return; AT.busy = true; const floor = atFloor(), S = AT.S, W = innerWidth;
-  try {
-    atInicio(); await atSleep(350);
-    await atDesce();
-    if (tipo === "saiEntra") { // sai de cena pela lateral, fica fora um tempo e volta por outro lado
-      const lado = Math.random() < .5 ? -1 : 1; await atAnda(lado > 0 ? W + 30 : -S - 30, floor - S + 4); await atSleep(atRnd(1500, 3000));
-      atPlace(lado > 0 ? -S - 30 : W + 30, floor - S + 4); await atAnda(atRnd(W * .25, W * .6), floor - S + 4); await atPausa("flex", 1500);
-    } else if (tipo === "sobeCard") {
-      const cs = [...document.querySelectorAll(".card")].filter(c => { const r = c.getBoundingClientRect(); return r.width > 180 && r.top > 110 && r.top < floor - 190 && !c.closest(".fr-top,#layer"); });
-      if (!cs.length) return await atPasseio2(floor, S, W);
-      const c = cs[Math.random() * cs.length | 0], r0 = c.getBoundingClientRect(), xi = Math.min(Math.max(r0.left + atRnd(20, 60), 6), W - S - 6);
-      await atAnda(xi, floor - S + 4); await atSleep(250);
-      const topo = () => c.getBoundingClientRect().top - S + 8;
-      await atPula(xi, topo(), Math.max(floor - S + 4 - topo(), 40) * .5 + 50, 800);
-      const r1 = c.getBoundingClientRect(), xf = Math.min(Math.max(r1.right - S - 24, xi + 40), W - S - 6);
-      const seguir = (ms, f) => atTween(ms, u => { const r = c.getBoundingClientRect(); if (r.top < 70 || r.top > floor - 50) { AT.live = false; return; } f(u); atPlace(f.x, r.top - S + 8); });
-      const dx0 = AT.x; const f1 = u => { f1.x = dx0 + (xf - dx0) * u; }; atPose("correS", ["seq:corre"], 1); await seguir(Math.abs(xf - dx0) / 85 * 1000, f1);
-      if (AT.live) { const f2 = () => { f2.x = xf; }; atPose(...({ nap: ["dorme", ["dorme"]], rosca: ["treinaS", ["seq:rosca"]], flex: ["flex", ["biceps"]], agua: ["agua", ["seq:agua"]] }[["nap", "rosca", "flex", "agua"][Math.random() * 4 | 0]])); await seguir(atRnd(3000, 4500), f2); }
-      AT.live = true; await atDesce();
-    } else await atPasseio2(floor, S, W);
-    await atVolta();
-  } catch (e) {} finally { atFim(); }
+async function atPeek(c) { // espia por trás da borda de cima do card e some de novo
+  const S = AT.S, top = c.getBoundingClientRect().top, x = Math.min(Math.max(c.getBoundingClientRect().left + 40, 6), innerWidth - S - 6);
+  atPlace(x, top + 8); atPose("parado", ["parado"], 1); const clip = () => { AT.el.style.clipPath = `inset(0 0 ${Math.max(0, AT.y + S - top)}px 0)`; };
+  for (const [alvo, ms, esp] of [[top - S * .42, 700, 600], [top + 6, 380, 500], [top - S * .5, 650, 500]]) { const y0 = AT.y; await atTween(ms, u => { atPlace(x, y0 + (alvo - y0) * (u * u * (3 - 2 * u))); clip(); }); await atSleep(esp); }
+  AT.el.style.clipPath = ""; return x;
 }
-async function atPasseio2(floor, S, W) {
-  const xa = atRnd(S, W - 2 * S); await atAnda(xa, floor - S + 4); await atPausa("olha", 900);
-  const xb = Math.min(Math.max(xa + atRnd(-W * .3, W * .3), 6), W - S - 6); await atAnda(xb, floor - S + 4);
-  await atPausa(["flex", "agua", "rosca", "barra"][Math.random() * 4 | 0], atRnd(2200, 3600));
+const AT_CENAS = {
+  async comer() { // espia o card de refeição, sobe, bebe água
+    const c = atAlvo(".card"); if (!c) return false; const S = AT.S;
+    atInicio(Math.random() < .5 ? -1 : 1); const r = c.getBoundingClientRect(), xi = Math.min(Math.max(r.left + 40, 6), innerWidth - S - 6);
+    await atCorre(xi, atFloor() - S + 4); atPose("parado", ["parado"], 1); await atSleep(300);
+    const x = await atPeek(c); AT.y = c.getBoundingClientRect().top + 8;
+    await atSalto(Math.min(x + 50, innerWidth - S - 6), c.getBoundingClientRect().top - S + 8, 70, () => atDip(c, 6));
+    atPose("agua", ["seq:agua"], 1); await atNoAlto(c, 3600);
+    atPose("parado", ["parado"], 1); await atSleep(500);
+    if (AT.live) await atDesceSai(50); return true;
+  },
+  async treino() { // sobe no card, levanta a barra, o card afunda a cada repetição, empurra o card
+    const c = atAlvo(".card"); if (!c) return false; const S = AT.S;
+    atInicio(Math.random() < .5 ? -1 : 1); const r = c.getBoundingClientRect(), xi = Math.min(Math.max(r.left + 30, 6), innerWidth - S - 6);
+    await atCorre(xi, atFloor() - S + 4); await atSleep(250);
+    await atSalto(xi + 40, c.getBoundingClientRect().top - S + 8, 70, () => atDip(c, 7));
+    atPose("treinaS", ["seq:barra"], 1); for (let k = 0; k < 3 && AT.live; k++) { await atNoAlto(c, 1500); atDip(c, 5); }
+    atPose("flex", ["biceps"], 1); atEmpurra(c, 14); await atNoAlto(c, 1800);
+    if (AT.live) await atDesceSai(60); return true;
+  },
+  async evo() { // sobe no gráfico, flexiona olhando a evolução e empurra o card
+    const c = atAlvo(".card"); if (!c) return false; const S = AT.S;
+    atInicio(Math.random() < .5 ? -1 : 1); const r = c.getBoundingClientRect(), xi = Math.min(Math.max(r.right - S - 40, 6), innerWidth - S - 6);
+    await atCorre(xi, atFloor() - S + 4); await atSleep(250);
+    await atSalto(xi - 30, c.getBoundingClientRect().top - S + 8, 75, () => atDip(c, 7));
+    atPose("parado", ["parado"], -1); await atNoAlto(c, 900);
+    atPose("flex", ["biceps"], -1); await atNoAlto(c, 600); atEmpurra(c, -14); await atNoAlto(c, 1700);
+    if (AT.live) await atDesceSai(55); return true;
+  },
+  async hoje() { // sobe no balão e puxa ele andando de passinho
+    const b = document.querySelector(".fr-bal"); if (!b) return false; const S = AT.S, r0 = b.getBoundingClientRect(); if (r0.top < 90 || r0.top > atFloor() - 190) return false;
+    atInicio(Math.random() < .5 ? -1 : 1); const xi = Math.min(Math.max(r0.left + r0.width * .55, 6), innerWidth - S - 6);
+    await atCorre(xi, atFloor() - S + 4); await atSleep(250);
+    await atSalto(xi, b.getBoundingClientRect().top - S + 8, 80, () => atDip(b, 5));
+    const x0 = AT.x; atPose("correS", ["seq:corre"], -1);
+    b.animate([{ transform: "none" }, { transform: "translateX(-26px)", offset: .55 }, { transform: "translateX(-24px)", offset: .8 }, { transform: "none" }], { duration: 2400, easing: "cubic-bezier(.3,1.2,.5,1)" });
+    await atTween(1800, u => { const r = b.getBoundingClientRect(); atPlace(x0 - 26 * u * (2 - u), r.top - S + 8); });
+    atPose("flex", ["biceps"], 1); await atNoAlto(b, 1200);
+    if (AT.live) await atDesceSai(55); return true;
+  }
+};
+async function atCena(tab) {
+  if (AT.busy || !document.querySelector("nav.tabs") || !frSprOk() || frSemMov()) return; AT.busy = true;
+  try { const f = AT_CENAS[tab] || AT_CENAS.hoje; const ok = await f(); if (ok === false) AT.busy = false; } catch (e) {} finally { if (AT.el) atFim(); AT.busy = false; }
 }
 function atAgenda() {
-  if (/[?&]passeio=/.test(location.search)) { const t = (location.search.match(/passeio=(\w+)/) || [])[1]; setTimeout(() => atPasseio(t === "1" ? "" : t), 2500); }
+  const q = (location.search.match(/passeio=(\w+)/) || [])[1]; if (q) setTimeout(() => atCena(q === "1" ? ui.tab : q), 2500);
   const livre = () => !!document.querySelector("nav.tabs") && frSprOk() && !frSemMov() && !document.hidden && !AT.busy && !FR_ESP_BUSY && !(document.getElementById("layer") || { children: [] }).children.length && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "");
-  const roda = () => { if (livre()) { const t = Math.random(); if (t < .4) atPasseio(""); else if (t < .72) atPasseio("sobeCard"); else if (t < .88) frEspia(); else atPasseio("saiEntra"); } setTimeout(roda, atRnd(30000, 60000)); };
-  setTimeout(roda, 25000);
+  const roda = () => { if (livre()) { if (Math.random() < .2) frEspia(); else atCena(ui.tab); } setTimeout(roda, atRnd(40000, 75000)); };
+  setTimeout(roda, 30000);
 }
 try {
-  document.addEventListener("click", e => { if (e.target.closest && e.target.closest(".fr-top .rs") && !AT.busy) atPasseio(Math.random() < .5 ? "" : "sobeCard"); });
+  document.addEventListener("click", e => { if (e.target.closest && e.target.closest(".fr-top .rs") && !AT.busy) atCena(ui.tab); });
   if (/[?&]espia=1/.test(location.search)) setTimeout(frEspia, 2500);
   atAgenda();
 } catch (e) {}
