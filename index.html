@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v85-20261113d"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v86-20261113e"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v85-20261113d";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v86-20261113e";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -202,6 +202,17 @@ details.acc summary::-webkit-details-marker{display:none}
 .fr-kcal{text-align:center;margin-top:8px;font-size:15px}.fr-kcal b{font-family:var(--f-display);font-size:26px;font-weight:600}
 .fr-seq{font-family:var(--f-display);font-weight:600;font-size:30px;min-width:1.6em;text-align:center}
 @media (max-width:460px){.brand .fr-ver{display:none}}
+/* Rael 2.5D: piscar e asinhas (só transform, leve) */
+.ra-olhos{transform-box:fill-box;transform-origin:center;animation:raPisca 5.2s infinite}
+@keyframes raPisca{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+.ra-asa-e,.ra-asa-d{transform-box:fill-box}
+.ra-asa-e{transform-origin:90% 20%}.ra-asa-d{transform-origin:10% 20%}
+.ra-resp .ra-asa-e{animation:raAsaE 3.4s ease-in-out infinite}.ra-resp .ra-asa-d{animation:raAsaD 3.4s ease-in-out infinite}
+@keyframes raAsaE{0%,100%{transform:rotate(0)}50%{transform:rotate(-5deg)}}@keyframes raAsaD{0%,100%{transform:rotate(0)}50%{transform:rotate(5deg)}}
+.ra-pulo .ra-asa-e{animation:raAcenaE .45s ease-in-out infinite}.ra-pulo .ra-asa-d{animation:raAcenaD .45s ease-in-out infinite}
+.ra-danca .ra-asa-e{animation:raAcenaE .7s ease-in-out infinite}.ra-danca .ra-asa-d{animation:raAcenaD .7s ease-in-out infinite}
+@keyframes raAcenaE{0%,100%{transform:rotate(8deg)}50%{transform:rotate(-34deg)}}@keyframes raAcenaD{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(34deg)}}
+@media (prefers-reduced-motion:reduce){.ra-olhos,.ra-asa-e,.ra-asa-d{animation:none!important}}
 /* Rael Frango animado: cenas por hora do dia e por treino (só CSS; respeita "reduzir movimento") */
 .ra{display:inline-block;line-height:0;position:relative}
 .ra svg{overflow:visible}
@@ -4246,7 +4257,7 @@ function frNotaDe(td) {
   return frNotaCalc({ kcal: t.kcal, meta, p: t.p, mp: m.p, agua: d.agua || 0, ma: m.agua, refeicoes, mref, exp: frEsperado(td), treino });
 }
 // Rael Frango: SVG idêntico ao do canvas de identidade aprovado (Main.dc.html). Só os olhos/sobrancelhas mudam com o humor.
-function frRael(humor, tam) {
+function frRaelClassico(humor, tam) {
   const olhosNormal = `<circle cx="80" cy="98" r="9" fill="#FFFFFF" stroke-width="4"/><circle cx="120" cy="98" r="9" fill="#FFFFFF" stroke-width="4"/><circle cx="82" cy="99" r="3.5" fill="#1B1630" stroke="none"/><circle cx="118" cy="99" r="3.5" fill="#1B1630" stroke="none"/>`;
   const olhos = humor === "dorme" ? `<path d="M71 99q9 7 18 0M111 99q9 7 18 0" fill="none" stroke-width="4"/>` : (humor === "feliz" || humor === "otimo") ? `<path d="M71 102q9-10 18 0M111 102q9-10 18 0" fill="none" stroke-width="4"/>` : humor === "foco" ? olhosNormal.replace('cx="82"', 'cx="85"').replace('cx="118"', 'cx="123"') : olhosNormal;
   const sobr = humor === "dorme" ? "" : `<path d="${humor === "alfa" ? "M64 78L90 93M136 78L110 93" : humor === "pessimo" ? "M64 95L90 82M136 95L110 82" : humor === "mal" ? "M66 91L90 84M134 91L110 84" : "M66 83L90 91M134 83L110 91"}" fill="none"/>`;
@@ -4267,6 +4278,55 @@ ${olhos}${sobr}
 <ellipse cx="100" cy="136" rx="6" ry="8" fill="#D4574A" stroke-width="4"/>
 </g>
 <ellipse cx="64" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/><ellipse cx="136" cy="116" rx="9" ry="6" fill="#D4574A" opacity=".3"/>${extra}</svg>`;
+}
+
+// Rael 2.5D (protótipo): mesma geometria do clássico (cenas e adereços encaixam), mas com volume: gradientes, brilho, sombra no chão,
+// olhos grandes com reflexo, piscar e asinhas. Só SVG/CSS (sem imagem). Aparelho fraco, "reduzir dados" ou ?rael=classico usam o clássico.
+let _r25n = 0;
+function frRael25ok() {
+  try {
+    if (/[?&]rael=classico/.test(location.search) || localStorage.getItem("raelfit:rael25") === "0") return false;
+    if (navigator.deviceMemory && navigator.deviceMemory <= 2) return false;
+    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return false;
+    if (window.matchMedia && matchMedia("(prefers-reduced-data: reduce)").matches) return false;
+  } catch (e) {}
+  return true;
+}
+function frRael(humor, tam) {
+  if (!frRael25ok()) return frRaelClassico(humor, tam);
+  const u = "r" + (++_r25n), L = "#1B1630";
+  const fechado = humor === "dorme", alegre = humor === "feliz" || humor === "otimo";
+  const pup = humor === "foco" ? 3 : 0;
+  const olho = (cx) => fechado ? `<path d="M${cx - 9} 99q9 7 18 0" fill="none" stroke="${L}" stroke-width="4" stroke-linecap="round"/>`
+    : alegre ? `<path d="M${cx - 9} 103q9-11 18 0" fill="none" stroke="${L}" stroke-width="4.5" stroke-linecap="round"/>`
+    : `<circle cx="${cx}" cy="98" r="11.5" fill="#fff" stroke="${L}" stroke-width="3.5"/><circle cx="${cx + pup}" cy="100" r="7" fill="${L}"/><circle cx="${cx + pup - 2.6}" cy="96.6" r="2.8" fill="#fff"/><circle cx="${cx + pup + 2.4}" cy="102.6" r="1.4" fill="#fff" opacity=".8"/>`;
+  const sobr = fechado ? "" : `<path d="${humor === "alfa" ? "M62 76L90 92M138 76L110 92" : humor === "pessimo" ? "M62 94L90 80M138 94L110 80" : humor === "mal" ? "M64 90L90 82M136 90L110 82" : "M64 80L90 87M136 80L110 87"}" fill="none" stroke="${L}" stroke-width="4.5" stroke-linecap="round"/>`;
+  const extra = humor === "pessimo" ? `<path d="M68 112q-6 10 0 14q6-4 0-14z" fill="#8FD3FF" stroke="${L}" stroke-width="3" stroke-linejoin="round"/>` : humor === "otimo" ? `<path d="M164 52l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#F2C14E" stroke="${L}" stroke-width="3" stroke-linejoin="round"/><path d="M30 60l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="#F2C14E" stroke="${L}" stroke-width="2.5" stroke-linejoin="round"/>` : "";
+  return `<svg width="${tam || 96}" height="${tam || 96}" viewBox="0 0 200 200" role="img" aria-label="Rael Frango" style="flex:none">
+<defs><radialGradient id="${u}c" cx="38%" cy="28%" r="80%"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".45" stop-color="#F7D77A"/><stop offset="1" stop-color="#E2A530"/></radialGradient>
+<radialGradient id="${u}v" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#F58A7C"/><stop offset=".6" stop-color="#D4574A"/><stop offset="1" stop-color="#A93A32"/></radialGradient>
+<radialGradient id="${u}a" cx="40%" cy="25%" r="85%"><stop offset="0" stop-color="#F4C95A"/><stop offset="1" stop-color="#D79A2B"/></radialGradient>
+<linearGradient id="${u}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5A455"/><stop offset="1" stop-color="#DE7E28"/></linearGradient>
+<linearGradient id="${u}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4764BE"/><stop offset="1" stop-color="#2F4C9E"/></linearGradient>
+<radialGradient id="${u}s" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="${L}" stop-opacity=".28"/><stop offset="1" stop-color="${L}" stop-opacity="0"/></radialGradient></defs>
+<ellipse cx="100" cy="188" rx="60" ry="9" fill="url(#${u}s)"/>
+<path d="M82 164V184M70 186H94M118 164V184M106 186H130" fill="none" stroke="#E08A3A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<g stroke="${L}" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="84" cy="50" r="14" fill="url(#${u}v)"/><circle cx="100" cy="42" r="15" fill="url(#${u}v)"/><circle cx="116" cy="50" r="14" fill="url(#${u}v)"/>
+<g class="ra-asa-e"><ellipse cx="36" cy="124" rx="15" ry="27" transform="rotate(22 36 124)" fill="url(#${u}a)"/></g>
+<g class="ra-asa-d"><ellipse cx="164" cy="124" rx="15" ry="27" transform="rotate(-22 164 124)" fill="url(#${u}a)"/></g>
+<ellipse cx="100" cy="112" rx="62" ry="60" fill="url(#${u}c)"/>
+<ellipse cx="100" cy="140" rx="34" ry="22" fill="#FFF6D6" stroke="none" opacity=".85"/>
+<path d="M47 72Q100 52 153 72" fill="none" stroke-width="15"/>
+<path d="M47 72Q100 52 153 72" fill="none" stroke="url(#${u}f)" stroke-width="8.5"/>
+</g>
+<path d="M58 66Q100 50 142 66" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".35"/>
+<ellipse cx="68" cy="82" rx="16" ry="9" transform="rotate(-28 68 82)" fill="#fff" opacity=".4"/>
+<g class="ra-olhos">${olho(80)}${olho(120)}</g>${sobr}
+<g stroke="${L}" stroke-linejoin="round" stroke-linecap="round"><path d="M89 109Q100 105 111 109Q108 123 100 128Q92 123 89 109Z" fill="url(#${u}b)" stroke-width="4.2"/>
+<ellipse cx="100" cy="137" rx="6" ry="8.5" fill="url(#${u}v)" stroke-width="3.6"/></g>
+<path d="M94 114Q100 111 106 114" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
+<ellipse cx="62" cy="118" rx="10" ry="6.5" fill="#E8604F" opacity=".38"/><ellipse cx="138" cy="118" rx="10" ry="6.5" fill="#E8604F" opacity=".38"/>${extra}</svg>`;
 }
 
 // ---- adaptação ao app: dados do próprio aparelho (mesmo formato de sempre) ----
