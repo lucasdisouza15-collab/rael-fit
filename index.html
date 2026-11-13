@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v78-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v79-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v78-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v79-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2500,10 +2500,10 @@ function rotinaById(id, p = P()) { return (p.rotinas || []).find(r => r.id === i
 const TAF_MIN = { barra: 3, abd: 36, corrida: 2400 };
 const TAF_TESTES = ["2026-11-14", "2026-12-12", "2027-01-09", "2027-02-06", "2027-03-06", "2027-04-03", "2027-05-01", "2027-05-29"];
 const TAF_ALVOS = [
-  { ate: "2026-12-12", corrida: 1400, abd: null, abdTxt: "base + 6", barra: null, barraTxt: "3 negativas de 5 s" },
-  { ate: "2027-02-06", corrida: 1900, abd: 36, abdTxt: "36", barra: 1, barraTxt: "1 rep" },
-  { ate: "2027-04-03", corrida: 2300, abd: 40, abdTxt: "40", barra: 3, barraTxt: "3 reps" },
-  { ate: "2027-05-29", corrida: 2600, abd: 42, abdTxt: "42", barra: 5, barraTxt: "5 reps" }
+  { ate: "2026-12-12", corrida: 1400, abd: null, abdTxt: "base + 6", barra: null, barraTxt: "suspensão assistida 20 s e remada invertida 3x8" },
+  { ate: "2027-02-06", corrida: 1900, abd: 36, abdTxt: "36", barra: 0, barraTxt: "suspensão sem apoio 10 s e remada invertida 3x10" },
+  { ate: "2027-04-03", corrida: 2300, abd: 40, abdTxt: "40", barra: 0, barraTxt: "3 negativas de 3 s sem ajuda" },
+  { ate: "2027-05-29", corrida: 2600, abd: 42, abdTxt: "42", barra: 1, barraTxt: "1 rep limpa (mínimo oficial é 3)" }
 ];
 const TAF_BLOCOS = [
   ["2026-11-16", "8 x (1' trota + 2' caminhada)"], ["2026-11-23", "8 x (2' trota + 2' caminhada)"], ["2026-11-30", "8 x (2' trota + 2' caminhada), sem subir (semana da prova)"],
@@ -2525,11 +2525,13 @@ const TAF_ROTINAS = [
   { id: "taf-fin-push", nome: "TAF Finalizador PUSH", taf: true, itens: [
     { eid: "abdominal-supra", series: 3, aq: 1, min: 12, max: 25, desc: 60 }] },
   { id: "taf-fin-pull", nome: "TAF Finalizador PULL", taf: true, itens: [
-    { eid: "barra-fixa", series: 4, aq: 1, min: 3, max: 5, desc: 90 }] },
+    { eid: "dead-hang", series: 3, aq: 0, min: 10, max: 30, desc: 60 },
+    { eid: "remada-invertida", series: 3, aq: 1, min: 8, max: 12, desc: 90 }] },
   { id: "taf-teste", nome: "TESTE TAF", taf: true, itens: [
     { eid: "caminhada", series: 1, aq: 0, min: 5, max: 5, desc: 0 },
     { eid: "polichinelo", series: 1, aq: 0, min: 30, max: 60, desc: 30 },
     { eid: "barra-fixa", series: 1, aq: 1, min: 1, max: 10, desc: 180 },
+    { eid: "dead-hang", series: 1, aq: 0, min: 5, max: 60, desc: 120 },
     { eid: "abdominal-supra", series: 1, aq: 1, min: 20, max: 45, desc: 180 },
     { eid: "corrida-rua", series: 1, aq: 0, min: 12, max: 12, desc: 0 }] }
 ];
@@ -2550,7 +2552,7 @@ function tafAddRotinas(rotinas) {
 }
 function tafDif(a, b) { return Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000); }
 function tafBarraTxt(hoje) {
-  return hoje < "2026-12-12" ? "4 x 3 negativas de 5 s (sobe pulando, desce devagar)" : hoje < "2027-02-06" ? "4 x máximo de negativas + 20 s de isometria no topo" : hoje < "2027-04-03" ? "4 x 2 a 3 repetições assistidas (elástico), diminuindo a ajuda" : "4 séries de 2 a 3 repetições limpas";
+  return hoje < "2026-12-12" ? "suspensão assistida (pés no banco) 3 x máx (meta 20 s) + remada invertida 3 x 8" : hoje < "2027-02-06" ? "suspensão sem apoio 3 x máx (meta 10 s) + remada invertida 3 x 10 + isometria assistida no topo 3 x 5 s" : hoje < "2027-04-03" ? "negativas de 3 s 3 x 3 (banco só para subir) + suspensão 3 x 20 s" : "tentativas de subida limpa + negativas de 5 s";
 }
 function tafPlano(hoje) {
   const r = { ativo: hoje <= TAF_FIM, antes: hoje < "2026-11-16", seg: null, ter: null, qui: null, barra: tafBarraTxt(hoje), abd: "3 séries a ~60% do seu máximo, +2 repetições por semana", proximoTeste: null, dias: null, alvo: null };
@@ -2575,14 +2577,15 @@ function tafRotInit() {
   if (typeof tafPodeInit === "function" && !tafPodeInit()) return; // Painel: só depois de ler o perfil do banco (nunca grava antes, v113)
   TAF_ROT_OK = true;
   try {
-    const p = P(); if (!tafAtivo(p) || p.tafRotV === 1) return;
+    const p = P(); if (!tafAtivo(p) || p.tafRotV === 3) return;
     updP(q => {
       q.tafOn = true;
       if (!q.tafRotAntes) q.tafRotAntes = clean(q.rotinas || []); // estado anterior, para voltar se precisar
       q.rotinas = q.rotinas || [];
       tafGarantirAquec(q.rotinas, eid => exById(eid, q).tipo);
       tafAddRotinas(q.rotinas);
-      q.tafRotV = 1;
+      if (q.tafRotV === 1 || q.tafRotV === 2) ["taf-fin-pull", "taf-teste"].forEach(id => { const t = q.rotinas.find(r => r.id === id), n = TAF_ROTINAS.find(r => r.id === id); if (t && n) t.itens = clean(n.itens); }); // v3 (13/11): barra começa na suspensão assistida e remada invertida
+      q.tafRotV = 3;
     });
   } catch (e) {}
 }
