@@ -6,10 +6,10 @@ const src = fs.readFileSync(__dirname + '/../supabase-sync.js', 'utf8');
 function mundo(linhas, local) {
   const chamadas = []; const listeners = {};
   const cli = { from() { const q = { _o: null, select() { return q; }, eq() { return q; }, order() { return q; }, limit(n) { q._lim = n; return q; },
-    range(a, b) { q._r = [a, b]; return q; }, then(res) { chamadas.push(q._r ? q._r.join('-') : 'limit' + q._lim);
+    range(a, b) { q._r = [a, b]; return q; }, then(res) { if (!q._r && !q._lim) return res({ data: [], error: null }); /* sbRestauraPerfis: sem perfis na nuvem */ chamadas.push(q._r ? q._r.join('-') : 'limit' + q._lim);
       let rows = linhas.slice().sort((x, y) => x.k < y.k ? -1 : 1); const a = q._r ? q._r[0] : 0, b = q._r ? q._r[1] : Math.min(q._lim || 1e9, 1000) - 1; /* servidor corta em 1000 */
       rows = rows.slice(a, Math.min(b, a + 999) + 1); res({ data: rows, error: null }); } }; return q; } };
-  const sb = { window: {}, navigator: { onLine: true }, PID: () => 'p1', ST: { docs: Object.assign({}, local) }, lsWrite() {}, render() {}, console, Date, Promise, setTimeout, clearTimeout,
+  const sb = { window: {}, navigator: { onLine: true }, PID: () => 'p1', perfis: () => ({ list: [], cur: 'p1' }), savePerfis() {}, lsRead: () => ({}), ST: { docs: Object.assign({}, local) }, lsWrite() {}, render() {}, console, Date, Promise, setTimeout, clearTimeout,
     addEventListener(e, fn) { (listeners[e] = listeners[e] || []).push(fn); }, document: { hidden: false, addEventListener(e, fn) { (listeners[e] = listeners[e] || []).push(fn); } } };
   vm.createContext(sb); vm.runInContext(src.replace(/^const SB =/m, 'var SB ='), sb);
   vm.runInContext('SB.cli = null', sb); sb.SB.cli = cli; sb.SB.user = { id: 'u1' }; return { sb, chamadas, listeners };
@@ -32,6 +32,14 @@ function mundo(linhas, local) {
   m.listeners.visibilitychange.forEach(fn => fn()); await new Promise(r => setTimeout(r, 20)); ok(m.chamadas.length === n0, 'B6 voltar à tela logo depois do pull NÃO baixa de novo');
   m.listeners.online.forEach(fn => fn()); await new Promise(r => setTimeout(r, 20)); ok(m.chamadas.length === n0, 'B6 evento online logo depois também não');
   m.sb.SB.ultPull = Date.now() - 61000; m.listeners.visibilitychange.forEach(fn => fn()); await new Promise(r => setTimeout(r, 20)); ok(m.chamadas.length === n0 + 1, 'B6 passado 1 minuto, baixa de novo');
+  // Login com Google: chama o OAuth do Supabase com provider google e volta para a própria página
+  { let args = null; m = mundo([], {}); m.sb.location = { origin: 'https://frangometro-app.pages.dev', pathname: '/' };
+    m.sb.SB.cli.auth = { signInWithOAuth: async a => { args = a; return { error: null }; } };
+    const r = await m.sb.sbGoogle();
+    ok(r === null && args && args.provider === 'google' && args.options.redirectTo === 'https://frangometro-app.pages.dev/', 'Google: signInWithOAuth(provider google) com redirectTo no próprio site');
+    m.sb.SB.cli.auth = { signInWithOAuth: async () => ({ error: { message: 'x' } }) }; ok((await m.sb.sbGoogle()) === 'x', 'Google: erro do Supabase volta como mensagem');
+    const html = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+    ok((html.match(/data-act="sbGoogle"/g) || []).length === 2 && /ACT\.sbGoogle\s*=/.test(html), 'Google: botão na tela de Nuvem e no início do onboarding, com ação ligada'); }
   console.log('NÃO TESTADO aqui (precisa do Supabase real): RLS entre dois logins; mescla por campo.');
   console.log(f ? f + ' falha(s)' : 'sync VERDE'); process.exit(f ? 1 : 0);
 })();
