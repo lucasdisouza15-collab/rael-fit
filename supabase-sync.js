@@ -35,6 +35,7 @@ async function sbPull() {
   if (!SB.cli || !SB.user) return;
   SB.ultPull = Date.now();
   try {
+    await sbRestauraPerfis();
     const perfil = PID();
     /* Páginas de 1.000 linhas (o Supabase corta cada consulta nesse limite); ordem por k para a paginação não repetir nem pular */
     const data = [], PAG = 1000;
@@ -75,3 +76,19 @@ SB.ultPull = 0;
 function sbPullLeve() { if (Date.now() - SB.ultPull < 60000) return; SB.ultPull = Date.now(); sbPull(); }
 addEventListener("online", () => { sbFlush(); sbPullLeve(); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden) sbPullLeve(); });
+
+/* Navegador limpo: a lista de perfis só existia no localStorage. Ao entrar, recria os perfis que estão na nuvem
+ * e, se este aparelho está vazio, abre o perfil que já foi configurado (onb) ou o mais cheio. Nunca apaga nada. */
+async function sbRestauraPerfis() {
+  const sem = d => !Object.keys(d).some(k => /^(dia|treino)-/.test(k) && !d[k]._del);
+  const { data, error } = await SB.cli.from("docs").select("perfil,data").eq("k", "perfil");
+  if (error || !data || !data.length) return;
+  const o = perfis(), ids = new Set(o.list.map(x => x.id));
+  let mudou = false;
+  data.forEach(r => { if (!ids.has(r.perfil)) { o.list.push({ id: r.perfil, nome: (r.data && r.data.nome) || "" }); ids.add(r.perfil); mudou = true; } });
+  if (o.list.length > 1 && o.cur === "main" && sem(ST.docs) && o.list.length === data.length + (data.some(r => r.perfil === "main") ? 0 : 1)) {
+    const alvo = data.find(r => r.perfil !== "main" && r.data && r.data.onb) || data.find(r => r.data && r.data.onb) || data.find(r => r.perfil !== "main");
+    if (alvo && alvo.perfil !== o.cur) { o.cur = alvo.perfil; mudou = true; }
+  }
+  if (mudou) { savePerfis(o); ST.docs = lsRead(); }
+}
