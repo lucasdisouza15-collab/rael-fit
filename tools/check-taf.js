@@ -4,7 +4,7 @@ const html = fs.readFileSync(__dirname + '/../index.html', 'utf8');
 const a = html.indexOf('/*TAF-PURO-INI*/'), b = html.indexOf('/*TAF-PURO-FIM*/');
 if (a < 0 || b < 0) { console.error('FALHOU: bloco TAF-PURO não encontrado'); process.exit(1); }
 const sb = { out: {} }; vm.createContext(sb);
-vm.runInContext(html.slice(a, b) + '\nout.f={TAF_MIN,TAF_TESTES,TAF_ALVOS,tafPlano,tafUltimo,tafStatus,TAF_ROTINAS,tafGarantirAquec,tafAddRotinas};', sb);
+vm.runInContext(html.slice(a, b) + '\nout.f={TAF_MIN,TAF_TESTES,TAF_ALVOS,tafPlano,tafUltimo,tafStatus,TAF_ROTINAS,tafGarantirAquec,tafAddRotinas,tafDia};', sb);
 const F = sb.out.f; let falhas = 0, total = 0;
 const ok = (n, c) => { total++; if (!c) { falhas++; console.error('FALHOU ' + n); } };
 const eq = (n, x, y) => ok(n + ' (obteve ' + JSON.stringify(x) + ')', JSON.stringify(x) === JSON.stringify(y));
@@ -26,6 +26,18 @@ eq('sem testes', F.tafUltimo({}), null);
 eq('status vs mínimo', F.tafStatus({ barra: 3, abd: 35, corrida: 2400 }), { barra: 'ok', abd: 'falta', corrida: 'ok' });
 eq('status sem dado', F.tafStatus(null), { barra: 'sem', abd: 'sem', corrida: 'sem' });
 ok('cartão entra na aba Semana e botão salva sem apagar nada', /h \+= tafCard\(\);/.test(html) && /ACT\.tafSalvar/.test(html) && !/delete p\.taf|p\.taf = \{\}\s*;?\s*\}\)/.test(html));
+
+// ---- "hoje / amanhã" com quantidade exata ----
+let d = F.tafDia('2026-11-14', 'PUSH A', null); ok('14/11 (sábado) é dia de teste: barra, abdominal, corrida nessa ordem', d.teste && d.itens.length === 3 && /Barra/.test(d.itens[0][0]) && /Abdominal/.test(d.itens[1][0]) && /Corrida/.test(d.itens[2][0]));
+d = F.tafDia('2026-11-13', 'PULL B', null); ok('13/11 sexta PULL B: barra assistida 3 x 10 s + remada 3 x 8, sem corrida', !d.teste && d.itens.length === 1 && /3 séries de 10 s/.test(d.itens[0][1]) && /remada invertida 3 x 8/.test(d.itens[0][1]));
+d = F.tafDia('2026-11-16', 'PUSH A', null); ok('16/11 segunda PUSH A: corrida do bloco + abdominal 3 x 10 provisório', d.itens.length === 2 && d.itens[0][1] === "8 x (1' trota + 2' caminhada)" && /3 séries de 10/.test(d.itens[1][1]));
+d = F.tafDia('2026-11-17', 'PULL A', null); ok('17/11 terça PULL A: corrida + barra 3 x 10 s (semana 1)', d.itens.length === 2 && /3 séries de 10 s/.test(d.itens[1][1]));
+d = F.tafDia('2026-11-24', 'PULL A', null); ok('24/11: meta da barra sobe 2 s por semana (12 s); em 11/12 chega a 18 s, nunca passa de 20 s', /3 séries de 12 s/.test(d.itens[1][1]) && /3 séries de 18 s/.test(F.tafDia('2026-12-11', 'PULL B', null).itens[0][1]));
+d = F.tafDia('2026-11-18', 'LEGS', null); ok('quarta/LEGS sem corrida: sem TAF extra', d.itens.length === 0);
+d = F.tafDia('2026-11-22', '', null); ok('domingo/folga: sem TAF extra', d.itens.length === 0 && !d.teste);
+d = F.tafDia('2026-11-23', 'PUSH A', { data: '2026-11-14', abd: 20 }); ok('abdominal = 60% do último teste + 2 por semana (20 -> 12 + 2)', /3 séries de 14/.test(d.itens[1][1]));
+ok('fim do plano: sem itens', F.tafDia('2027-06-01', 'PUSH A', null).itens.length === 0);
+ok('cartão mostra Hoje e Amanhã com tafDia', /dia\("Hoje", t\) \+ dia\("Amanhã", addDays\(t, 1\)\)/.test(html));
 
 // ---- rotinas TAF e aquecimento ----
 ok('4 rotinas TAF com id fixo e flag taf', F.TAF_ROTINAS.map(r => r.id).join() === 'taf-corrida,taf-fin-push,taf-fin-pull,taf-teste' && F.TAF_ROTINAS.every(r => r.taf === true));
