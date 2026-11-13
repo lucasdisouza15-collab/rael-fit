@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v74-20261113b"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v75-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v74-20261113b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v75-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2487,6 +2487,77 @@ function semanaEf(p = P()) {
   return semanaRot(p, ws, ws.some(w => w.data === t), t);
 }
 function rotinaById(id, p = P()) { return (p.rotinas || []).find(r => r.id === id) || null; }
+/*TAF-PURO-INI*/
+// Rumo ao TAF (Escrivão PC-BA). Mínimos: Portaria PCBA nº 198/2026, art. 10 §1º (homem). Metas intermediárias = proposta do plano (não são da Portaria).
+const TAF_MIN = { barra: 3, abd: 36, corrida: 2400 };
+const TAF_TESTES = ["2026-11-14", "2026-12-12", "2027-01-09", "2027-02-06", "2027-03-06", "2027-04-03", "2027-05-01", "2027-05-29"];
+const TAF_ALVOS = [
+  { ate: "2026-12-12", corrida: 1400, abd: null, abdTxt: "base + 6", barra: null, barraTxt: "3 negativas de 5 s" },
+  { ate: "2027-02-06", corrida: 1900, abd: 36, abdTxt: "36", barra: 1, barraTxt: "1 rep" },
+  { ate: "2027-04-03", corrida: 2300, abd: 40, abdTxt: "40", barra: 3, barraTxt: "3 reps" },
+  { ate: "2027-05-29", corrida: 2600, abd: 42, abdTxt: "42", barra: 5, barraTxt: "5 reps" }
+];
+const TAF_BLOCOS = [
+  ["2026-11-16", "8 x (1' trota + 2' caminhada)"], ["2026-11-23", "8 x (2' trota + 2' caminhada)"], ["2026-11-30", "8 x (2' trota + 2' caminhada), sem subir (semana da prova)"],
+  ["2026-12-07", "6 x (3' trota + 1' caminhada)"], ["2026-12-14", "5 x (4' trota + 1' caminhada)"], ["2026-12-21", "4 x (6' trota + 1' caminhada)"],
+  ["2026-12-28", "3 x (8' trota + 2' caminhada)"], ["2027-01-04", "2 x (12' trota + 2' caminhada)"], ["2027-01-11", "15' contínuo + 5' caminhada"], ["2027-01-18", "20' contínuo"]
+];
+const TAF_ABC = [
+  ["2027-01-25", "22' contínuo", "5 x (3' moderado + 1' caminhada)", "20' leve"], ["2027-02-08", "25' contínuo", "6 x (3' + 1' caminhada)", "20' leve"],
+  ["2027-02-22", "28' contínuo", "5 x (4' + 1' caminhada)", "20' leve"], ["2027-03-08", "30' contínuo", "4 x (6' + 1,5' caminhada)", "25' leve"],
+  ["2027-03-22", "30' contínuo", "3 x (4' no ritmo da meta + 2' caminhada)", "25' leve"], ["2027-04-05", "30' contínuo", "3 x (5' no ritmo da meta + 2' caminhada)", "25' leve"],
+  ["2027-04-19", "32' contínuo", "2 x (8' no ritmo da meta + 3' caminhada)", "25' leve"], ["2027-05-03", "30' contínuo", "12' no ritmo da meta + 3' caminhada + 6'", "25' leve"],
+  ["2027-05-17", "volume -30% (polimento)", "1 x 8' no ritmo da meta", "leve"]
+];
+const TAF_FIM = "2027-05-30";
+function tafDif(a, b) { return Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000); }
+function tafBarraTxt(hoje) {
+  return hoje < "2026-12-12" ? "4 x 3 negativas de 5 s (sobe pulando, desce devagar)" : hoje < "2027-02-06" ? "4 x máximo de negativas + 20 s de isometria no topo" : hoje < "2027-04-03" ? "4 x 2 a 3 repetições assistidas (elástico), diminuindo a ajuda" : "4 séries de 2 a 3 repetições limpas";
+}
+function tafPlano(hoje) {
+  const r = { ativo: hoje <= TAF_FIM, antes: hoje < "2026-11-16", seg: null, ter: null, qui: null, barra: tafBarraTxt(hoje), abd: "3 séries a ~60% do seu máximo, +2 repetições por semana", proximoTeste: null, dias: null, alvo: null };
+  for (let i = 0; i < TAF_BLOCOS.length; i++) if (hoje >= TAF_BLOCOS[i][0]) { r.seg = r.ter = r.qui = TAF_BLOCOS[i][1]; }
+  if (hoje >= TAF_ABC[0][0]) for (let i = 0; i < TAF_ABC.length; i++) if (hoje >= TAF_ABC[i][0]) { r.seg = TAF_ABC[i][1]; r.ter = TAF_ABC[i][2]; r.qui = TAF_ABC[i][3]; }
+  const pt = TAF_TESTES.find(d => d >= hoje); if (pt) { r.proximoTeste = pt; r.dias = tafDif(hoje, pt); }
+  r.alvo = TAF_ALVOS.find(a => a.ate >= hoje) || TAF_ALVOS[TAF_ALVOS.length - 1];
+  return r;
+}
+function tafUltimo(taf) {
+  const ks = Object.keys(taf || {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort(); if (!ks.length) return null;
+  const k = ks[ks.length - 1]; return Object.assign({ data: k }, taf[k]);
+}
+function tafStatus(t) {
+  const f = (v, m) => v == null || v === "" ? "sem" : (+v >= m ? "ok" : "falta");
+  return { barra: f(t && t.barra, TAF_MIN.barra), abd: f(t && t.abd, TAF_MIN.abd), corrida: f(t && t.corrida, TAF_MIN.corrida) };
+}
+/*TAF-PURO-FIM*/
+function tafCard() {
+  const p = P(), t = TODAY(), pl = tafPlano(t); if (!pl.ativo || p.tafOff) return "";
+  const u = tafUltimo(p.taf), st = tafStatus(u), A = pl.alvo;
+  const cel = (v, un, s) => v == null || v === "" ? `<span class="muted">sem dado</span>` : `<b style="color:var(--${s === "ok" ? "good" : "warn"})">${esc(String(v))}${un}</b>`;
+  let h = `<div class="card"><div class="row between"><h2>Rumo ao TAF</h2><span class="pill acc">Escrivão PC-BA</span></div>`;
+  if (pl.antes) h += `<div class="small ink2" style="margin-top:6px">As corridas começam em 16/11. Antes: o teste-base de sábado 14/11 (corrida só confortável, sem arrancada).</div>`;
+  else h += `<div class="small" style="margin-top:8px"></div><div class="eyebrow" style="margin-top:8px">Esta semana</div><div class="small ink2">Seg: ${esc(pl.seg)}<br>Ter: ${esc(pl.ter)}<br>Qui: ${esc(pl.qui)}</div>`;
+  h += `<div class="small ink2" style="margin-top:6px"><b>Abdominal</b> no fim de PUSH A e B: ${esc(pl.abd)}.<br><b>Barra</b> no fim de PULL A e B: ${esc(pl.barra)}.</div>`;
+  h += `<div class="small" style="margin-top:8px">${pl.proximoTeste ? (pl.dias === 0 ? "<b>Hoje é dia de teste de referência.</b>" : "Próximo teste de referência: <b>" + ddmm(pl.proximoTeste) + "</b> (" + pl.dias + (pl.dias === 1 ? " dia" : " dias") + ").") : "Plano concluído."}</div>`;
+  h += `<div class="table" style="margin-top:8px"><div class="row between small"><span></span><span class="muted">mínimo · último · meta do ciclo</span></div>`
+    + `<div class="row between small"><span>Corrida 12 min</span><span>${TAF_MIN.corrida} m · ${cel(u && u.corrida, " m", st.corrida)} · ${A.corrida} m</span></div>`
+    + `<div class="row between small"><span>Abdominal 1 min</span><span>${TAF_MIN.abd} · ${cel(u && u.abd, "", st.abd)} · ${esc(A.abdTxt)}</span></div>`
+    + `<div class="row between small"><span>Barra</span><span>${TAF_MIN.barra} reps · ${cel(u && u.barra, " reps", st.barra)} · ${esc(A.barraTxt)}</span></div></div>`;
+  if (u) h += `<div class="xs muted" style="margin-top:4px">Último teste: ${ddmm(u.data)}</div>`;
+  h += `<button class="btn pri block" style="margin-top:10px" data-act="tafSheet">Registrar teste</button>`
+    + `<div class="xs muted" style="margin-top:8px">Mínimos: Portaria PCBA nº 198/2026 (cada teste é eliminatório). Data do TAF ainda não confirmada. Antes de intensificar, avaliação do cardiologista (o atestado original também é exigido, até 10 dias antes).</div></div>`;
+  return h;
+}
+ACT.tafSheet = () => {
+  openSheet({ title: "Registrar teste do TAF", body: () => `<div class="stack"><label class="f">Corrida 12 min (metros)<input type="number" inputmode="numeric" id="tafC" placeholder="ex.: 1150"></label><label class="f">Abdominal em 1 min (repetições)<input type="number" inputmode="numeric" id="tafA" placeholder="ex.: 20"></label><label class="f">Barra (repetições completas)<input type="number" inputmode="numeric" id="tafB" placeholder="ex.: 0"></label><div class="xs muted">Vale a contagem pela Portaria: abdominal com cotovelos passando os joelhos; barra com queixo acima da barra e cotovelos estendidos embaixo; corrida só a distância medida.</div></div>`, foot: () => `<button class="btn pri block" data-act="tafSalvar">Salvar</button>` });
+};
+ACT.tafSalvar = () => {
+  const g = id => { const v = $("#" + id).value; return v === "" ? null : Math.max(0, Math.round(num(v))); };
+  const c = g("tafC"), a = g("tafA"), b = g("tafB"); if (c == null && a == null && b == null) { toast("Preencha pelo menos um teste."); return; }
+  updP(p => { p.taf = p.taf || {}; const o = Object.assign({}, p.taf[TODAY()] || {}); if (c != null) o.corrida = c; if (a != null) o.abd = a; if (b != null) o.barra = b; p.taf[TODAY()] = o; });
+  closeAllSheets(); toast("Teste salvo");
+};
 function viewSemana() {
   const p = P(), t = TODAY(), dwT = dowOf(t);
   const startWeek = addDays(t, -((dwT + 6) % 7));
@@ -2494,6 +2565,7 @@ function viewSemana() {
   let h = `<div class="card"><div class="row between" style="margin-bottom:10px"><h2>Sua semana</h2><span class="xs muted">toque no dia para mudar</span></div><div class="week">${[1, 2, 3, 4, 5, 6, 0].map((dw, i) => {
     const date = addDays(startWeek, i), rid = semanaEf(p)[dw], r = rid && rotinaById(rid, p);
     return `<button class="wd ${date === t ? "today" : ""} ${r ? "" : "rest"} ${doneDates.has(date) ? "done" : ""}" data-act="pickDay" data-dw="${dw}"><div class="d">${DOW[dw]}</div><div class="r">${r ? esc(shortName(r.nome)) : nomeFeito[date] ? esc(shortName(nomeFeito[date])) : "Folga"}</div>${doneDates.has(date) ? `<div class="xs" style="color:var(--good)">${ICON.check.replace("<svg", '<svg width="12" height="12"')}</div>` : ""}</button>`; }).join("")}</div></div>`;
+  h += tafCard();
   const rid = semanaEf(p)[dwT], r = rid && rotinaById(rid, p);
   if (r) h += `<div class="card"><div class="eyebrow">Hoje, ${DOWL[dwT].toLowerCase()}</div><div class="row" style="margin-top:4px"><div class="grow"><h2>${esc(r.nome)}</h2><div class="small muted">${r.itens.length} exercícios · ${r.itens.reduce((s, x) => s + num(x.series), 0)} séries</div></div><button class="btn pri" data-act="startRoutine" data-id="${r.id}">Começar</button></div><div class="small ink2" style="margin-top:8px">${esc(frase("treino"))}</div><button class="btn soft block" style="margin-top:10px" data-act="startEmpty">+ Iniciar treino vazio</button></div>`;
   else h += `<div class="card"><div class="eyebrow">Hoje, ${DOWL[dwT].toLowerCase()}</div><div class="row" style="margin-top:4px"><div class="grow small ink2">${(p.rotinas || []).length ? "Dia de folga no plano. " + esc(frase("folga")) : "Ainda não tem rotina. Monte a semana abaixo em 10 segundos."}</div><button class="btn" data-act="startEmpty">Iniciar treino vazio</button></div></div>`;

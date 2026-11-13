@@ -52,6 +52,14 @@ Lógica pura em `index.html` entre `/*IX-PURO-INI*/` e `/*IX-PURO-FIM*/`, testad
 - Aceite de um lote: auditoria 0 fora do padrão; todo `publicado` tem EX_SEQ e arquivos em ex/; `node tools/check.js` verde; prova após publicar (print do site e do Painel). Nada testado em celular.
 - Risco aberto: canal de volta das imagens do Gemini (Drive/Gmail) NÃO CONFIRMADO; o lote 1 testa isso.
 
+### Rumo ao TAF (13/11/2026)
+- Problema: Lucas vai prestar Escrivão PC-BA e quer plano real, cumprível e mensurável dentro do app, sem quebrar a rotação push/pull/legs.
+- Fonte dos mínimos: Portaria PCBA nº 198/2026, art. 10 §1º (homem): barra 3 reps, abdominal 36 em 1 min, corrida de 12 min 2.400 m. Cada teste é eliminatório. Data do TAF: NÃO CONFIRMADA. Metas intermediárias são do plano (/mnt/project-files/saude/plano-taf-escrivao-pcba.md), não da Portaria.
+- Comportamento: cartão "Rumo ao TAF" em Treino > Semana (até 30/05/2027, `p.tafOff` esconde): corridas da semana (seg/ter/qui), abdominal e barra da fase, próximo teste de referência (sábados a cada 28 dias a partir de 14/11), tabela mínimo / último / meta do ciclo e botão "Registrar teste" (salva em `p.taf[AAAA-MM-DD] = {corrida, abd, barra}`, só soma, nunca apaga).
+- Lógica pura entre `/*TAF-PURO-INI*/` e `/*TAF-PURO-FIM*/`, testada por `tools/check-taf.js` (dentro de `tools/check.js`).
+- Aceite: `node tools/check.js` verde (17 verificações do TAF) e prova no navegador (cartão com data simulada 18/11 e registro salvo). Nada testado em celular real.
+- Paridade: aplicar na aba Frangômetro do Painel; Hevy: rotinas prontas para colar (sem acesso direto ao Hevy).
+
 ## Regras do método
 - Antes de abrir PR: `node tools/check.js` (sintaxe dos scripts + testes das contas de kcal/macros e da nota Pintinho/Frango/Galo Alfa). Se mudar uma regra de conta, ajustar o teste na mesma entrega.
 - Paridade: tudo que entra no site (index.html) vai também para a aba Frangômetro do Painel, exceto o que for exclusivo de um dos dois.
