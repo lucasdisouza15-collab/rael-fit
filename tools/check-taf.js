@@ -38,5 +38,6 @@ eq('segunda passada não muda nada (idempotente)', F.tafGarantirAquec(rs, tipo),
 eq('adiciona as 4 TAF uma vez', [F.tafAddRotinas(rs), F.tafAddRotinas(rs), rs.length], [4, 0, 7]);
 ok('aquecimento não altera as rotinas TAF', F.tafGarantirAquec([{ id: 't', taf: true, itens: [{ eid: 'supino' }] }], tipo) === 0);
 ok('TAF é opt-in: cartão e rotinas só com tafAtivo (link #taf)', /!tafAtivo\(p\)\) return ""/.test(html) && /if \(!tafAtivo\(p\) \|\| p\.tafRotV === 1\) return;/.test(html) && /location\.hash \|\| ""\) !== "#taf"/.test(html));
+ok('init das rotinas TAF espera o perfil carregar quando o app tem esse guarda (Painel)', /typeof tafPodeInit === "function" && !tafPodeInit\(\)/.test(html));
 console.log((total - falhas) + '/' + total + ' verificações do TAF passaram');
 process.exit(falhas ? 1 : 0);
