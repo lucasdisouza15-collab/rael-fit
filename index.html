@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v80-20261113b"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v82-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v79-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v82-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -473,7 +473,7 @@ input[type=file]::file-selector-button{border-radius:10px}
 <nav class="tabs" aria-label="Seções"><div class="in" id="tabbar"></div></nav>
 <div id="layer"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="supabase-sync.js?v=1"></script>
+<script src="supabase-sync.js?v=2"></script>
 <script>
 // ---------- Banco de alimentos (por 100 g ou 100 ml) ----------
 // [nome, kcal, proteína, carboidrato, gordura, fibra, categoria, fonte, g por unidade (opcional), nome da unidade]
@@ -5768,7 +5768,7 @@ function onbBody() {
   let h = "";
   const HM = { oi: "feliz", obj: "alfa", dados: "normal", peso: "foco", meta: "alfa", sanfona: "mal", extra: "feliz", motivos: "normal", evento: "feliz", desafio: "alfa", comp: "normal", fds: "normal", reg: "foco", pronto: "otimo" };
   const T = (t, s, big) => `<div class="rfala${big ? " big" : ""}">${st.startsWith("t_") ? frRael("foco", 64) : frRael(HM[st] || "normal", big ? 120 : 66)}<div class="rbal"><b>${t}</b>${s ? `<div class="sub">${s}</div>` : ""}</div></div>`;
-  if (st === "oi") h = T(ONB.ret ? "Voltou! O galinheiro tava com saudade." : (d.nome ? "Fala, " + esc(d.nome) + "! Eu sou o Rael." : "Opa! Eu sou o Rael."), ONB.ret ? "Vamos chocar um plano novo? São só 5 perguntinhas." : "Vou chocar seu plano junto com você. São só 5 perguntinhas e cada resposta racha um pouco o ovo. O resto fica pra depois.", true);
+  if (st === "oi") h = T(ONB.ret ? "Voltou! O galinheiro tava com saudade." : (d.nome ? "Fala, " + esc(d.nome) + "! Eu sou o Rael." : "Opa! Eu sou o Rael."), ONB.ret ? "Vamos chocar um plano novo? São só 5 perguntinhas." : "Vou chocar seu plano junto com você. São só 5 perguntinhas e cada resposta racha um pouco o ovo. O resto fica pra depois.", true) + (!ONB.ret && typeof SB !== "undefined" && SB.cli && !SB.user ? `<button class="btn soft block" style="margin-top:12px" data-act="onbTenhoConta">Já uso o Frangômetro: entrar e recuperar meus dados</button>` : "");
   else if (st === "motivos") h = T(ONB.ret ? "O que te trouxe de volta?" : "O que te move?", "Pode marcar mais de uma, ou nenhuma. Eu não julgo (muito).") + ONB_MOTIVOS.map(([i, t]) => onbOpt("onbMulti", d.motivos.includes(t), i, t, `data-k="motivos" data-v="${esc(t)}"`)).join("");
   else if (st === "dif") h = T("O que muda desta vez?", "Pode marcar mais de uma.") + ONB_DIF.map(([i, t]) => onbOpt("onbMulti", d.dif.includes(t), i, t, `data-k="dif" data-v="${esc(t)}"`)).join("");
   else if (st === "obj") h = T("O que a gente vai chocar?", ONB.ret ? "Antes era: " + ({ perder: "perder gordura", manter: "manter o peso", ganhar: "ganhar massa" }[P().objetivo] || "perder gordura") + ". Se continua valendo, é só seguir." : "Escolha o rumo. Dá pra mudar quando quiser.") + ONB_OBJ.map(([k, i, t]) => onbOpt("onbObj", d.objetivo === k, i, t, `data-v="${k}"`)).join("");
@@ -5816,6 +5816,7 @@ let _hold = null;
 document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest("[data-hold]"); if (!b || b.classList.contains("done")) return; b.classList.add("hold"); _hold = setTimeout(() => { _hold = null; ONB.d.comp = true; try { navigator.vibrate && navigator.vibrate(30); } catch (_) {} drawSheet(); }, 1400); });
 const holdSolta = () => { if (_hold) { clearTimeout(_hold); _hold = null; } const b = document.querySelector("[data-hold].hold"); if (b) b.classList.remove("hold"); };
 document.addEventListener("pointerup", holdSolta); document.addEventListener("pointercancel", holdSolta);
+ACT.onbTenhoConta = () => { closeSheet(); UIc.ixAv = true; UIc.sec = UIc.sec || {}; UIc.sec.dados = true; ui.tab = "perfil"; render(); toast("Entre com e-mail e senha em Nuvem. Seus dados voltam sozinhos."); };
 ACT.onbSkip = () => { updP(p => { p.onb = true; }); closeSheet(); };
 ACT.onbFim = () => {
   if (ONB.prev) { ONB.prev = false; closeSheet(); toast("Só uma olhada: nada foi alterado."); return; }
@@ -6187,8 +6188,8 @@ function ixMetaHtml(p = P(), compacto) {
 // 6. Convidado: entrada rápida (a IA usa a chave Gemini grátis do próprio usuário, em Perfil > Inteligência artificial)
 ACT.onbRapido = () => { onbLe(); ONB.rapido = true; ONB.i = 1; drawSheet(); const b = $(".sheet-b"); if (b) b.scrollTop = 0; };
 function ixConviteHtml() {
-  const p = P(), s = ixSB(); if (!p.convidado || !s.cli || s.user || (ixLsGet(IX_CONV, "") >= TODAY()) || frRegDays().length < 3) return "";
-  return `<div class="card flat"><div class="eyebrow">Guardar seus dados</div><div class="small" style="margin-top:4px">Por enquanto seus dados estão só neste aparelho. Criando uma conta (e-mail e senha) eles ficam na nuvem e você pode abrir em outro celular.</div><div class="row wrap-ok" style="margin-top:8px"><button class="btn sm pri" data-act="ixConviteSim">Guardar na nuvem</button><button class="btn sm ghost" data-act="ixConviteDepois">Depois</button></div></div>`;
+  const p = P(), s = ixSB(); if (!s.cli || s.user || (ixLsGet(IX_CONV, "") >= TODAY()) || frRegDays().length < 3) return "";
+  return `<div class="card flat"><div class="eyebrow">Guardar seus dados</div><div class="small" style="margin-top:4px">Seus dados estão só neste navegador: se você limpar o cache ou os dados do site, eles somem. Entrando com uma conta (e-mail e senha) eles ficam na nuvem e você pode abrir em outro celular.</div><div class="row wrap-ok" style="margin-top:8px"><button class="btn sm pri" data-act="ixConviteSim">Guardar na nuvem</button><button class="btn sm ghost" data-act="ixConviteDepois">Depois</button></div></div>`;
 }
 ACT.ixConviteSim = () => { UIc.ixAv = true; UIc.sec = UIc.sec || {}; UIc.sec.dados = true; ui.tab = "perfil"; render(); };
 ACT.ixConviteDepois = () => { ixLsSet(IX_CONV, addDays(TODAY(), 7)); render(); };
@@ -6217,11 +6218,12 @@ function render() {
   $("#view").innerHTML = ui.tab === "hoje" ? V() : `<div class="stack">${frTopo(ui.tab)}${V()}</div>`;
 }
 (async function init() {
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}   /* pede ao navegador para não apagar os dados sozinho */
   ST.docs = lsRead();
   render();
   connectCaps();
   await Promise.race([connectCloud(), new Promise(r => setTimeout(r, 2500))]);
-  try { sbInit().then(() => { if (!SHEET.stack.length) render(); }); } catch (e) {}
+  try { await Promise.race([sbInit(), new Promise(r => setTimeout(r, 3000))]); if (!SHEET.stack.length) render(); } catch (e) {}   /* espera a nuvem antes de decidir o onboarding: assim o botão de recuperar aparece e quem já tem conta não refaz o perfil */
   try { if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}   /* cache offline: registra sempre, não só com avisos ligados */
   if (!P().onb && !SHEET.stack.length) onboarding(); else if (!SHEET.stack.length) voltouCheck();
   if (getDoc("ativo") && !SHEET.stack.length) render();

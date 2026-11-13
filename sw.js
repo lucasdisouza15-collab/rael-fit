@@ -28,7 +28,7 @@ const FRASES = [
    - Configs .json: rede primeiro, cópia se offline. Nunca guarda: chamadas de dados (Supabase, IA, Worker), pedidos que não são GET e o teste de versão (?_=).
    Para forçar renovação geral, suba CACHE (ex.: frango-v2); o botão "Atualizar app" do app também limpa tudo. */
 const CACHE = "frango-v1";
-const FIXOS = ["./", "icon.png", "icon-192.png", "apple-touch-icon.png", "manifest.json", "supabase-sync.js?v=1"];
+const FIXOS = ["./", "icon.png", "icon-192.png", "apple-touch-icon.png", "manifest.json", "supabase-sync.js?v=2"];
 const EXTERNOS_OK = [/^fonts\.googleapis\.com$/, /^fonts\.gstatic\.com$/, /^cdn\.jsdelivr\.net$/];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(FIXOS.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
