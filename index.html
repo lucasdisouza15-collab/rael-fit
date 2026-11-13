@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v79-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v80-20261113b"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
@@ -2570,6 +2570,28 @@ function tafStatus(t) {
   const f = (v, m) => v == null || v === "" ? "sem" : (+v >= m ? "ok" : "falta");
   return { barra: f(t && t.barra, TAF_MIN.barra), abd: f(t && t.abd, TAF_MIN.abd), corrida: f(t && t.corrida, TAF_MIN.corrida) };
 }
+// O que fazer num dia: itens [rótulo, texto] com quantidade exata. nomeRot = nome da rotina do dia na semana (ou ""). u = último teste.
+function tafAbdTxt(data, u) {
+  if (u && u.abd) { const n = Math.max(8, Math.round(u.abd * 0.6) + 2 * Math.max(0, Math.floor(tafDif(u.data, data) / 7))); return "3 séries de " + n + ", descanso 60 s (cotovelo passa o joelho)"; }
+  return "3 séries de 10, descanso 60 s (número provisório; o teste de sábado define o certo)";
+}
+function tafBarraDia(data) {
+  if (data < "2026-12-12") { const s = Math.min(20, 10 + 2 * Math.max(0, Math.floor(tafDif("2026-11-13", data) / 7))); return "suspensão assistida (banco, ponta dos pés): 3 séries de " + s + " s (a mais longa primeiro), descanso 90 s; depois remada invertida 3 x 8"; }
+  return tafBarraTxt(data);
+}
+function tafDia(data, nomeRot, u) {
+  const pl = tafPlano(data), dow = new Date(data + "T12:00:00").getDay(), nr = String(nomeRot || ""), it = [];
+  if (!pl.ativo) return { data, dow, teste: false, itens: it };
+  if (TAF_TESTES.indexOf(data) >= 0) return { data, dow, teste: true, itens: [
+    ["1º Barra", "suspensão sem apoio (segundos) e depois assistida (segundos); tente 1 repetição limpa. Anote os dois tempos"],
+    ["2º Abdominal", "1 minuto cheio, conte as repetições (cotovelo passa o joelho)"],
+    ["3º Corrida", "12 minutos no ritmo que você aguenta até o fim; anote os metros"]] };
+  const run = dow === 1 ? pl.seg : dow === 2 ? pl.ter : dow === 4 ? pl.qui : null;
+  if (run) it.push(["Corrida (manhã)", run]);
+  if (/push/i.test(nr)) it.push(["Abdominal (fim do " + nr + ")", tafAbdTxt(data, u)]);
+  if (/pull/i.test(nr)) it.push(["Barra (fim do " + nr + ")", tafBarraDia(data)]);
+  return { data, dow, teste: false, itens: it };
+}
 /*TAF-PURO-FIM*/
 let TAF_ROT_OK = false;
 function tafRotInit() {
@@ -2594,9 +2616,9 @@ function tafCard() {
   const u = tafUltimo(p.taf), st = tafStatus(u), A = pl.alvo;
   const cel = (v, un, s) => v == null || v === "" ? `<span class="muted">sem dado</span>` : `<b style="color:var(--${s === "ok" ? "good" : "warn"})">${esc(String(v))}${un}</b>`;
   let h = `<div class="card"><div class="row between"><h2>Rumo ao TAF</h2><span class="pill acc">Escrivão PC-BA</span></div>`;
-  if (pl.antes) h += `<div class="small ink2" style="margin-top:6px">As corridas começam em 16/11. Antes: o teste-base de sábado 14/11 (corrida só confortável, sem arrancada).</div>`;
-  else h += `<div class="small" style="margin-top:8px"></div><div class="eyebrow" style="margin-top:8px">Esta semana</div><div class="small ink2">Seg: ${esc(pl.seg)}<br>Ter: ${esc(pl.ter)}<br>Qui: ${esc(pl.qui)}</div>`;
-  h += `<div class="small ink2" style="margin-top:6px"><b>Abdominal</b> no fim de PUSH A e B: ${esc(pl.abd)}.<br><b>Barra</b> no fim de PULL A e B: ${esc(pl.barra)}.</div>`;
+  const nomeDia = d => { const r = rotinaById(semanaEf(p)[dowOf(d)], p); return r ? r.nome : ""; };
+  const dia = (tit, d) => { const x = tafDia(d, nomeDia(d), u); return `<div class="eyebrow" style="margin-top:10px">${tit} · ${esc(DOWL[x.dow].toLowerCase())} ${ddmm(d)}${x.teste ? " · TESTE" : ""}</div>` + (x.itens.length ? `<div class="small" style="margin-top:2px">${x.itens.map(i => `<div style="margin-top:3px"><b>${esc(i[0])}:</b> ${esc(i[1])}</div>`).join("")}</div>` : `<div class="small ink2" style="margin-top:2px">Sem TAF extra. Faça só o treino do dia (ou descanse).</div>`); };
+  h += dia("Hoje", t) + dia("Amanhã", addDays(t, 1));
   h += `<div class="small" style="margin-top:8px">${pl.proximoTeste ? (pl.dias === 0 ? "<b>Hoje é dia de teste de referência.</b>" : "Próximo teste de referência: <b>" + ddmm(pl.proximoTeste) + "</b> (" + pl.dias + (pl.dias === 1 ? " dia" : " dias") + ").") : "Plano concluído."}</div>`;
   h += `<div class="table" style="margin-top:8px"><div class="row between small"><span></span><span class="muted">mínimo · último · meta do ciclo</span></div>`
     + `<div class="row between small"><span>Corrida 12 min</span><span>${TAF_MIN.corrida} m · ${cel(u && u.corrida, " m", st.corrida)} · ${A.corrida} m</span></div>`
