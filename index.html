@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v73-20261113a"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-ver" content="v74-20261113b"><meta name="copyright" content="© Lucas de Souza. Todos os direitos reservados."><script>/* © Lucas de Souza. Todos os direitos reservados. Proibida a cópia, redistribuição ou uso comercial sem autorização escrita. */</script><script>/*ST-INI*/
 function stDecide(s){if(!s||typeof s!=="object")return{modo:"teste"};if(s.estado==="migrado"){var l=typeof s.loja==="string"&&/^https:\/\//.test(s.loja)?s.loja:"";return{modo:"migrado",msg:typeof s.mensagem==="string"&&s.mensagem?s.mensagem.slice(0,300):"O Frangômetro agora está na loja. Baixe o app oficial.",loja:l}}return{modo:"teste"}}
 function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"))return false;var o=doc.createElement("div");o.id="st-bloqueio";o.setAttribute("role","alertdialog");o.style.cssText="position:fixed;inset:0;z-index:2147483647;background:#27335F;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui,sans-serif";var h=doc.createElement("h1");h.textContent="Esta versão de teste foi encerrada";h.style.cssText="font-size:22px;margin:0 0 12px";var p=doc.createElement("p");p.textContent=d.msg;p.style.cssText="margin:0 0 20px;max-width:320px;line-height:1.4";o.appendChild(h);o.appendChild(p);if(d.loja){var a=doc.createElement("a");a.href=d.loja;a.textContent="Abrir na loja";a.style.cssText="background:#fff;color:#27335F;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none";o.appendChild(a)}doc.body.appendChild(o);return true}
 /*ST-FIM*/
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v73-20261113a";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v74-20261113b";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
 checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
@@ -2454,19 +2454,19 @@ function semanaRot(p, ws, feitos, hoje) {
   const base = rs.filter(r => !/b[ôo]nus|opcional/i.test(r.nome)), bon = rs.find(r => /b[ôo]nus|opcional/i.test(r.nome));
   const out = {}; if (!base.length) return out;
   const isLeg = r => /^\s*(legs?|pernas?)\b/i.test(r.nome), leg = base.find(isLeg), nonLeg = base.filter(r => !isLeg(r));
-  /* v73 (13/11/2026, Lucas): uma perna entre cada push e pull (PUSH A, LEGS, PULL A, LEGS, ...), nunca mais de 1 treino seguido sem perna.
+  /* v73 (13/11/2026, Lucas): uma perna a cada par push+pull (PUSH A, PULL A, LEGS, PUSH B, PULL B, LEGS), nunca 4 treinos seguidos sem perna.
      Sem rotina de perna, ou sem outra rotina, o ciclo é a lista como veio. */
-  const rot = leg && nonLeg.length ? nonLeg.flatMap(r => [r, leg]) : base;
+  const rot = leg && nonLeg.length ? nonLeg.flatMap((r, i) => i % 2 || i === nonLeg.length - 1 ? [r, leg] : [r]) : base;
   const norm = s => String(s || "").trim().toLowerCase();
   const casa = (w, r) => (w.rotinaId && r.id === w.rotinaId) || (norm(w.nome) && norm(w.nome).startsWith(norm(r.nome)));
   let last = -1;
   for (let n = 0; n < ws.length && last < 0; n++) {
     const w = ws[n];
     if (leg && casa(w, leg) && rot !== base) {
-      /* perna aparece várias vezes no ciclo: a posição é a perna que vem depois do último treino que NÃO foi perna */
+      /* perna aparece mais de uma vez no ciclo: a posição vem do último treino que NÃO foi perna (se a perna é a seguinte a ele no ciclo, ocupa o lugar; senão volta ao ponto dele) */
       const pv = ws.slice(n + 1).find(x => !casa(x, leg) && nonLeg.some(r => casa(x, r)));
       const pi = pv ? rot.findIndex(r => r !== leg && casa(pv, r)) : -1;
-      last = pi >= 0 ? pi + 1 : 1; break;
+      last = pi < 0 ? rot.indexOf(leg) : rot[pi + 1] === leg ? pi + 1 : pi; break;
     }
     const i = rot.findIndex(r => casa(w, r)); if (i >= 0) { last = i; break; }
   }
