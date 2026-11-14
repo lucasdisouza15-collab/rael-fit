@@ -3992,8 +3992,17 @@ function syncLsPrefs() { const o = {}; try { for (let i = 0; i < localStorage.le
 // pacote completo (backup em arquivo e Copiar tudo): todos os docs, fotos, perfis apagados e preferências
 async function syncPacote() {
   let fotos = []; try { fotos = (await fotoLista(null)).map(x => ({ id: x.id, w: x.w, t: x.t, d: x.d })).filter(x => x.d); } catch (e) {}
-  const o = { app: "rael-fit", v: 3, origem: syncPainel() ? "painel" : "site", exportado: new Date().toISOString(), docs: syncSnap(), fotos };
-  if (!syncPainel()) { o.lixeira = lixeira(); o.ls = syncLsPrefs(); o.perfil = { id: PID(), nome: nomeU() }; }
+  const o = { app: "rael-fit", v: 4, origem: syncPainel() ? "painel" : "site", exportado: new Date().toISOString(), docs: syncSnap(), fotos };
+  if (!syncPainel()) {
+    o.lixeira = lixeira(); o.ls = syncLsPrefs(); o.perfil = { id: PID(), nome: nomeU() };
+    // v4: outros perfis deste aparelho (o perfil ativo continua em docs). Só leitura; nada é alterado ou apagado.
+    o.perfis = [];
+    try { perfis().list.forEach(it => { if (it.id === PID()) return; let d = {}; try { d = JSON.parse(localStorage.getItem(it.id === "main" ? LS_KEY : LS_KEY + ":" + it.id) || "{}") || {}; } catch (e) {} const docs = {}; Object.keys(d).forEach(k => { if (k !== "ativo" && d[k] && !d[k]._del) docs[k] = d[k]; }); if (Object.keys(docs).length) o.perfis.push({ id: it.id, nome: it.nome || "", docs }); }); } catch (e) {}
+  }
+  // v4: contagens para o importador conferir (dias, treinos, fotos...) e fuso das datas
+  const dk = Object.keys(o.docs), pf = o.docs.perfil || {};
+  o.fuso = "America/Bahia";
+  o.contagens = { dias: dk.filter(k => k.startsWith("dia-")).length, treinos: dk.filter(k => k.startsWith("treino-") && !o.docs[k]._del).length, fotos: fotos.length, rotinas: (pf.rotinas || []).length, receitas: (pf.receitas || []).length, alimentos: (pf.alimentos || []).length, exCustom: (pf.exCustom || []).length, pesos: dk.filter(k => k.startsWith("dia-") && o.docs[k].peso != null).length, sono: Object.keys(pf.sono || {}).length, medidas: ((pf.med || {}).hist || []).length, taf: Object.keys(pf.taf || {}).length, outrosPerfis: (o.perfis || []).length };
   return o;
 }
 function syncPlano(remoto) {

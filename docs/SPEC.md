@@ -72,6 +72,13 @@ Lógica pura em `index.html` entre `/*IX-PURO-INI*/` e `/*IX-PURO-FIM*/`, testad
 - Mudança: `TAF Finalizador PULL` = dead hang assistido (tempo) + remada invertida; `TESTE TAF` ganha dead hang (tempo máximo). Metas de barra por ciclo em segundos/reps (12/12 suspensão assistida 20 s; 06/02 sem apoio 10 s; 03/04 3 negativas de 3 s; 29/05 1 rep limpa). A meta final fica ABAIXO do mínimo oficial (3 reps) e isso está escrito. Rotinas já criadas (v1/v2) são atualizadas por id na primeira abertura (`tafRotV` 3); o resto do perfil não muda.
 - Aceite: `node tools/check.js` verde (27 TAF) e prova de migração v1 para v3 em navegador (PUSH A intacta, 2 itens no Finalizador PULL).
 
+### Backup v4 para migração ao app novo (14/11/2026)
+- Problema: o app novo (Lovable) vai receber os dados dos testadores. O backup v3 já cobria dias, treinos, perfil, fotos, lixeira e preferências `frango:*`, mas só do perfil ATIVO e sem contagens para conferir.
+- Mudança (só leitura, nada é apagado): backup `v: 4` ganha `perfis` (docs dos outros perfis do aparelho, sem `ativo` nem apagados), `contagens` (dias, treinos, fotos, rotinas, receitas, alimentos, exCustom, pesos, sono, medidas, taf, outrosPerfis) e `fuso: "America/Bahia"`. v3 continua lido como antes (a restauração ignora os campos novos).
+- Fora do backup de propósito: chave de IA (`raelfit:apikey`), avisos push, cache de modelos.
+- Aceite: `node tools/check.js` verde; prova em navegador com 2 perfis, foto e preferências; verificador da migração em /mnt/project-files/frangometro/migracao/.
+- Paridade: aba Frangômetro do Painel precisa do mesmo trecho em `syncPacote` para exportar v4 (sem `perfis`, o Painel não tem perfis).
+
 ## Regras do método
 - Antes de abrir PR: `node tools/check.js` (sintaxe dos scripts + testes das contas de kcal/macros e da nota Pintinho/Frango/Galo Alfa). Se mudar uma regra de conta, ajustar o teste na mesma entrega.
 - Paridade: tudo que entra no site (index.html) vai também para a aba Frangômetro do Painel, exceto o que for exclusivo de um dos dois.
