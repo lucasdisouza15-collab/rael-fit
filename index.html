@@ -6,11 +6,11 @@ function stAplica(d,doc){if(d.modo!=="migrado"||doc.getElementById("st-bloqueio"
 (function(){try{function ver(){fetch("app-status.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j)stAplica(stDecide(j),document)}).catch(function(){})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ver);else ver();document.addEventListener("visibilitychange",function(){if(!document.hidden)ver()});setInterval(ver,300000)}catch(e){}})()</script><script>(function(){try{var V="v85-20261113d";function ocupado(){var a=document.activeElement,l=document.getElementById("layer");return (a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||(l&&l.children.length>0)}
 function checa(){try{if(ocupado())return;fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="app-ver" content="([^"]+)"/);if(m&&m[1]!==V&&!ocupado()&&sessionStorage.getItem("frv")!==m[1]){sessionStorage.setItem("frv",m[1]);location.replace(location.pathname+"?v="+m[1]+location.hash)}}).catch(function(){})}catch(e){}}
-checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#27335F"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+checa();document.addEventListener("visibilitychange",function(){if(!document.hidden)checa()});setInterval(checa,300000)}catch(e){}})()</script><meta name="theme-color" content="#F4F1EA" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0C0D0F" media="(prefers-color-scheme: dark)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Frangômetro"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.json"><script>try{var t=localStorage.getItem("frTema");if(t)document.documentElement.setAttribute("data-tema",t)}catch(e){}</script><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Frangômetro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Barlow:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: app de uma coluna, mobile-first, barra de abas fixa embaixo, folhas (sheets) sobem de baixo */
 :root{
@@ -466,6 +466,65 @@ input[type=file]::file-selector-button{border-radius:10px}
 .sheet:has(.onb) .sheet-f .btn.pri:active{transform:scale(.98)}
 .sheet:has(.onb) .sheet-f .btn.ghost{clip-path:none;border-radius:18px}
 .bar>i{box-shadow:inset 0 0 0 1px rgba(27,22,48,.55)}
+/* ===== TEMA TERRA (v86): claro = papel quente + verde-floresta, escuro = grafite + verde-limão. Só visual; funções e dados intactos. ===== */
+:root{--f-display:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--f-body:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+--bg:#F4F1EA;--surface:#FBF9F4;--surface-2:#ECE7DA;--ink:#1B2420;--ink-2:#3A453F;--muted:#5F6A63;--line:#DDD7C7;--accent:#2F6B57;--accent-ink:#fff;--accent-soft:#E3EDE7;
+--prot:#2F6B57;--carb:#C98A3B;--gord:#B8665A;--fib:#8E968F;--good:#2C6049;--warn:#7A5410;--bad:#9A3A31;--deficit:#2F6B57;--surplus:#B8665A;--grid:#E6E1D3;--axis:#C9C3B2;--gema:#EFE3C2;
+--cta:#23473B;--cta-ink:#fff;--sombra:0 1px 2px rgba(27,36,32,.05),0 4px 14px rgba(27,36,32,.05);--rad:20px;--rad-m:14px;--campo:#CFC8B5;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-tema="claro"]){--bg:#0C0D0F;--surface:#16171B;--surface-2:#202228;--ink:#F2F3F5;--ink-2:#C9CBD2;--muted:#9496A1;--line:#2A2C34;--accent:#C8F23C;--accent-ink:#0C0D0F;--accent-soft:#232A12;
+--prot:#C8F23C;--carb:#7C8CFF;--gord:#FF8A5B;--fib:#8A8C98;--good:#8BE0A8;--warn:#F0C674;--bad:#FF8F85;--deficit:#C8F23C;--surplus:#FF8A5B;--grid:#23252C;--axis:#3A3D47;--gema:#2A2D1A;
+--cta:#C8F23C;--cta-ink:#0C0D0F;--sombra:none;--campo:#3A3D47;color-scheme:dark}}
+:root[data-tema="escuro"]{--bg:#0C0D0F;--surface:#16171B;--surface-2:#202228;--ink:#F2F3F5;--ink-2:#C9CBD2;--muted:#9496A1;--line:#2A2C34;--accent:#C8F23C;--accent-ink:#0C0D0F;--accent-soft:#232A12;
+--prot:#C8F23C;--carb:#7C8CFF;--gord:#FF8A5B;--fib:#8A8C98;--good:#8BE0A8;--warn:#F0C674;--bad:#FF8F85;--deficit:#C8F23C;--surplus:#FF8A5B;--grid:#23252C;--axis:#3A3D47;--gema:#2A2D1A;
+--cta:#C8F23C;--cta-ink:#0C0D0F;--sombra:none;--campo:#3A3D47;color-scheme:dark}
+body{font-weight:400;letter-spacing:-.005em}
+h1,h2,h3,.sec-title h2,details.sec .sec-t b,.sec-label,.fr-nivel,#fr-splash .fr-sp-nome,.brand .fr-logo,.chip,.seg button,.btn,.datenav .lbl,nav.tabs button,.wd .d{text-transform:none;font-family:var(--f-display)}
+h1{font-size:30px;font-weight:700;letter-spacing:-.035em}h2{font-size:19px;font-weight:700;letter-spacing:-.025em}h3{font-size:16px;font-weight:650;letter-spacing:-.01em}.sec-title h2{font-size:19px;font-weight:700}
+.num,.kcal-r,.stat b,.balance .n,.ring .c b,.fr-kcal b,.fr-seq,.fr-nota-n,.restbar b{font-weight:650;letter-spacing:-.03em}
+.brand .fr-logo{font-size:20px;font-weight:700;letter-spacing:-.03em;background:none;padding:0}
+.sec-label,details.sec .sec-t b{font-weight:700;letter-spacing:.06em;font-size:12px;text-transform:uppercase;color:var(--muted)}details.sec .sec-t b{font-size:15px;text-transform:none;letter-spacing:-.01em;color:var(--ink)}
+header.top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+nav.tabs{background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+nav.tabs button{color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:0}
+nav.tabs button[aria-current="page"]{color:var(--ink)}nav.tabs button[aria-current="page"] svg{color:var(--accent);stroke:var(--accent)}
+.card,.ex-card{background:var(--surface);border:1px solid var(--line);box-shadow:var(--sombra)}
+.card.flat,details.sec .sec-body>.card{border:0}
+.fr-bal,.fr-balao{background:var(--surface-2)!important;color:var(--ink)}
+.fr-balao .fr-resp button,.fr-bal .fr-resp button{background:var(--surface);border:1px solid var(--line)}
+.fr-balao .fr-resp button.pri,.fr-bal .fr-resp button.pri{background:var(--cta);color:var(--cta-ink);border-color:transparent}
+.btn{background:var(--surface-2);color:var(--ink);font-size:15px;font-weight:650;letter-spacing:-.01em;text-transform:none}
+.btn:hover,.card .btn:hover{background:color-mix(in srgb,var(--surface-2) 80%,var(--ink) 8%)}
+.card .btn,.ex-card .btn,.sheet .btn{background:var(--surface-2)}
+.btn.pri,.card .btn.pri,.sheet .btn.pri{background:var(--cta);color:var(--cta-ink);box-shadow:none}
+.btn.soft,.card .btn.soft{background:var(--accent-soft);color:var(--ink)}
+.btn.ghost,.card .btn.ghost{background:transparent}
+.btn.sm{font-size:14px}
+.chip{background:var(--surface-2);font-size:14px;font-weight:600;text-transform:none}.chip[aria-pressed="true"]{background:var(--cta);color:var(--cta-ink)}
+.seg{background:var(--surface-2)}.seg button{font-size:14px;font-weight:600;text-transform:none;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+input[type=text],input[type=number],input[type=search],input[type=date],select,textarea{background:var(--surface);border:1px solid var(--campo);color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+.pill,.pill.acc{background:var(--surface-2);color:var(--ink-2)}
+.pill.good{background:color-mix(in srgb,var(--good) 16%,var(--surface));color:var(--good)}.pill.warn{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}.pill.bad{background:color-mix(in srgb,var(--bad) 16%,var(--surface));color:var(--bad)}
+.bar{background:var(--line)}.bar>i{box-shadow:none}
+.wd{background:var(--surface);border:1px solid var(--line)}.wd.today{box-shadow:none;background:var(--cta);color:var(--cta-ink);border-color:transparent}.wd.done{background:var(--accent-soft)}
+.cup{border-color:var(--prot)}.cup.on{background:var(--prot)}
+.sets tr.done td{background:var(--accent-soft)}.check{border-color:var(--campo)}.check.on{background:var(--cta);border-color:var(--cta)}.check.on svg{color:var(--cta-ink)}
+.empty{border:1px dashed var(--campo)}.ai{background:var(--surface)}.bubble.me{background:var(--cta);color:var(--cta-ink)}
+.fr-nivel{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.fr-nivel.fr-pintinho{background:var(--surface-2)!important}.fr-nivel.fr-frango{background:var(--accent-soft)!important}.fr-nivel.fr-galo{background:color-mix(in srgb,var(--gord) 25%,var(--surface))!important}
+.fr-nota-n b{color:var(--accent)}
+.fr-chip{background:var(--surface-2)}.fr-chip.ok{background:var(--accent-soft);box-shadow:none}.fr-chip.meio{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.toast,.tip{background:var(--cta);color:var(--cta-ink)}
+.rbal{background:var(--surface-2);border-color:var(--line)}.rbal::before{background:var(--surface-2);border-color:var(--line)}
+.fr-resp2 button,.onb-opt{background:var(--surface);border:1px solid var(--campo);box-shadow:none;color:var(--ink)}.onb-opt.on{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.onb-hold{border-color:var(--accent)}.onb-hold.done{color:var(--accent-ink)}
+.sheet:has(.onb){background:var(--bg)}.sheet:has(.onb) .card.stepcard{box-shadow:var(--sombra)}
+.sheet:has(.onb) .sheet-f .btn.pri{box-shadow:none}.sheet:has(.onb) input[type=text],.sheet:has(.onb) input[type=number],.sheet:has(.onb) select{border:1px solid var(--campo)}
+.humb{border:1px solid var(--line);background:var(--surface)}
+#fr-splash{background:var(--bg);color:var(--ink)}#fr-splash .fr-sp-nome{font-weight:700;font-size:40px;letter-spacing:-.04em;text-transform:none}#fr-splash .fr-sp-barra{background:var(--line)}#fr-splash .fr-sp-barra i{background:var(--accent)}
+.ra .ra-z{fill:#27335F}
+/* fim do tema Terra */
 </style>
 
 <header class="top"><div id="faixa-teste" role="note" style="background:#FFE9A8;color:#3B2F00;text-align:center;font:600 12px/1.35 system-ui,sans-serif;padding:6px 10px">Versão de teste. Em breve nas lojas Android e iOS.</div><div class="in" id="topbar"></div></header>
@@ -4222,9 +4281,9 @@ function frArco(r1_, r2_, raio) { const [x1, y1] = frPt(r1_, raio), [x2, y2] = f
 function frMedidor(x, nv) {
   const r = clamp(x / 100, 0, 1), [nx, ny] = frPt(r, 62);
   return `<svg viewBox="0 -10 200 128" role="img" aria-label="Nota do dia: ${Math.round(x)} de 100, ${nv.n}" style="width:100%;max-width:300px;display:block;margin:0 auto">
-    <g fill="none" stroke-width="18"><path d="${frArco(0, FR_ARC.a, 80)}" stroke="#DDE3F3"/><path d="${frArco(FR_ARC.a, FR_ARC.b, 80)}" stroke="#6E85C2"/><path d="${frArco(FR_ARC.b, FR_ARC.max, 80)}" stroke="#F0DC9A"/></g>
-    <line x1="100" y1="100" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#27335F" stroke-width="7" stroke-linecap="round"/><circle cx="100" cy="100" r="10" fill="#27335F"/>
-    <g font-family="Big Shoulders Display,sans-serif" font-size="11" font-weight="900" fill="#4B5784" letter-spacing=".5"><text x="14" y="114">PINTINHO</text><text x="100" y="2" text-anchor="middle">FRANGO</text><text x="136" y="114">GALO ALFA</text></g></svg>`;
+    <g fill="none" stroke-width="18"><path d="${frArco(0, FR_ARC.a, 80)}" style="stroke:var(--line)"/><path d="${frArco(FR_ARC.a, FR_ARC.b, 80)}" style="stroke:var(--accent);opacity:.55"/><path d="${frArco(FR_ARC.b, FR_ARC.max, 80)}" style="stroke:var(--carb);opacity:.8"/></g>
+    <line x1="100" y1="100" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" style="stroke:var(--ink)" stroke-width="7" stroke-linecap="round"/><circle cx="100" cy="100" r="10" style="fill:var(--ink)"/>
+    <g font-family="Inter,sans-serif" font-size="9.5" font-weight="700" style="fill:var(--muted)" letter-spacing=".4"><text x="14" y="114">PINTINHO</text><text x="100" y="2" text-anchor="middle">FRANGO</text><text x="186" y="114" text-anchor="end">GALO ALFA</text></g></svg>`;
 }
 // tipos de exercício do dia: musculação e atividades de 20 min ou mais lançadas em "outras atividades"
 function frMovTipos(td) {
@@ -5594,6 +5653,7 @@ function viewPerfil() {
       <div>${p.objetivo === "perder" ? "− " + fmt(p.ajuste) + " kcal para perder peso" : p.objetivo === "ganhar" ? "+ " + fmt(p.ajuste) + " kcal para ganhar massa" : "Manutenção, sem ajuste"} = <b>${fmt(c.kcal)} kcal</b>.</div>
       <div>Proteína ${({ perder: 2.0, manter: 1.6, ganhar: 1.8 })[p.objetivo]} g/kg, gordura 0,8 g/kg, carboidrato no que sobra, fibra 14 g por 1.000 kcal, água 35 ml/kg.</div></div></details></div>`;
   h += `<div class="card stack"><h2>Preferências</h2>
+    <label class="f">Aparência<select id="prTema" data-on="tema">${[["", "Automática (segue o celular)"], ["claro", "Clara"], ["escuro", "Escura"]].map(([v, n]) => `<option value="${v}" ${(localStorage.getItem("frTema") || "") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="f">Aumento de carga na progressão<select id="prInc" data-on="prefs">${[1, 2, 2.5, 4, 5].map(v => `<option value="${v}" ${num(p.incremento) === v ? "selected" : ""}>+${fmt1(v)} kg</option>`).join("")}</select></label>
     <label class="f">Intensidade da musculação (MET usado no gasto)<select id="prMet" data-on="prefs">${[[3.5, "Leve (3,5)"], [5, "Moderada (5,0)"], [6, "Pesada (6,0)"]].map(([v, n]) => `<option value="${v}" ${num(p.metMusc) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
     <label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" id="prSomar" data-on="prefs" ${p.somarTreino ? "checked" : ""}> Somar as calorias do treino à meta do dia (comer de volta o que gastou)</label>
@@ -5647,6 +5707,8 @@ ACT.savePerfil = () => {
 };
 ON.metasAuto = el => { updP(p => { p.metasAuto = el.checked; if (!el.checked) p.metas = Object.assign({}, metasCalc(p)); }); render(); };
 ACT.saveMetas = () => { updP(p => { p.metas = {}; ["kcal", "p", "c", "g", "f", "agua"].forEach(k => { p.metas[k] = num($("#mt_" + k).value); }); }); render(); toast("Metas salvas"); };
+ON.tema = () => { const v = $("#prTema").value; try { v ? localStorage.setItem("frTema", v) : localStorage.removeItem("frTema"); } catch (e) {} aplicaTema(); };
+function aplicaTema() { let v = ""; try { v = localStorage.getItem("frTema") || ""; } catch (e) {} v ? document.documentElement.setAttribute("data-tema", v) : document.documentElement.removeAttribute("data-tema"); }
 ON.prefs = () => { updP(p => { p.incremento = num($("#prInc").value); p.metMusc = num($("#prMet").value); p.somarTreino = $("#prSomar").checked; const f = num($("#prFds").value); p.fimSemana = f > 0 ? { pct: f } : null; p.jejumOn = $("#prJej").checked; }); render(); toast("Preferências salvas"); };
 function backupJSON_antigo() { const docs = {}; for (const k in ST.docs) if (!ST.docs[k]._del) docs[k] = ST.docs[k]; return JSON.stringify({ app: "rael-fit", v: 1, exportado: new Date().toISOString(), docs }); }
 // lembrete de backup: só no modo local; depois de 7 dias sem backup aparece na tela inicial (adia por 2 dias)
